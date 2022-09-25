@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  node:
+    user: 1000:1000
+    image: node:18-alpine
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: npm run start
+    ports:
+      - 1234:1234
+      - 1235:1235
+  file_server:
+    image: node:18-alpine
+    volumes:
+      - ./chipdb-384.json:/app/chipdb-384.json
+    working_dir: /app
+    command: ash -c 'npm install http-server -g && http-server -p 5000 --cors'
+    ports:
+      - 5000:5000
