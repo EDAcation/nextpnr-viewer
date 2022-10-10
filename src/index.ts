@@ -2,19 +2,29 @@ import { Subject, Observable, pipe } from 'rxjs';
 import { ChipDbInterface } from './chipdb/chipdb.interface';
 import { ChipDb } from './chipdb/types';
 import { Renderer } from './renderer';
+import { ChipInfoPODImpl } from './chipdb/binary-types';
 
 function getChipDb(url: string): Observable<ChipDb> {
     const subject: Subject<ChipDb> = new Subject<ChipDb>();
 
     var fileReq = new XMLHttpRequest();
+    fileReq.responseType = 'arraybuffer';
     fileReq.open("GET", url);
     fileReq.onreadystatechange = _ => {
         if (fileReq.readyState === 4) {
             if (fileReq.status === 200 || fileReq.status === 0) {
+                let arraybuffer = fileReq.response;
+                let dataview = new DataView(arraybuffer);
+                console.log(dataview);
+                const impl = new ChipInfoPODImpl(new DataView(dataview.buffer, dataview.getInt32(0, true)));
+                console.log(impl);
+
+                /*
                 const jsonText: string = fileReq.responseText;
 
                 const chipdb = ChipDb.from_interface(JSON.parse(jsonText) as ChipDbInterface);
                 subject.next(chipdb);
+                */
             }
         }
     };
@@ -31,13 +41,13 @@ window.onload = () => {
     if (context === null) { console.error("Cannot get context"); return; }
 
 
-    getChipDb("http://192.168.2.12:5000/chipdb-384.json").subscribe(chipDb => {
+    getChipDb("http://localhost:5000/chipdb-384.bin").subscribe(chipDb => {
         const renderer = new Renderer(context, chipDb);
 
         canvas.addEventListener('wheel', e => {
             e.preventDefault();
             if (e.deltaY === 0) return;
-            renderer.zoom(e.deltaY > 0 ? 0.2 : -0.2, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            renderer.zoom(e.deltaY > 0 ? 0.1 : -0.1, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
         });
 
         let down = false;

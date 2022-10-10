@@ -14,7 +14,7 @@ services:
   file_server:
     image: node:18-alpine
     volumes:
-      - ./chipdb-384.json:/app/chipdb-384.json
+      - ./chipdb-384.bin:/app/chipdb-384.bin
     working_dir: /app
     command: ash -c 'npm install http-server -g && http-server -p 5000 --cors'
     ports:
