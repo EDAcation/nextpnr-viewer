@@ -2,7 +2,7 @@ import { Subject, Observable, pipe } from 'rxjs';
 import { ChipDbInterface } from './chipdb/chipdb.interface';
 import { ChipDb } from './chipdb/types';
 import { Renderer } from './renderer';
-import { ChipInfoPODImpl } from './chipdb/binary-types';
+import { ChipInfoPODImpl } from './chipdb-new/ecp5-impl.chipdb';
 
 function getChipDb(url: string): Observable<ChipDb> {
     const subject: Subject<ChipDb> = new Subject<ChipDb>();
@@ -41,7 +41,7 @@ window.onload = () => {
     if (context === null) { console.error("Cannot get context"); return; }
 
 
-    getChipDb("http://localhost:5000/chipdb-384.bin").subscribe(chipDb => {
+    getChipDb("http://localhost:5000/chipdb.bin").subscribe(chipDb => {
         const renderer = new Renderer(context, chipDb);
 
         canvas.addEventListener('wheel', e => {

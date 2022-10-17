@@ -2,6 +2,8 @@ export class RelString {
     static fromDataView(dataview: DataView): string {
         const off = dataview.getInt32(0, true);
 
+        if (dataview.byteOffset + off === -1) return "";
+
         dataview = new DataView(dataview.buffer, dataview.byteOffset + off);
 
         let cur = 0;
@@ -13,6 +15,32 @@ export class RelString {
         }
 
         return ret_str;
+    }
+}
+
+export class RelStringArr {
+    static fromDataView(dataview: DataView): Array<string> {
+        const off = dataview.getInt32(0, true);
+        const len = dataview.getInt32(4, true);
+
+        const range = (n: number) => [...Array(n).keys()];
+
+        return range(len).map(i => RelString.fromDataView(new DataView(
+            dataview.buffer,
+            dataview.byteOffset + off + i * 4
+        )));
+    }
+}
+
+export class RelInt32Arr {
+    static fromDataView(dataview: DataView): Array<number> {
+        const off = dataview.getInt32(0, true);
+        const len = dataview.getInt32(4, true);
+
+        const range = (n: number) => [...Array(n).keys()];
+        const dv = new DataView(dataview.buffer, dataview.byteOffset + off);
+
+        return range(len).map(i => dv.getInt32(i * 4, true));
     }
 }
 
