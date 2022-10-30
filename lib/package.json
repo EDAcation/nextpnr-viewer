@@ -16,6 +16,10 @@
     "check": "tsc --noEmit",
     "build": "parcel build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EDAcation/nextpnr-viewer.git"
+  },
   "keywords": [],
   "source": "src/index.ts",
   "main": "dist/main.js",
