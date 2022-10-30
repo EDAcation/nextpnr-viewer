@@ -1,16 +1,25 @@
 {
   "name": "nextpnr-viewer",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "author": {
+    "name": "EDAcation"
+  },
+  "contributors": [
+    {
+      "email": "wesselinkbram@gmail.com",
+      "name": "Bram Wesselink",
+      "url": "https://brammie.nl"
+    }
+  ],
+  "description": "A HTML 5 Canvas based viewer for nextpnr place and route visualizations.",
   "scripts": {
     "check": "tsc --noEmit",
     "build": "parcel build"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
-  "types": "dist/types.d.ts"
+  "types": "dist/types.d.ts",
+  "files": ["dist/**/*"]
 }
