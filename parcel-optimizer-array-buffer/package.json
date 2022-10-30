@@ -1,0 +1,33 @@
+{
+  "author": {
+    "name": "EDAcation"
+  },
+  "contributors": [
+    {
+      "email": "wesselinkbram@gmail.com",
+      "name": "Bram Wesselink",
+      "url": "https://brammie.nl"
+    }
+  ],
+  "description": "Parcel optimizer for inlining binary content as an array buffer",
+  "main": "lib/parcel-optimizer-array-buffer.js",
+  "source": "src/parcel-optimizer-array-buffer.js",
+  "engines": {
+    "node": ">= 12.0.0",
+    "parcel": "^2.7.0"
+  },
+  "name": "parcel-optimizer-array-buffer",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EDAcation/nextpnr-viewer.git"
+  },
+  "version": "1.0.0",
+  "dependencies": {
+    "@parcel/plugin": "^2.7.0",
+    "@parcel/utils": "^2.7.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.7.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "author": {
+    "name": "EDAcation"
+  },
+  "contributors": [
+    {
+      "email": "wesselinkbram@gmail.com",
+      "name": "Bram Wesselink",
+      "url": "https://brammie.nl"
+    }
+  ],
+  "description": "Test for the nextpnr based viewer",
+  "main": "lib/main.js",
+  "source": "src/index.ts",
+  "name": "test-nextpnr-viewer",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EDAcation/nextpnr-viewer.git"
+  },
+  "version": "1.0.0"
+}
