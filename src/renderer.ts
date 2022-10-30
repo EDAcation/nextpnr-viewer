@@ -1,17 +1,24 @@
+/*
 import { ChipDb, WireData } from './chipdb/types';
 import { DecalXY, DecalType } from './decal/decal';
 import { gfxTileWire } from './render/gfx';
 import { GraphicElement, GraphicElementStyle, GraphicElementType } from './render/types';
 import { getGroupDecalGraphics } from './render/group.decal';
 import { getBelDecalGraphics } from './render/bel.decal';
+*/
+import { Architecture } from './architecture/architecture';
+import { GraphicElement } from './gfx/gfx';
+import { Type as GraphicElementType } from './gfx/types';
+import { Style as GraphicElementStyle } from './gfx/styles';
+import { from } from 'rxjs';
 
-export class Renderer {
+export class Renderer<T> {
     constructor(
         private context: CanvasRenderingContext2D,
-        private db: ChipDb,
-        private _scale: number = 55,
+        private architecture: Architecture<T>,
+        private _scale: number = 10,
         private _offX: number = -3,
-        private _offY: number = -10.5,
+        private _offY: number = -75.5,
         private _visibleWidth = 0,
         private _visibleHeight = 0,
         private _elements: {
@@ -24,31 +31,13 @@ export class Renderer {
         this._visibleWidth = this.context.canvas.width;
         this._visibleHeight = this.context.canvas.height;
 
-        const wireDecals: Array<DecalXY> = this.db.wire_data.map(wd => DecalXY.from_wire(wd));
-        const groupDecals: Array<DecalXY> = this.db.group_data.map(gd => DecalXY.from_group(gd));
-        const belDecals: Array<DecalXY> = this.db.bel_data.map(bd => DecalXY.from_bel(bd));
-        console.log(this.db);
+        this._elements.wire = this.architecture.getWireDecals().map(decal => {
+            return this.architecture.getDecalGraphics(decal.decal);
+        }).flat();
 
-        for (const decal of wireDecals) {
-            if (decal.decal.type === DecalType.TYPE_WIRE) {
-                const wd: WireData = decal.decal.obj as WireData;
-
-                for (const segment of wd.segments) {
-                    gfxTileWire(this._elements.wire, segment.x, segment.y,
-                                this.db.width, this.db.height, segment.index,
-                                decal.decal.active ? GraphicElementStyle.STYLE_ACTIVE : GraphicElementStyle.STYLE_INACTIVE);
-                }
-            }
-        }
-
-        for (const decal of groupDecals) {
-            getGroupDecalGraphics(this._elements.group, decal);
-        }
-
-        for (const decal of belDecals) {
-            getBelDecalGraphics(this._elements.bel, decal);
-        }
-
+        this._elements.bel = this.architecture.getBelDecals().map(decal => {
+            return this.architecture.getDecalGraphics(decal.decal);
+        }).flat();
         console.log(this._elements);
     }
 
@@ -74,14 +63,16 @@ export class Renderer {
 
         const oldScale = this._scale;
         this._scale *= amt;
-        this._scale = Math.min(4000, Math.max(55, this._scale));
+        this._scale = Math.min(4000, Math.max(10, this._scale));
         amt = this._scale / oldScale;
+        if (amt === 1) return;
 
         this._offX -= x/(this._scale*amt) - x/this._scale;
         this._offY -= y/(this._scale*amt) - y/this._scale;
 
         this._visibleWidth = this.context.canvas.width / this._scale;
         this._visibleHeight = this.context.canvas.height / this._scale;
+
         this.render();
     }
 
@@ -93,11 +84,14 @@ export class Renderer {
     }
 
     private renderElements(elements: Array<GraphicElement>) {
+        if (elements.length === 0) return;
+
         this.context.strokeStyle = this.getColor(elements[0].style);
         this.context.beginPath();
+        let i = 0;
         for (const ge of elements) {
 
-            if (ge.type === GraphicElementType.TYPE_BOX) {
+            if (ge.type === GraphicElementType.Box) {
                 this.context.moveTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y1) * this._scale);
                 this.context.lineTo((-this._offX + ge.x2) * this._scale, (-this._offY + -ge.y1) * this._scale);
                 this.context.lineTo((-this._offX + ge.x2) * this._scale, (-this._offY + -ge.y2) * this._scale);
@@ -105,8 +99,12 @@ export class Renderer {
                 this.context.lineTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y1) * this._scale);
             }
 
-            else if (ge.type === GraphicElementType.TYPE_LINE || ge.type === GraphicElementType.TYPE_ARROW ||
-                ge.type === GraphicElementType.TYPE_LOCAL_LINE || ge.type === GraphicElementType.TYPE_LOCAL_ARROW) {
+            else if (ge.type === GraphicElementType.Line /*|| ge.type === GraphicElementType.TYPE_ARROW ||
+                ge.type === GraphicElementType.TYPE_LOCAL_LINE || ge.type === GraphicElementType.TYPE_LOCAL_ARROW*/) {
+                if (this._scale < 100 && i++ % 10 !== 0) continue;
+                if (ge.x2 < this._offX || ge.x1 > this._offX + this._visibleWidth ||
+                   -ge.y2 < this._offY || -ge.y1 > this._offY + this._visibleHeight) continue;
+
                 this.context.moveTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y1) * this._scale);
                 this.context.lineTo((-this._offX + ge.x2) * this._scale, (-this._offY + -ge.y2) * this._scale);
             }
@@ -117,14 +115,14 @@ export class Renderer {
 
     private getColor(style: GraphicElementStyle): string {
         switch (style) {
-            case GraphicElementStyle.STYLE_ACTIVE:
+            case GraphicElementStyle.Active:
                 return "#F8F8F2";
-            case GraphicElementStyle.STYLE_INACTIVE:
+            case GraphicElementStyle.Inactive:
                 return "#6272A4";
-            case GraphicElementStyle.STYLE_FRAME:
-                return "#BD93F9";
+            //case GraphicElementStyle.STYLE_FRAME:
+                //return "#BD93F9";
         }
 
-        return "#FF0000";
+        //return "#FF0000";
     }
 }

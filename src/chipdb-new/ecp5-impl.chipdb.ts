@@ -222,8 +222,8 @@ export class WireInfoPODImpl implements WireInfoPOD {
     private _name: string;
     private _type: number;
     private _tile_wire: number;
-    private _pips_uphill: Array<PipLocatorPOD>;
-    private _pips_downhill: Array<PipLocatorPOD>;
+    private _pips_uphill?: Array<PipLocatorPOD> = undefined;
+    private _pips_downhill?: Array<PipLocatorPOD> = undefined;
     private _bel_pins: Array<BelPortPOD>;
 
     constructor(private _dataview: DataView) {

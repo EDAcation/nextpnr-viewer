@@ -1,11 +1,10 @@
-import { Subject, Observable, pipe } from 'rxjs';
-import { ChipDbInterface } from './chipdb/chipdb.interface';
-import { ChipDb } from './chipdb/types';
+import { Subject, Observable } from 'rxjs';
 import { Renderer } from './renderer';
 import { ChipInfoPODImpl } from './chipdb-new/ecp5-impl.chipdb';
+import { ECP5Arch } from './architecture/ecp5.arch';
 
-function getChipDb(url: string): Observable<ChipDb> {
-    const subject: Subject<ChipDb> = new Subject<ChipDb>();
+function getChipDb(url: string): Observable<ECP5Arch> {
+    const subject: Subject<ECP5Arch> = new Subject<ECP5Arch>();
 
     var fileReq = new XMLHttpRequest();
     fileReq.responseType = 'arraybuffer';
@@ -15,16 +14,10 @@ function getChipDb(url: string): Observable<ChipDb> {
             if (fileReq.status === 200 || fileReq.status === 0) {
                 let arraybuffer = fileReq.response;
                 let dataview = new DataView(arraybuffer);
-                console.log(dataview);
                 const impl = new ChipInfoPODImpl(new DataView(dataview.buffer, dataview.getInt32(0, true)));
-                console.log(impl);
+                const arch = new ECP5Arch(impl);
 
-                /*
-                const jsonText: string = fileReq.responseText;
-
-                const chipdb = ChipDb.from_interface(JSON.parse(jsonText) as ChipDbInterface);
-                subject.next(chipdb);
-                */
+                subject.next(arch);
             }
         }
     };
@@ -41,8 +34,8 @@ window.onload = () => {
     if (context === null) { console.error("Cannot get context"); return; }
 
 
-    getChipDb("http://localhost:5000/chipdb.bin").subscribe(chipDb => {
-        const renderer = new Renderer(context, chipDb);
+    getChipDb("http://localhost:5000/chipdb.bin").subscribe(arch => {
+        const renderer = new Renderer(context, arch);
 
         canvas.addEventListener('wheel', e => {
             e.preventDefault();
