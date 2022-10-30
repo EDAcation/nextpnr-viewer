@@ -1,4 +1,4 @@
-import { DecalXY } from '../decal-new/decal';
+import { DecalXY } from '../decal/decal';
 import { GraphicElement } from '../gfx/gfx';
 
 export interface Architecture<DecalID> {

@@ -1,7 +1,7 @@
-import { ChipInfoPOD } from '../chipdb-new/ecp5.chipdb';
+import { ChipInfoPOD } from '../chipdb/ecp5.chipdb';
 import { Architecture } from './architecture';
-import { ECP5DecalID, ECP5DecalType } from '../decal-new/ecp5.decalid';
-import { DecalXY } from '../decal-new/decal';
+import { ECP5DecalID, ECP5DecalType } from '../decal/ecp5.decalid';
+import { DecalXY } from '../decal/decal';
 import { GFX } from '../gfx/ecp5.gfx';
 import { GfxTileWireId } from '../gfx/tilewire.ecp5.gfx';
 import { GraphicElement } from '../gfx/gfx';
