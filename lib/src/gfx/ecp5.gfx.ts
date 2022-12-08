@@ -101,7 +101,38 @@ export class GFX {
             el.y1 = y + gfxconstants.slice_y2;
             el.y2 = y + 0.25;
             ret.push(el.clone());
+        } else if (type === 1821) { // TRELLIS_COMB
+            el.x1 = x + gfxconstants.slice_x1;
+            el.x2 = x + gfxconstants.slice_x2_comb;
+            el.y1 = y + gfxconstants.slice_y1 + Math.floor(z / 4) * gfxconstants.slice_pitch;
+            el.y2 = y + gfxconstants.slice_y2 + Math.floor(z / 4) * gfxconstants.slice_pitch;
+            ret.push(el.clone());
+
+            el.style = Style.Frame;
+            el.x1 = x + gfxconstants.slice_x2_comb + 15 * gfxconstants.wire_distance;
+            el.x2 = el.x1 + gfxconstants.wire_distance;
+            el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (GfxTileWireId.TILE_WIRE_CLK3_SLICE - GfxTileWireId.TILE_WIRE_DUMMY_D2 + 5 + (3 - z) * 26) +
+                3 * gfxconstants.slice_pitch - 0.0007;
+            el.y2 = el.y1 + gfxconstants.wire_distance * 5;
+            ret.push(el.clone());
+        } else if (type === 1787) { // TRELLIS_FF
+            el.x1 = x + gfxconstants.slice_x1_ff;
+            el.x2 = x + gfxconstants.slice_x2;
+            el.y1 = y + gfxconstants.slice_y1 + Math.floor(z / 4) * gfxconstants.slice_pitch;
+            el.y2 = y + gfxconstants.slice_y2 + Math.floor(z / 4) * gfxconstants.slice_pitch;
+            ret.push(el.clone());
+
+            el.style = Style.Frame;
+            el.x1 = x + gfxconstants.slice_x2 + 15 * gfxconstants.wire_distance;
+            el.x2 = el.x1 + gfxconstants.wire_distance;
+            el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (GfxTileWireId.TILE_WIRE_CLK3_SLICE - GfxTileWireId.TILE_WIRE_DUMMY_D2 + 5 + (3 - z) * 26) +
+                3 * gfxconstants.slice_pitch - 0.0007;
+            el.y2 = el.y1 + gfxconstants.wire_distance * 5;
+            ret.push(el.clone());
+        } else if (type === 1822) { // TRELLIS_RAMW
+            // do not draw
         }
+
 
 
         else if (first) {
@@ -711,8 +742,43 @@ export class GFX {
             el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (tilewire - GfxTileWireId.TILE_WIRE_REFCLKP_EXTREF + 1) + 1 * gfxconstants.slice_pitch;
             el.y2 = el.y1;
             ret.push(el.clone());
+        } else if (type === 1271) { // WIRE_TYPE_SLICE
+            if (tilewire >= GfxTileWireId.TILE_WIRE_FCO_SLICE && tilewire <= GfxTileWireId.TILE_WIRE_FCI_SLICE) {
+                const gap = Math.floor((tilewire - GfxTileWireId.TILE_WIRE_FCO_SLICE) / 24);
+                const item = (tilewire - GfxTileWireId.TILE_WIRE_FCO_SLICE) % 24;
+                el.x1 = x + gfxconstants.slice_x1 - gfxconstants.wire_length;
+                el.x2 = x + gfxconstants.slice_x1;
+                el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (tilewire - GfxTileWireId.TILE_WIRE_FCO_SLICE + 1 + gap * 2) + 3 * gfxconstants.slice_pitch;
+                el.y2 = el.y1;
+                ret.push(el.clone());
+                // FX to F connection - top
+                if (item == (GfxTileWireId.TILE_WIRE_FXD_SLICE - GfxTileWireId.TILE_WIRE_FCO_SLICE)) {
+                    el.x2 = el.x1;
+                    el.y2 = el.y1 - gfxconstants.wire_distance;
+                    ret.push(el.clone());
+                }
+                // F5 to F connection - bottom
+                if (item == (GfxTileWireId.TILE_WIRE_F5D_SLICE - GfxTileWireId.TILE_WIRE_FCO_SLICE)) {
+                    el.x2 = el.x1;
+                    el.y2 = el.y1 + gfxconstants.wire_distance;
+                    ret.push(el.clone());
+                }
+                // connection between slices
+                if (item == (GfxTileWireId.TILE_WIRE_FCID_SLICE - GfxTileWireId.TILE_WIRE_FCO_SLICE) && tilewire != GfxTileWireId.TILE_WIRE_FCI_SLICE) {
+                    el.x2 = el.x1;
+                    el.y2 = el.y1 - gfxconstants.wire_distance * 3;
+                    ret.push(el.clone());
+                }
+            }
+            if (tilewire >= GfxTileWireId.TILE_WIRE_DUMMY_D2 && tilewire <= GfxTileWireId.TILE_WIRE_WAD0A_SLICE) {
+                const gap = Math.floor((tilewire - GfxTileWireId.TILE_WIRE_DUMMY_D2) / 12);
+                el.x1 = x + gfxconstants.slice_x2 + gfxconstants.wire_length;
+                el.x2 = x + gfxconstants.slice_x2;
+                el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (tilewire - GfxTileWireId.TILE_WIRE_DUMMY_D2 + 1 + gap * 14) + 3 * gfxconstants.slice_pitch;
+                el.y2 = el.y1;
+                ret.push(el.clone());
+            }
         }
-
 
         else if (first) {
             console.log(x,y,type);

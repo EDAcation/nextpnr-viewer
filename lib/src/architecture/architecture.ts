@@ -7,4 +7,6 @@ export interface Architecture<DecalID> {
     getWireDecals(): Array<DecalXY<DecalID>>;
     getPipDecals(): Array<DecalXY<DecalID>>;
     getGroupDecals(): Array<DecalXY<DecalID>>;
+
+    activateBelByName(name: string): void;
 }

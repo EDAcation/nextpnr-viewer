@@ -15,6 +15,8 @@ import {
 } from '../gfx/ecp5.gfx.constants';
 
 export class ECP5Arch implements Architecture<ECP5DecalID> {
+    private _active_bels: Array<{x: number, y: number, name: string}> = [];
+
     constructor(
         private _chipdb: ChipInfoPOD
     ) {}
@@ -74,6 +76,7 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
 
         const ret: Array<DecalXY<ECP5DecalID>> = [];
 
+
         while (cursor_tile != this._chipdb.width * this._chipdb.height) {
             while (cursor_tile < this._chipdb.num_tiles &&
                    cursor_index >= this._chipdb.locations[this._chipdb.location_type[cursor_tile]].bel_data.length) {
@@ -81,12 +84,16 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
                 cursor_tile++;
             }
 
+            const x = cursor_tile % this._chipdb.width;
+            const y = Math.floor(cursor_tile / this._chipdb.width);
+            const name = this._chipdb.locations[this._chipdb.location_type[cursor_tile]]?.bel_data[cursor_index].name;
+
             ret.push(new DecalXY<ECP5DecalID>(
                 new ECP5DecalID(
                     ECP5DecalType.TYPE_BEL,
-                    {x: cursor_tile % this._chipdb.width, y: Math.floor(cursor_tile / this._chipdb.width)},
+                    {x, y},
                     cursor_index,
-                    false
+                    this._active_bels.filter(ab => ab.x === x && ab.y === y && ab.name === name).length === 1
                 ),
                 0,
                 0
@@ -147,6 +154,16 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
         }
 
         return ret;
+    }
+
+    public activateBelByName(name: string) {
+        const parts = name.split('/');
+
+        const x_idx = parseInt(parts[0].replace('X', ''), 10);
+        const y_idx = parseInt(parts[1].replace('Y', ''), 10);
+        const bname = parts[2];
+
+        this._active_bels.push({x: x_idx, y: y_idx, name: bname});
     }
 
 }

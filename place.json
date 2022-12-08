@@ -1,0 +1,2121 @@
+{
+  "creator": "Next Generation Place and Route (Version nextpnr-0.4)",
+  "modules": {
+    "top": {
+      "settings": {
+        "place": "00000000000000000000000000000001",
+        "placer1/startTemp": "1.000000",
+        "placer1/budgetBased": "0 ",
+        "placer1/minBelsForGridPick": "64",
+        "placer1/netShareWeight": "0.000000",
+        "placer1/constraintWeight": "10.000000",
+        "placerHeap/parallelRefine": "0 ",
+        "pack": "00000000000000000000000000000001",
+        "synth": "00000000000000000000000000000001",
+        "placerHeap/timingWeight": "10 ",
+        "placerHeap/criticalityExponent": "2",
+        "placerHeap/beta": "0.900000",
+        "placerHeap/alpha": "0.100000",
+        "seed": "01010011010110001001011110010011",
+        "arch.type": "lfe5u_25f",
+        "arch.name": "ARCHNAME",
+        "router": "router1",
+        "placer": "heap",
+        "auto_freq": "00000000000000000000000000000000",
+        "slack_redist_iter": "00000000000000000000000000000000",
+        "timing_driven": "0 ",
+        "target_freq": "12000000.000000"
+      },
+      "attributes": {
+        "top": "00000000000000000000000000000001",
+        "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:5.1-34.10"
+      },
+      "ports": {
+        "rst": {
+          "direction": "input",
+          "bits": [ 2091 ]
+        },
+        "result": {
+          "direction": "output",
+          "bits": [ 2168, 2170, 2149, 2151, 2130, 2132, 2110, 2112 ]
+        },
+        "clk": {
+          "direction": "input",
+          "bits": [ 2089 ]
+        },
+        "c$arg": {
+          "direction": "input",
+          "bits": [ 2156, 2157, 2137, 2138, 2118, 2119, 2097, 2098 ]
+        }
+      },
+      "cells": {
+        "$gbuf$clk$TRELLIS_IO_IN": {
+          "hide_name": 1,
+          "type": "DCCA",
+          "parameters": {
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000101",
+            "NEXTPNR_BEL": "X31/Y0/TDCC0"
+          },
+          "port_directions": {
+            "CE": "input",
+            "CLKO": "output",
+            "CLKI": "input"
+          },
+          "connections": {
+            "CE": [  ],
+            "CLKO": [ 2254 ],
+            "CLKI": [ 2210 ]
+          }
+        },
+        "$nextpnr_CCU2C_1$CCU2_COMB1": {
+          "hide_name": 1,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0000000000001010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X32/Y35/SLICEB.K1"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [  ],
+            "F": [  ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2252 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [  ],
+            "A": [  ]
+          }
+        },
+        "$nextpnr_CCU2C_1$CCU2_COMB0": {
+          "hide_name": 1,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0000000000000000",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X32/Y35/SLICEB.K0"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2252 ],
+            "F": [ 2105 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2234 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [  ],
+            "A": [  ]
+          }
+        },
+        "result_CCU2C_S0$CCU2_COMB1": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X32/Y35/SLICEA.K1",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2234 ],
+            "F": [ 2193 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2249 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2212 ],
+            "A": [ 2096 ]
+          }
+        },
+        "result_CCU2C_S0$CCU2_COMB0": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X32/Y35/SLICEA.K0",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2249 ],
+            "F": [ 2196 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2104 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2214 ],
+            "A": [ 2095 ]
+          }
+        },
+        "result_CCU2C_S0_1$CCU2_COMB1": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICED.K1",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2104 ],
+            "F": [ 2198 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2246 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2216 ],
+            "A": [ 2117 ]
+          }
+        },
+        "result_CCU2C_S0_1$CCU2_COMB0": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICED.K0",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2246 ],
+            "F": [ 2200 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2125 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2218 ],
+            "A": [ 2116 ]
+          }
+        },
+        "result_CCU2C_S0_2$CCU2_COMB1": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEC.K1",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2125 ],
+            "F": [ 2202 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2243 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2220 ],
+            "A": [ 2136 ]
+          }
+        },
+        "result_CCU2C_S0_2$CCU2_COMB0": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEC.K0",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2243 ],
+            "F": [ 2204 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2144 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2222 ],
+            "A": [ 2135 ]
+          }
+        },
+        "result_CCU2C_S0_3$CCU2_COMB1": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEB.K1",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2144 ],
+            "F": [ 2206 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2240 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2224 ],
+            "A": [ 2155 ]
+          }
+        },
+        "result_CCU2C_S0_3$CCU2_COMB0": {
+          "hide_name": 0,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0110011010101010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEB.K0",
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:74.7-80.4"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2240 ],
+            "F": [ 2208 ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2232 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [ 2226 ],
+            "A": [ 2154 ]
+          }
+        },
+        "$nextpnr_CCU2C_0$CCU2_COMB1": {
+          "hide_name": 1,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "YES",
+            "INITVAL": "1111111111111111",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEA.K1"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2232 ],
+            "F": [  ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [ 2237 ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [  ],
+            "A": [  ]
+          }
+        },
+        "$nextpnr_CCU2C_0$CCU2_COMB0": {
+          "hide_name": 1,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "WREMUX": "WRE",
+            "CCU2_INJECT1": "NO",
+            "INITVAL": "0000000000001010",
+            "MODE": "CCU2"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEA.K0"
+          },
+          "port_directions": {
+            "OFX": "output",
+            "FCO": "output",
+            "F": "output",
+            "WCK": "input",
+            "WRE": "input",
+            "WAD3": "input",
+            "WAD2": "input",
+            "WAD1": "input",
+            "WAD0": "input",
+            "WD": "input",
+            "DI1": "input",
+            "DI0": "input",
+            "FXB": "input",
+            "FXA": "input",
+            "FCI": "input",
+            "F1": "input",
+            "M": "input",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "OFX": [  ],
+            "FCO": [ 2237 ],
+            "F": [  ],
+            "WCK": [  ],
+            "WRE": [  ],
+            "WAD3": [  ],
+            "WAD2": [  ],
+            "WAD1": [  ],
+            "WAD0": [  ],
+            "WD": [  ],
+            "DI1": [  ],
+            "DI0": [  ],
+            "FXB": [  ],
+            "FXA": [  ],
+            "FCI": [  ],
+            "F1": [  ],
+            "M": [  ],
+            "D": [  ],
+            "C": [  ],
+            "B": [  ],
+            "A": [ 2228 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_6": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEB.FF1",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2155 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2206 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_5": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEC.FF0",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2135 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2204 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_4": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEC.FF1",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2136 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2202 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_3": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICED.FF0",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2116 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2200 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_2": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICED.FF1",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2117 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2198 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_1": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X32/Y35/SLICEA.FF0",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2095 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2196 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "state_TRELLIS_FF_Q": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X32/Y35/SLICEA.FF1",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2096 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2193 ],
+            "CLK": [ 2254 ]
+          }
+        },
+        "c$arg[0]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X72/Y35/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2226 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2156 ]
+          }
+        },
+        "c$arg[1]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X0/Y35/PIOC",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2224 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2157 ]
+          }
+        },
+        "c$arg[2]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X27/Y0/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2222 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2137 ]
+          }
+        },
+        "c$arg[3]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X0/Y35/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2220 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2138 ]
+          }
+        },
+        "c$arg[4]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X72/Y35/PIOD",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2218 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2118 ]
+          }
+        },
+        "rst$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X33/Y0/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:8.14-8.17",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2190 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2091 ]
+          }
+        },
+        "c$arg[5]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X15/Y50/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2216 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2119 ]
+          }
+        },
+        "c$arg[6]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X33/Y0/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2214 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2097 ]
+          }
+        },
+        "c$arg[7]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X18/Y50/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2212 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2098 ]
+          }
+        },
+        "clk$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "INPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X27/Y0/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:7.14-7.17",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [ 2210 ],
+            "T": [  ],
+            "I": [  ],
+            "B": [ 2089 ]
+          }
+        },
+        "$PACKER_GND": {
+          "hide_name": 1,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "INITVAL": "0000000000000000"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y34/SLICEC.K1"
+          },
+          "port_directions": {
+            "F": "output",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "F": [ 2228 ],
+            "D": [  ],
+            "C": [  ],
+            "B": [  ],
+            "A": [  ]
+          }
+        },
+        "result[0]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X35/Y0/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2208 ],
+            "B": [ 2168 ]
+          }
+        },
+        "result[1]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X29/Y0/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2206 ],
+            "B": [ 2170 ]
+          }
+        },
+        "result[2]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X72/Y35/PIOC",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2204 ],
+            "B": [ 2149 ]
+          }
+        },
+        "result[3]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X72/Y35/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2202 ],
+            "B": [ 2151 ]
+          }
+        },
+        "$PACKER_VCC": {
+          "hide_name": 1,
+          "type": "TRELLIS_COMB",
+          "parameters": {
+            "INITVAL": "1111111111111111"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X52/Y36/SLICEC.K1"
+          },
+          "port_directions": {
+            "F": "output",
+            "D": "input",
+            "C": "input",
+            "B": "input",
+            "A": "input"
+          },
+          "connections": {
+            "F": [ 2230 ],
+            "D": [  ],
+            "C": [  ],
+            "B": [  ],
+            "A": [  ]
+          }
+        },
+        "result[4]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X15/Y50/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2200 ],
+            "B": [ 2130 ]
+          }
+        },
+        "result[5]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X29/Y0/PIOB",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2198 ],
+            "B": [ 2132 ]
+          }
+        },
+        "result[6]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X0/Y35/PIOD",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2196 ],
+            "B": [ 2110 ]
+          }
+        },
+        "result[7]$tr_io": {
+          "hide_name": 0,
+          "type": "TRELLIS_IO",
+          "parameters": {
+            "DATAMUX_MDDR": "PADDO",
+            "DATAMUX_ODDR": "PADDO",
+            "DIR": "OUTPUT"
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X35/Y0/PIOA",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31",
+            "IO_TYPE": "LVCMOS33"
+          },
+          "port_directions": {
+            "IOLTO": "input",
+            "IOLDO": "input",
+            "O": "output",
+            "T": "input",
+            "I": "input",
+            "B": "inout"
+          },
+          "connections": {
+            "IOLTO": [  ],
+            "IOLDO": [  ],
+            "O": [  ],
+            "T": [  ],
+            "I": [ 2193 ],
+            "B": [ 2112 ]
+          }
+        },
+        "state_TRELLIS_FF_Q_7": {
+          "hide_name": 0,
+          "type": "TRELLIS_FF",
+          "parameters": {
+            "SD": "1 ",
+            "SRMODE": "ASYNC",
+            "REGSET": "RESET",
+            "LSRMUX": "LSR",
+            "GSR": "DISABLED",
+            "CLKMUX": "CLK",
+            "CEMUX": "1 "
+          },
+          "attributes": {
+            "BEL_STRENGTH": "00000000000000000000000000000001",
+            "NEXTPNR_BEL": "X31/Y35/SLICEB.FF0",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:22.3-28.6|/usr/bin/../share/yosys/ecp5/cells_map.v:63.157-63.208",
+            "module_not_derived": "00000000000000000000000000000001"
+          },
+          "port_directions": {
+            "Q": "output",
+            "LSR": "input",
+            "DI": "input",
+            "CLK": "input"
+          },
+          "connections": {
+            "Q": [ 2154 ],
+            "LSR": [ 2190 ],
+            "DI": [ 2208 ],
+            "CLK": [ 2254 ]
+          }
+        }
+      },
+      "netnames": {
+        "$glbnet$clk$TRELLIS_IO_IN": {
+          "hide_name": 1,
+          "bits": [ 2254 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "ECP5_IS_GLOBAL": "00000000000000000000000000000001"
+          }
+        },
+        "$nextpnr_CCU2C_1$CCU2_FCI_INT": {
+          "hide_name": 1,
+          "bits": [ 2252 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0$CCU2_FCI_INT": {
+          "hide_name": 0,
+          "bits": [ 2249 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0_1$CCU2_FCI_INT": {
+          "hide_name": 0,
+          "bits": [ 2246 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0_2$CCU2_FCI_INT": {
+          "hide_name": 0,
+          "bits": [ 2243 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0_3$CCU2_FCI_INT": {
+          "hide_name": 0,
+          "bits": [ 2240 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "$nextpnr_CCU2C_0$CCU2_FCI_INT": {
+          "hide_name": 1,
+          "bits": [ 2237 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "$nextpnr_CCU2C_1$CIN": {
+          "hide_name": 1,
+          "bits": [ 2234 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "$nextpnr_CCU2C_0$COUT": {
+          "hide_name": 1,
+          "bits": [ 2232 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result[6]": {
+          "hide_name": 0,
+          "bits": [ 2110 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result[7]": {
+          "hide_name": 0,
+          "bits": [ 2112 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "rst": {
+          "hide_name": 0,
+          "bits": [ 2091 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "rst$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2190 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:8.14-8.17"
+          }
+        },
+        "clk$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2210 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:7.14-7.17"
+          }
+        },
+        "result[1]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2206 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "result[0]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2208 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "$PACKER_VCC_NET": {
+          "hide_name": 1,
+          "bits": [ 2230 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "$PACKER_GND_NET": {
+          "hide_name": 1,
+          "bits": [ 2228 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[0]": {
+          "hide_name": 0,
+          "bits": [ 2156 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[1]": {
+          "hide_name": 0,
+          "bits": [ 2157 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[2]": {
+          "hide_name": 0,
+          "bits": [ 2137 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[1]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2224 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "c$arg[0]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2226 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "state[1]": {
+          "hide_name": 0,
+          "bits": [ 2155 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "state[0]": {
+          "hide_name": 0,
+          "bits": [ 2154 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "result[3]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2202 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "result[2]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2204 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "c$arg[3]": {
+          "hide_name": 0,
+          "bits": [ 2138 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[4]": {
+          "hide_name": 0,
+          "bits": [ 2118 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0_3_COUT[2]": {
+          "hide_name": 0,
+          "bits": [ 2144 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "unused_bits": "0 2 4 6 7",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
+            "force_downto": "00000000000000000000000000000001"
+          }
+        },
+        "c$arg[5]": {
+          "hide_name": 0,
+          "bits": [ 2119 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[6]": {
+          "hide_name": 0,
+          "bits": [ 2097 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[3]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2220 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "c$arg[2]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2222 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "state[3]": {
+          "hide_name": 0,
+          "bits": [ 2136 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "state[2]": {
+          "hide_name": 0,
+          "bits": [ 2135 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "result[5]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2198 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "result[4]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2200 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "c$arg[7]": {
+          "hide_name": 0,
+          "bits": [ 2098 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "clk": {
+          "hide_name": 0,
+          "bits": [ 2089 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0_3_COUT[4]": {
+          "hide_name": 0,
+          "bits": [ 2125 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "unused_bits": "0 2 4 6 7",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
+            "force_downto": "00000000000000000000000000000001"
+          }
+        },
+        "result[0]": {
+          "hide_name": 0,
+          "bits": [ 2168 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result[1]": {
+          "hide_name": 0,
+          "bits": [ 2170 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[5]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2216 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "c$arg[4]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2218 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "state[5]": {
+          "hide_name": 0,
+          "bits": [ 2117 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "state[4]": {
+          "hide_name": 0,
+          "bits": [ 2116 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "result[7]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2193 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "result[6]$TRELLIS_IO_OUT": {
+          "hide_name": 0,
+          "bits": [ 2196 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
+          }
+        },
+        "result[2]": {
+          "hide_name": 0,
+          "bits": [ 2149 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result[3]": {
+          "hide_name": 0,
+          "bits": [ 2151 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result_CCU2C_S0_COUT[7]": {
+          "hide_name": 0,
+          "bits": [ 2105 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "unused_bits": "0 2 4 6 7",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
+            "force_downto": "00000000000000000000000000000001"
+          }
+        },
+        "result_CCU2C_S0_3_COUT[6]": {
+          "hide_name": 0,
+          "bits": [ 2104 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "unused_bits": "0 2 4 6 7",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
+            "force_downto": "00000000000000000000000000000001"
+          }
+        },
+        "result[4]": {
+          "hide_name": 0,
+          "bits": [ 2130 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "result[5]": {
+          "hide_name": 0,
+          "bits": [ 2132 ] ,
+          "attributes": {
+            "ROUTING": " "
+          }
+        },
+        "c$arg[7]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2212 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "c$arg[6]$TRELLIS_IO_IN": {
+          "hide_name": 0,
+          "bits": [ 2214 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
+          }
+        },
+        "state[7]": {
+          "hide_name": 0,
+          "bits": [ 2096 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        },
+        "state[6]": {
+          "hide_name": 0,
+          "bits": [ 2095 ] ,
+          "attributes": {
+            "ROUTING": " ",
+            "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
+          }
+        }
+      }
+    }
+  }
+}
