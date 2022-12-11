@@ -4,6 +4,7 @@ import { Renderer } from './renderer';
 import { ChipInfoPODImpl } from './chipdb/ecp5-impl.chipdb';
 import { ECP5Arch } from './architecture/ecp5.arch';
 import { ECP5DecalID } from './decal/ecp5.decalid';
+// @ts-ignore
 import chipdb from 'array-buffer:./chipdb/ecp5-bins/chipdb-25k.bin';
 
 function getChipDb(): ECP5Arch {
@@ -30,16 +31,12 @@ export class NextPNRViewer implements ViewerInterface {
         this._element.appendChild(canvas);
         this._canvas = canvas;
 
-        const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
-        if (context === null) throw 'unable to create canvas';
-
-        this._renderer = new Renderer(context, getChipDb(), this._config.colors);
+        this._renderer = new Renderer(canvas, getChipDb(), this._config.colors);
         this._addEventListeners(canvas);
         const toggleDefaults = {
             showWires: true,
             showGroups: true,
             showBels: true,
-            noSmallWires: true
         };
 
         if (this._config.createToggles) this._createToggles(toggleDefaults);
@@ -52,40 +49,40 @@ export class NextPNRViewer implements ViewerInterface {
                                showWires: boolean,
                                showGroups: boolean,
                                showBels: boolean,
-                               noSmallWires: boolean
                            }) {
-        this._element.appendChild(document.createElement('br'));
+        const toggleContainer = document.createElement('div');
+
         this._createToggle(
             'show_wires',
             'Show Wires',
             (r, v) => r.changeViewMode({showWires: v}),
-            defaults.showWires
+            defaults.showWires,
+            toggleContainer
         );
         this._createToggle(
             'show_groups',
             'Show Groups',
             (r, v) => r.changeViewMode({showGroups: v}),
-            defaults.showGroups
+            defaults.showGroups,
+            toggleContainer
         );
         this._createToggle(
             'show_bels',
             'Show BELs',
             (r, v) => r.changeViewMode({showBels: v}),
-            defaults.showBels
+            defaults.showBels,
+            toggleContainer
         );
-        this._createToggle(
-            'no_small_wires',
-            'Don\'t show small wires (improves performance)',
-            (r, v) => r.changeViewMode({noSmallWires: v}),
-            defaults.noSmallWires
-        );
+
+        this._element.appendChild(toggleContainer);
     }
 
     private _createToggle(
         toggle_id: string,
         toggle_description: string,
         toggle_action: (renderer: RendererInterface, value: boolean) => void,
-        default_state: boolean
+        default_state: boolean,
+        elem: HTMLElement
     ) {
         const inputElement: HTMLInputElement = document.createElement('input');
         inputElement.id = toggle_id;
@@ -104,8 +101,8 @@ export class NextPNRViewer implements ViewerInterface {
         labelElement.setAttribute('for', inputElement.name);
         labelElement.innerHTML = toggle_description;
 
-        this._element.appendChild(inputElement);
-        this._element.appendChild(labelElement);
+        elem.appendChild(inputElement);
+        elem.appendChild(labelElement);
     }
 
     private _addEventListeners(canvas: HTMLCanvasElement) {
@@ -116,7 +113,7 @@ export class NextPNRViewer implements ViewerInterface {
         canvas.addEventListener('wheel', e => {
             e.preventDefault();
             if (e.deltaY === 0) return;
-            this._renderer.zoom(e.deltaY > 0 ? 0.1 : -0.1, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            this._renderer.zoom(e.deltaY > 0 ? 0.05 : -0.05, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
         });
         canvas.addEventListener('mousedown', _ => { down = true; first = true; });
         canvas.addEventListener('mouseup', _ => { down = false; });
@@ -142,8 +139,15 @@ export class NextPNRViewer implements ViewerInterface {
     }
 
     public resize(width: number, height: number) {
-        this._canvas.width = width;
-        this._canvas.height = height;
+        this._element.style.width = `${width}px`;
+        this._element.style.height = `${height}px`;
+        this._element.style.display = 'flex';
+        this._element.style.flexDirection = 'column';
+
+        this._canvas.style.flexGrow = '1';
+
+        this._canvas.width = this._canvas.clientWidth;
+        this._canvas.height = this._canvas.clientHeight;
 
         this._renderer.render();
     }

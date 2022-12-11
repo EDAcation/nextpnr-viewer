@@ -13,13 +13,11 @@ export interface Renderer {
         showWires?: boolean,
         showGroups?: boolean,
         showBels?: boolean,
-        noSmallWires?: boolean
     }): void;
 
     get viewMode(): {
         showWires: boolean,
         showGroups: boolean,
         showBels: boolean,
-        noSmallWires: boolean
     };
 }
