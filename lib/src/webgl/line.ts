@@ -20,12 +20,13 @@ export class Line {
 
         out vec4 color;
 
+        uniform vec2 u_canvas_size;
         uniform vec2 u_offset;
         uniform float u_scale;
         uniform vec4 u_color;
 
         void main() {
-            vec2 pos = vec2((position.x - u_offset.x) / 1280.0, (-position.y - u_offset.y) / 720.0);
+            vec2 pos = vec2((position.x - u_offset.x) / u_canvas_size.x, (-position.y - u_offset.y) / u_canvas_size.y);
             vec2 pos0to1 = pos * u_scale;
             vec2 posfull = pos0to1 * 2.0 - vec2(1, 1);
             gl_Position = vec4(posfull.x, -posfull.y, 0, 1);
@@ -68,11 +69,14 @@ export class Line {
         gl.bindVertexArray(null);
     }
 
-    public draw(offsetX: number, offsetY: number, scale: number): void {
+    public draw(offsetX: number, offsetY: number, scale: number, canvasWidth: number, canvasHeight: number): void {
         const gl = this._gl;
         if (Line._program === undefined) throw 'can\'t draw without a program';
 
         gl.useProgram(Line._program);
+
+        const canvasSizeLoc = gl.getUniformLocation(Line._program, 'u_canvas_size');
+        gl.uniform2f(canvasSizeLoc, canvasWidth, canvasHeight);
 
         const offLoc = gl.getUniformLocation(Line._program, 'u_offset');
         gl.uniform2f(offLoc, offsetX, offsetY);

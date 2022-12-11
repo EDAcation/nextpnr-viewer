@@ -27,7 +27,7 @@ export class Renderer<T> implements RendererInterface {
             group: Array<GraphicElement>,
             bel: Array<GraphicElement>
         } = { wire: [], group: [], bel: [] },
-        private _viewMode = { showWires: true, showGroups: true, showBels: true, noSmallWires: true },
+        private _viewMode = { showWires: true, showGroups: true, showBels: true },
     ) {
         this._visibleWidth = this.canvas.width;
         this._visibleHeight = this.canvas.height;
@@ -48,11 +48,11 @@ export class Renderer<T> implements RendererInterface {
 
             this.lines.forEach(l => {
                 if (this._viewMode.showWires && l.type === 'wire')
-                    l.line.draw(this._offX, this._offY, this._scale)
+                    l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
                 if (this._viewMode.showGroups && l.type === 'group')
-                    l.line.draw(this._offX, this._offY, this._scale)
+                    l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
                 if (this._viewMode.showBels && l.type === 'bel')
-                    l.line.draw(this._offX, this._offY, this._scale)
+                    l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
             });
 
             this.animationFrameId = undefined;
@@ -94,12 +94,10 @@ export class Renderer<T> implements RendererInterface {
         showWires?: boolean,
         showGroups?: boolean,
         showBels?: boolean,
-        noSmallWires?: boolean
     }) {
         if (viewMode.showWires !== undefined)    this._viewMode.showWires = viewMode.showWires;
         if (viewMode.showGroups !== undefined)   this._viewMode.showGroups = viewMode.showGroups;
         if (viewMode.showBels !== undefined)     this._viewMode.showBels = viewMode.showBels;
-        if (viewMode.noSmallWires !== undefined) this._viewMode.noSmallWires = viewMode.noSmallWires;
 
         this.render();
     }
