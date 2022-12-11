@@ -4,12 +4,17 @@ import { Type as GraphicElementType } from './gfx/types';
 import { Style as GraphicElementStyle } from './gfx/styles';
 import { NextpnrJSON } from './pnr-json/pnr-json';
 import { Renderer as RendererInterface, ColorConfig } from './renderer.interface';
+import { Line } from './webgl/line';
+
+type ElementType = 'wire'|'group'|'bel';
 
 export class Renderer<T> implements RendererInterface {
     private animationFrameId?: number;
 
+    private lines: Array<{line: Line, type: ElementType}> = [];
+
     constructor(
-        private context: CanvasRenderingContext2D,
+        private canvas: HTMLCanvasElement,
         private architecture: Architecture<T>,
         private _colors: ColorConfig,
         private _scale: number = 15,
@@ -19,14 +24,13 @@ export class Renderer<T> implements RendererInterface {
         private _visibleHeight = 0,
         private _elements: {
             wire: Array<GraphicElement>,
-            long_wire: Array<GraphicElement>,
             group: Array<GraphicElement>,
             bel: Array<GraphicElement>
-        } = { wire: [], long_wire: [], group: [], bel: [] },
+        } = { wire: [], group: [], bel: [] },
         private _viewMode = { showWires: true, showGroups: true, showBels: true, noSmallWires: true },
     ) {
-        this._visibleWidth = this.context.canvas.width;
-        this._visibleHeight = this.context.canvas.height;
+        this._visibleWidth = this.canvas.width;
+        this._visibleHeight = this.canvas.height;
 
         this.createGraphicElements();
     }
@@ -35,24 +39,21 @@ export class Renderer<T> implements RendererInterface {
         if (this.animationFrameId) window.cancelAnimationFrame(this.animationFrameId);
 
         this.animationFrameId = window.requestAnimationFrame(() => {
-            this.context.fillStyle = "#282A36";
-            this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+            const gl: WebGL2RenderingContext|null = this.canvas.getContext('webgl2');
+            if (!gl) throw 'couldnt get gl2 context';
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-            if (this._viewMode.showWires) {
-                if (this._viewMode.noSmallWires) {
-                    this.renderElements(this._elements.long_wire);
-                } else {
-                    this.renderElements(this._elements.wire);
-                }
-            }
+            gl.clearColor(0.1568627450980392, 0.16470588235294117, 0.21176470588235294, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
 
-            if (this._viewMode.showGroups) {
-                this.renderElements(this._elements.group);
-            }
-
-            if (this._viewMode.showBels) {
-                this.renderElements(this._elements.bel);
-            }
+            this.lines.forEach(l => {
+                if (this._viewMode.showWires && l.type === 'wire')
+                    l.line.draw(this._offX, this._offY, this._scale)
+                if (this._viewMode.showGroups && l.type === 'group')
+                    l.line.draw(this._offX, this._offY, this._scale)
+                if (this._viewMode.showBels && l.type === 'bel')
+                    l.line.draw(this._offX, this._offY, this._scale)
+            });
 
             this.animationFrameId = undefined;
         });
@@ -70,8 +71,8 @@ export class Renderer<T> implements RendererInterface {
         this._offX -= x/(this._scale*amt) - x/this._scale;
         this._offY -= y/(this._scale*amt) - y/this._scale;
 
-        this._visibleWidth = this.context.canvas.width / this._scale;
-        this._visibleHeight = this.context.canvas.height / this._scale;
+        this._visibleWidth = this.canvas.width / this._scale;
+        this._visibleHeight = this.canvas.height / this._scale;
 
         this.render();
     }
@@ -112,16 +113,6 @@ export class Renderer<T> implements RendererInterface {
             return this.architecture.getDecalGraphics(decal.decal);
         }).flat();
 
-        this._elements.long_wire = this._elements.wire.filter(ge => {
-            const xlen = Math.abs(ge.x1-ge.x2);
-            const ylen = Math.abs(ge.y1-ge.y2);
-
-            const cutoff = 3;
-            if (xlen < cutoff && ylen < cutoff)
-                return false;
-            return true;
-        });
-
         this._elements.bel = this.architecture.getBelDecals().map(decal => {
             return this.architecture.getDecalGraphics(decal.decal);
         }).flat();
@@ -129,49 +120,44 @@ export class Renderer<T> implements RendererInterface {
         this._elements.group = this.architecture.getGroupDecals().map(decal => {
             return this.architecture.getDecalGraphics(decal.decal);
         }).flat();
+
+        this.lines = [];
+        this.lines = this.lines.concat(this.toLines(this._elements.bel).map(line => ({line, type: 'bel'})));
+        this.lines = this.lines.concat(this.toLines(this._elements.group).map(line => ({line, type: 'group'})));
+        this.lines = this.lines.concat(this.toLines(this._elements.wire).map(line => ({line, type: 'wire'})));
     }
 
-    private renderElements(elements: Array<GraphicElement>) {
-        if (elements.length === 0) return;
-
+    private toLines(ges: Array<GraphicElement>): Array<Line> {
+        const groups = ges.filter((v, i, self) => self.findIndex(e => e.style === v.style && e.type === e.type) === i)
+                          .map(g => ges.filter(e => e.style === g.style && e.type === g.type));
         
-        const groups = elements
-                            .map(e => e.style)
-                            .filter((v,i,self) => self.indexOf(v) === i)
-                            .map(s => elements.filter(e => e.style === s));
-
-
-        for (const group of groups) {
-            this.context.beginPath();
-            this.context.strokeStyle = this.getColor(group[0].style);
-
-            for (const ge of group) {
-
-                if (ge.type === GraphicElementType.Box) {
-                    this.context.moveTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y1) * this._scale);
-                    this.context.lineTo((-this._offX + ge.x2) * this._scale, (-this._offY + -ge.y1) * this._scale);
-                    this.context.lineTo((-this._offX + ge.x2) * this._scale, (-this._offY + -ge.y2) * this._scale);
-                    this.context.lineTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y2) * this._scale);
-                    this.context.lineTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y1) * this._scale);
-                }
-
-                else if (ge.type === GraphicElementType.Line ||
-                         ge.type === GraphicElementType.ARROW ||
-                         ge.type === GraphicElementType.LOCAL_LINE ||
-                         ge.type === GraphicElementType.LOCAL_ARROW) {
-                    /*
-                    if (this._scale < 100 && i++ % 10 !== 0) continue;
-                    if (ge.x2 < this._offX || ge.x1 > this._offX + this._visibleWidth ||
-                       -ge.y2 < this._offY || -ge.y1 > this._offY + this._visibleHeight) continue;
-                    */
-
-                    this.context.moveTo((-this._offX + ge.x1) * this._scale, (-this._offY + -ge.y1) * this._scale);
-                    this.context.lineTo((-this._offX + ge.x2) * this._scale, (-this._offY + -ge.y2) * this._scale);
-                }
-
+        const ret: Array<Line> = [];
+        groups.forEach(g => {
+            if (g.length === 0) return;
+            if (g[0].type === GraphicElementType.Box) {
+                const ls = g.flatMap(e => {
+                    return [
+                        {x1: e.x1, x2: e.x2, y1: e.y1, y2: e.y1},
+                        {x1: e.x1, x2: e.x2, y1: e.y2, y2: e.y2},
+                        {x1: e.x1, x2: e.x1, y1: e.y1, y2: e.y2},
+                        {x1: e.x2, x2: e.x2, y1: e.y1, y2: e.y2},
+                    ];
+                });
+                ret.push(new Line(this.canvas, ls, this.getColorObj(g[0].style)));
+            } else {
+                ret.push(new Line(this.canvas, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
             }
-            this.context.stroke();
-        }
+        });
+        return ret;
+    }
+
+    private getColorObj(style: GraphicElementStyle): {r: number, g: number, b: number} {
+        const col = this.getColor(style).replace('#', '');
+        const rstr = col.slice(0,2);
+        const gstr = col.slice(2,4);
+        const bstr = col.slice(4,6);
+
+        return {r: parseInt(rstr, 16) / 255, g: parseInt(gstr, 16) / 255, b: parseInt(bstr, 16) / 255};
     }
 
     private getColor(style: GraphicElementStyle): string {

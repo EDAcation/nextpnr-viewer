@@ -4,6 +4,7 @@ import { Renderer } from './renderer';
 import { ChipInfoPODImpl } from './chipdb/ecp5-impl.chipdb';
 import { ECP5Arch } from './architecture/ecp5.arch';
 import { ECP5DecalID } from './decal/ecp5.decalid';
+// @ts-ignore
 import chipdb from 'array-buffer:./chipdb/ecp5-bins/chipdb-25k.bin';
 
 function getChipDb(): ECP5Arch {
@@ -30,10 +31,10 @@ export class NextPNRViewer implements ViewerInterface {
         this._element.appendChild(canvas);
         this._canvas = canvas;
 
-        const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
-        if (context === null) throw 'unable to create canvas';
+        //const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
+        //if (context === null) throw 'unable to create canvas';
 
-        this._renderer = new Renderer(context, getChipDb(), this._config.colors);
+        this._renderer = new Renderer(canvas, getChipDb(), this._config.colors);
         this._addEventListeners(canvas);
         const toggleDefaults = {
             showWires: true,
@@ -116,7 +117,7 @@ export class NextPNRViewer implements ViewerInterface {
         canvas.addEventListener('wheel', e => {
             e.preventDefault();
             if (e.deltaY === 0) return;
-            this._renderer.zoom(e.deltaY > 0 ? 0.1 : -0.1, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            this._renderer.zoom(e.deltaY > 0 ? 0.05 : -0.05, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
         });
         canvas.addEventListener('mousedown', _ => { down = true; first = true; });
         canvas.addEventListener('mouseup', _ => { down = false; });
