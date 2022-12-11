@@ -7,12 +7,9 @@ export class Line {
 
     private _amount: number;
 
-    constructor(canvas: HTMLCanvasElement,
+    constructor(gl: WebGL2RenderingContext,
                 lines: Array<{x1: number, x2: number, y1: number, y2: number}>,
                 private _color: {r: number, g: number, b: number}) {
-        const gl: WebGL2RenderingContext|null = canvas.getContext('webgl2');
-        if (gl === null) throw 'webgl not supported';
-
         this._gl = gl;
 
         var vertexShaderSrc = `#version 300 es

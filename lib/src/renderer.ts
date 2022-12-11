@@ -12,6 +12,7 @@ export class Renderer<T> implements RendererInterface {
     private animationFrameId?: number;
 
     private lines: Array<{line: Line, type: ElementType}> = [];
+    private _gl: WebGL2RenderingContext;
 
     constructor(
         private canvas: HTMLCanvasElement,
@@ -29,6 +30,11 @@ export class Renderer<T> implements RendererInterface {
         } = { wire: [], group: [], bel: [] },
         private _viewMode = { showWires: true, showGroups: true, showBels: true },
     ) {
+        const gl: WebGL2RenderingContext|null = this.canvas.getContext('webgl2');
+        if (!gl) throw 'couldnt get gl2 context';
+
+        this._gl = gl;
+
         this._visibleWidth = this.canvas.width;
         this._visibleHeight = this.canvas.height;
 
@@ -39,12 +45,10 @@ export class Renderer<T> implements RendererInterface {
         if (this.animationFrameId) window.cancelAnimationFrame(this.animationFrameId);
 
         this.animationFrameId = window.requestAnimationFrame(() => {
-            const gl: WebGL2RenderingContext|null = this.canvas.getContext('webgl2');
-            if (!gl) throw 'couldnt get gl2 context';
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            this._gl.viewport(0, 0, this._gl.canvas.width, this._gl.canvas.height);
 
-            gl.clearColor(0.1568627450980392, 0.16470588235294117, 0.21176470588235294, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            this._gl.clearColor(0.1568627450980392, 0.16470588235294117, 0.21176470588235294, 1.0);
+            this._gl.clear(this._gl.COLOR_BUFFER_BIT);
 
             this.lines.forEach(l => {
                 if (this._viewMode.showWires && l.type === 'wire')
@@ -141,9 +145,9 @@ export class Renderer<T> implements RendererInterface {
                         {x1: e.x2, x2: e.x2, y1: e.y1, y2: e.y2},
                     ];
                 });
-                ret.push(new Line(this.canvas, ls, this.getColorObj(g[0].style)));
+                ret.push(new Line(this._gl, ls, this.getColorObj(g[0].style)));
             } else {
-                ret.push(new Line(this.canvas, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
+                ret.push(new Line(this._gl, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
             }
         });
         return ret;
