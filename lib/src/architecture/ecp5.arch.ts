@@ -178,7 +178,5 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
         const wname = parts[2];
 
         this._active_wires.push({x: x_idx, y: y_idx, name: wname})
-        console.log(this._active_wires);
     }
-
 }

@@ -31,8 +31,7 @@ export class NextpnrJSON {
             routingParts.push({wire, pip, strength});
         }
 
-        routingParts.forEach(({wire, pip, strength}: RoutingPart) => {
-            console.log(wire, pip, strength);
+        routingParts.forEach(({wire, pip, strength: _strength}: RoutingPart) => {
             if (pip.length === 0) {
                 architecture.activateWireByName(wire);
             } else {
