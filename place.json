@@ -3,6 +3,13 @@
   "modules": {
     "top": {
       "settings": {
+        "route": "00000000000000000000000000000001",
+        "router/tmg_ripup": "0 ",
+        "router1/useEstimate": "1 ",
+        "router1/fullCleanupReroute": "1 ",
+        "router1/cleanupReroute": "1 ",
+        "router1/maxIterCnt": "200",
+        "arch.disable_router_lutperm": "0 ",
         "place": "00000000000000000000000000000001",
         "placer1/startTemp": "1.000000",
         "placer1/budgetBased": "0 ",
@@ -23,8 +30,10 @@
         "placer": "heap",
         "auto_freq": "00000000000000000000000000000000",
         "slack_redist_iter": "00000000000000000000000000000000",
-        "timing_driven": "0 ",
-        "target_freq": "12000000.000000"
+        "timing_driven": "00000000000000000000000000000001",
+        "target_freq": "12000000.000000",
+        "arch.speed": "6",
+        "arch.package": "CABGA381"
       },
       "attributes": {
         "top": "00000000000000000000000000000001",
@@ -33,19 +42,19 @@
       "ports": {
         "rst": {
           "direction": "input",
-          "bits": [ 2091 ]
+          "bits": [ 2013 ]
         },
         "result": {
           "direction": "output",
-          "bits": [ 2168, 2170, 2149, 2151, 2130, 2132, 2110, 2112 ]
+          "bits": [ 2090, 2092, 2071, 2073, 2052, 2054, 2032, 2034 ]
         },
         "clk": {
           "direction": "input",
-          "bits": [ 2089 ]
+          "bits": [ 2011 ]
         },
         "c$arg": {
           "direction": "input",
-          "bits": [ 2156, 2157, 2137, 2138, 2118, 2119, 2097, 2098 ]
+          "bits": [ 2078, 2079, 2059, 2060, 2040, 2041, 2019, 2020 ]
         }
       },
       "cells": {
@@ -65,8 +74,8 @@
           },
           "connections": {
             "CE": [  ],
-            "CLKO": [ 2254 ],
-            "CLKI": [ 2210 ]
+            "CLKO": [ 2176 ],
+            "CLKI": [ 2132 ]
           }
         },
         "$nextpnr_CCU2C_1$CCU2_COMB1": {
@@ -120,7 +129,7 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2252 ],
+            "FCI": [ 2174 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
@@ -167,8 +176,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2252 ],
-            "F": [ 2105 ],
+            "FCO": [ 2174 ],
+            "F": [ 2027 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -180,7 +189,7 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2234 ],
+            "FCI": [ 2156 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
@@ -229,8 +238,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2234 ],
-            "F": [ 2193 ],
+            "FCO": [ 2156 ],
+            "F": [ 2115 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -242,13 +251,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2249 ],
+            "FCI": [ 2171 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2212 ],
-            "A": [ 2096 ]
+            "B": [ 2134 ],
+            "A": [ 2018 ]
           }
         },
         "result_CCU2C_S0$CCU2_COMB0": {
@@ -291,8 +300,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2249 ],
-            "F": [ 2196 ],
+            "FCO": [ 2171 ],
+            "F": [ 2118 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -304,13 +313,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2104 ],
+            "FCI": [ 2026 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2214 ],
-            "A": [ 2095 ]
+            "B": [ 2136 ],
+            "A": [ 2017 ]
           }
         },
         "result_CCU2C_S0_1$CCU2_COMB1": {
@@ -353,8 +362,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2104 ],
-            "F": [ 2198 ],
+            "FCO": [ 2026 ],
+            "F": [ 2120 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -366,13 +375,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2246 ],
+            "FCI": [ 2168 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2216 ],
-            "A": [ 2117 ]
+            "B": [ 2138 ],
+            "A": [ 2039 ]
           }
         },
         "result_CCU2C_S0_1$CCU2_COMB0": {
@@ -415,8 +424,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2246 ],
-            "F": [ 2200 ],
+            "FCO": [ 2168 ],
+            "F": [ 2122 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -428,13 +437,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2125 ],
+            "FCI": [ 2047 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2218 ],
-            "A": [ 2116 ]
+            "B": [ 2140 ],
+            "A": [ 2038 ]
           }
         },
         "result_CCU2C_S0_2$CCU2_COMB1": {
@@ -477,8 +486,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2125 ],
-            "F": [ 2202 ],
+            "FCO": [ 2047 ],
+            "F": [ 2124 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -490,13 +499,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2243 ],
+            "FCI": [ 2165 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2220 ],
-            "A": [ 2136 ]
+            "B": [ 2142 ],
+            "A": [ 2058 ]
           }
         },
         "result_CCU2C_S0_2$CCU2_COMB0": {
@@ -539,8 +548,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2243 ],
-            "F": [ 2204 ],
+            "FCO": [ 2165 ],
+            "F": [ 2126 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -552,13 +561,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2144 ],
+            "FCI": [ 2066 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2222 ],
-            "A": [ 2135 ]
+            "B": [ 2144 ],
+            "A": [ 2057 ]
           }
         },
         "result_CCU2C_S0_3$CCU2_COMB1": {
@@ -601,8 +610,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2144 ],
-            "F": [ 2206 ],
+            "FCO": [ 2066 ],
+            "F": [ 2128 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -614,13 +623,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2240 ],
+            "FCI": [ 2162 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2224 ],
-            "A": [ 2155 ]
+            "B": [ 2146 ],
+            "A": [ 2077 ]
           }
         },
         "result_CCU2C_S0_3$CCU2_COMB0": {
@@ -663,8 +672,8 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2240 ],
-            "F": [ 2208 ],
+            "FCO": [ 2162 ],
+            "F": [ 2130 ],
             "WCK": [  ],
             "WRE": [  ],
             "WAD3": [  ],
@@ -676,13 +685,13 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2232 ],
+            "FCI": [ 2154 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
             "C": [  ],
-            "B": [ 2226 ],
-            "A": [ 2154 ]
+            "B": [ 2148 ],
+            "A": [ 2076 ]
           }
         },
         "$nextpnr_CCU2C_0$CCU2_COMB1": {
@@ -723,7 +732,7 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2232 ],
+            "FCO": [ 2154 ],
             "F": [  ],
             "WCK": [  ],
             "WRE": [  ],
@@ -736,7 +745,7 @@
             "DI0": [  ],
             "FXB": [  ],
             "FXA": [  ],
-            "FCI": [ 2237 ],
+            "FCI": [ 2159 ],
             "F1": [  ],
             "M": [  ],
             "D": [  ],
@@ -783,7 +792,7 @@
           },
           "connections": {
             "OFX": [  ],
-            "FCO": [ 2237 ],
+            "FCO": [ 2159 ],
             "F": [  ],
             "WCK": [  ],
             "WRE": [  ],
@@ -802,7 +811,7 @@
             "D": [  ],
             "C": [  ],
             "B": [  ],
-            "A": [ 2228 ]
+            "A": [ 2150 ]
           }
         },
         "state_TRELLIS_FF_Q_6": {
@@ -830,10 +839,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2155 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2206 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2077 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2128 ],
+            "CLK": [ 2176 ]
           }
         },
         "state_TRELLIS_FF_Q_5": {
@@ -861,10 +870,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2135 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2204 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2057 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2126 ],
+            "CLK": [ 2176 ]
           }
         },
         "state_TRELLIS_FF_Q_4": {
@@ -892,10 +901,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2136 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2202 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2058 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2124 ],
+            "CLK": [ 2176 ]
           }
         },
         "state_TRELLIS_FF_Q_3": {
@@ -923,10 +932,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2116 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2200 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2038 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2122 ],
+            "CLK": [ 2176 ]
           }
         },
         "state_TRELLIS_FF_Q_2": {
@@ -954,10 +963,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2117 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2198 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2039 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2120 ],
+            "CLK": [ 2176 ]
           }
         },
         "state_TRELLIS_FF_Q_1": {
@@ -985,10 +994,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2095 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2196 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2017 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2118 ],
+            "CLK": [ 2176 ]
           }
         },
         "state_TRELLIS_FF_Q": {
@@ -1016,10 +1025,10 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2096 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2193 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2018 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2115 ],
+            "CLK": [ 2176 ]
           }
         },
         "c$arg[0]$tr_io": {
@@ -1047,10 +1056,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2226 ],
+            "O": [ 2148 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2156 ]
+            "B": [ 2078 ]
           }
         },
         "c$arg[1]$tr_io": {
@@ -1078,10 +1087,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2224 ],
+            "O": [ 2146 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2157 ]
+            "B": [ 2079 ]
           }
         },
         "c$arg[2]$tr_io": {
@@ -1109,10 +1118,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2222 ],
+            "O": [ 2144 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2137 ]
+            "B": [ 2059 ]
           }
         },
         "c$arg[3]$tr_io": {
@@ -1140,10 +1149,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2220 ],
+            "O": [ 2142 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2138 ]
+            "B": [ 2060 ]
           }
         },
         "c$arg[4]$tr_io": {
@@ -1171,10 +1180,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2218 ],
+            "O": [ 2140 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2118 ]
+            "B": [ 2040 ]
           }
         },
         "rst$tr_io": {
@@ -1202,10 +1211,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2190 ],
+            "O": [ 2112 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2091 ]
+            "B": [ 2013 ]
           }
         },
         "c$arg[5]$tr_io": {
@@ -1233,10 +1242,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2216 ],
+            "O": [ 2138 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2119 ]
+            "B": [ 2041 ]
           }
         },
         "c$arg[6]$tr_io": {
@@ -1264,10 +1273,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2214 ],
+            "O": [ 2136 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2097 ]
+            "B": [ 2019 ]
           }
         },
         "c$arg[7]$tr_io": {
@@ -1295,10 +1304,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2212 ],
+            "O": [ 2134 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2098 ]
+            "B": [ 2020 ]
           }
         },
         "clk$tr_io": {
@@ -1326,10 +1335,10 @@
           "connections": {
             "IOLTO": [  ],
             "IOLDO": [  ],
-            "O": [ 2210 ],
+            "O": [ 2132 ],
             "T": [  ],
             "I": [  ],
-            "B": [ 2089 ]
+            "B": [ 2011 ]
           }
         },
         "$PACKER_GND": {
@@ -1350,7 +1359,7 @@
             "A": "input"
           },
           "connections": {
-            "F": [ 2228 ],
+            "F": [ 2150 ],
             "D": [  ],
             "C": [  ],
             "B": [  ],
@@ -1384,8 +1393,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2208 ],
-            "B": [ 2168 ]
+            "I": [ 2130 ],
+            "B": [ 2090 ]
           }
         },
         "result[1]$tr_io": {
@@ -1415,8 +1424,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2206 ],
-            "B": [ 2170 ]
+            "I": [ 2128 ],
+            "B": [ 2092 ]
           }
         },
         "result[2]$tr_io": {
@@ -1446,8 +1455,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2204 ],
-            "B": [ 2149 ]
+            "I": [ 2126 ],
+            "B": [ 2071 ]
           }
         },
         "result[3]$tr_io": {
@@ -1477,8 +1486,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2202 ],
-            "B": [ 2151 ]
+            "I": [ 2124 ],
+            "B": [ 2073 ]
           }
         },
         "$PACKER_VCC": {
@@ -1499,7 +1508,7 @@
             "A": "input"
           },
           "connections": {
-            "F": [ 2230 ],
+            "F": [ 2152 ],
             "D": [  ],
             "C": [  ],
             "B": [  ],
@@ -1533,8 +1542,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2200 ],
-            "B": [ 2130 ]
+            "I": [ 2122 ],
+            "B": [ 2052 ]
           }
         },
         "result[5]$tr_io": {
@@ -1564,8 +1573,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2198 ],
-            "B": [ 2132 ]
+            "I": [ 2120 ],
+            "B": [ 2054 ]
           }
         },
         "result[6]$tr_io": {
@@ -1595,8 +1604,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2196 ],
-            "B": [ 2110 ]
+            "I": [ 2118 ],
+            "B": [ 2032 ]
           }
         },
         "result[7]$tr_io": {
@@ -1626,8 +1635,8 @@
             "IOLDO": [  ],
             "O": [  ],
             "T": [  ],
-            "I": [ 2193 ],
-            "B": [ 2112 ]
+            "I": [ 2115 ],
+            "B": [ 2034 ]
           }
         },
         "state_TRELLIS_FF_Q_7": {
@@ -1655,233 +1664,233 @@
             "CLK": "input"
           },
           "connections": {
-            "Q": [ 2154 ],
-            "LSR": [ 2190 ],
-            "DI": [ 2208 ],
-            "CLK": [ 2254 ]
+            "Q": [ 2076 ],
+            "LSR": [ 2112 ],
+            "DI": [ 2130 ],
+            "CLK": [ 2176 ]
           }
         }
       },
       "netnames": {
         "$glbnet$clk$TRELLIS_IO_IN": {
           "hide_name": 1,
-          "bits": [ 2254 ] ,
+          "bits": [ 2176 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/CLK1_SLICE;X31/Y35/0_0_MUXCLK1->0_0_CLK1_SLICE;5;X31/Y35/MUXCLK1;X31/Y35/0_0_CLK0->0_0_MUXCLK1;5;X31/Y35/CLK2_SLICE;X31/Y35/0_0_MUXCLK2->0_0_CLK2_SLICE;5;X31/Y35/MUXCLK2;X31/Y35/0_0_CLK0->0_0_MUXCLK2;5;X21/Y37/G_VPTX0000;X21/Y37/0_0_G_HPRX0000->0_0_G_VPTX0000;5;X22/Y35/R_HPBX0000;X22/Y35/0_0_G_VPTX0000->0_0_R_HPBX0000;5;X31/Y35/G_HPBX0000;;5;X31/Y35/CLK3_SLICE;X31/Y35/0_0_MUXCLK3->0_0_CLK3_SLICE;5;X31/Y35/MUXCLK3;X31/Y35/0_0_CLK0->0_0_MUXCLK3;5;X31/Y35/CLK0;X31/Y35/0_0_G_HPBX0000->0_0_CLK0;5;X41/Y37/G_VPTX0000;X41/Y37/0_0_G_HPRX0000->0_0_G_VPTX0000;5;X42/Y35/L_HPBX0000;X42/Y35/0_0_G_VPTX0000->0_0_L_HPBX0000;5;X32/Y35/G_HPBX0000;;5;X32/Y35/CLK0_SLICE;X32/Y35/0_0_MUXCLK0->0_0_CLK0_SLICE;5;X32/Y35/MUXCLK0;X32/Y35/0_0_CLK0->0_0_MUXCLK0;5;X32/Y35/CLK0;X32/Y35/0_0_G_HPBX0000->0_0_CLK0;5;X0/Y0/G_LRPCLK0;X32/Y37/-32_-37_G_VPFS0000->-32_-37_G_LRPCLK0;5;X0/Y0/G_LLPCLK0;X31/Y37/-31_-37_G_VPFS0000->-31_-37_G_LLPCLK0;5;X0/Y0/G_URPCLK0;X32/Y13/-32_-13_G_VPFS0000->-32_-13_G_URPCLK0;5;X0/Y0/G_CLKO_TDCC0;;5;X0/Y0/G_VPFS0000;X31/Y0/-31_0_G_CLKO_TDCC0->-31_0_G_VPFS0000;5;X0/Y0/G_ULPCLK0;X31/Y13/-31_-13_G_VPFS0000->-31_-13_G_ULPCLK0;5",
             "ECP5_IS_GLOBAL": "00000000000000000000000000000001"
           }
         },
         "$nextpnr_CCU2C_1$CCU2_FCI_INT": {
           "hide_name": 1,
-          "bits": [ 2252 ] ,
+          "bits": [ 2174 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X32/Y35/FCIB1_SLICE;;1"
           }
         },
         "result_CCU2C_S0$CCU2_FCI_INT": {
           "hide_name": 0,
-          "bits": [ 2249 ] ,
+          "bits": [ 2171 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X32/Y35/FCIA1_SLICE;;1"
           }
         },
         "result_CCU2C_S0_1$CCU2_FCI_INT": {
           "hide_name": 0,
-          "bits": [ 2246 ] ,
+          "bits": [ 2168 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X31/Y35/FCID1_SLICE;;1"
           }
         },
         "result_CCU2C_S0_2$CCU2_FCI_INT": {
           "hide_name": 0,
-          "bits": [ 2243 ] ,
+          "bits": [ 2165 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X31/Y35/FCIC1_SLICE;;1"
           }
         },
         "result_CCU2C_S0_3$CCU2_FCI_INT": {
           "hide_name": 0,
-          "bits": [ 2240 ] ,
+          "bits": [ 2162 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X31/Y35/FCIB1_SLICE;;1"
           }
         },
         "$nextpnr_CCU2C_0$CCU2_FCI_INT": {
           "hide_name": 1,
-          "bits": [ 2237 ] ,
+          "bits": [ 2159 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X31/Y35/FCIA1_SLICE;;1"
           }
         },
         "$nextpnr_CCU2C_1$CIN": {
           "hide_name": 1,
-          "bits": [ 2234 ] ,
+          "bits": [ 2156 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X32/Y35/FCOA_SLICE;;1;X32/Y35/FCIB_SLICE;X32/Y35/0_0_FCOA_SLICE->0_0_FCIB_SLICE;1"
           }
         },
         "$nextpnr_CCU2C_0$COUT": {
           "hide_name": 1,
-          "bits": [ 2232 ] ,
+          "bits": [ 2154 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X31/Y35/FCOA_SLICE;;1;X31/Y35/FCIB_SLICE;X31/Y35/0_0_FCOA_SLICE->0_0_FCIB_SLICE;1"
           }
         },
         "result[6]": {
           "hide_name": 0,
-          "bits": [ 2110 ] ,
+          "bits": [ 2032 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result[7]": {
           "hide_name": 0,
-          "bits": [ 2112 ] ,
+          "bits": [ 2034 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "rst": {
           "hide_name": 0,
-          "bits": [ 2091 ] ,
+          "bits": [ 2013 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "rst$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2190 ] ,
+          "bits": [ 2112 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/MUXLSR2;X31/Y35/0_0_LSR1->0_0_MUXLSR2;1;X31/Y35/LSR2_SLICE;X31/Y35/0_0_MUXLSR2->0_0_LSR2_SLICE;1;X31/Y35/LSR1;X31/Y35/0_0_H02W0301->0_0_LSR1;1;X31/Y35/MUXLSR3;X31/Y35/0_0_LSR1->0_0_MUXLSR3;1;X31/Y35/LSR3_SLICE;X31/Y35/0_0_MUXLSR3->0_0_LSR3_SLICE;1;X32/Y35/V00B0100;X32/Y35/0_1_V02N0301->0_0_V00B0100;1;X32/Y35/LSR0;X32/Y35/0_0_V00B0100->0_0_LSR0;1;X32/Y35/MUXLSR0;X32/Y35/0_0_LSR0->0_0_MUXLSR0;1;X32/Y35/LSR0_SLICE;X32/Y35/0_0_MUXLSR0->0_0_LSR0_SLICE;1;X33/Y0/JPADDIA_PIO;;1;X33/Y0/JDIA;X33/Y0/0_0_JPADDIA_PIO->0_0_JDIA;1;X33/Y1/JQ0;X33/Y0/0_0_JDIA->0_1_JQ0;1;X33/Y1/H01W0000;X33/Y1/0_0_JQ0->0_0_H01W0000;1;X32/Y4/V06S0003;X32/Y1/1_0_H01W0000->0_3_V06S0003;1;X32/Y10/V06S0103;X32/Y7/0_-3_V06S0003->0_3_V06S0103;1;X32/Y16/V06S0203;X32/Y13/0_-3_V06S0103->0_3_V06S0203;1;X32/Y22/V06S0303;X32/Y19/0_-3_V06S0203->0_3_V06S0303;1;X32/Y28/V06S0003;X32/Y25/0_-3_V06S0303->0_3_V06S0003;1;X32/Y34/V06S0003;X32/Y31/0_-3_V06S0003->0_3_V06S0003;1;X32/Y36/V02N0301;X32/Y37/0_-3_V06S0003->0_-1_V02N0301;1;X31/Y35/H02W0301;X32/Y35/0_1_V02N0301->-1_0_H02W0301;1;X31/Y35/LSR0;X31/Y35/0_0_H02W0301->0_0_LSR0;1;X31/Y35/MUXLSR1;X31/Y35/0_0_LSR0->0_0_MUXLSR1;1;X31/Y35/LSR1_SLICE;X31/Y35/0_0_MUXLSR1->0_0_LSR1_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:8.14-8.17"
           }
         },
         "clk$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2210 ] ,
+          "bits": [ 2132 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X27/Y0/JPADDIA_PIO;;1;X31/Y0/JPADDI;X31/Y0/-4_0_JPADDIA_PIO->0_0_JPADDI;1;X31/Y0/JINCK;X31/Y0/0_0_JPADDI->0_0_JINCK;1;X0/Y0/G_JPCLKT01;X31/Y0/0_0_JINCK->-31_0_G_JPCLKT01;1;X0/Y0/G_TDCC0CLKI;X31/Y0/-31_0_G_JPCLKT01->-31_0_G_TDCC0CLKI;1;X0/Y0/G_CLKI_TDCC0;X31/Y0/-31_0_G_TDCC0CLKI->-31_0_G_CLKI_TDCC0;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:7.14-7.17"
           }
         },
         "result[1]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2206 ] ,
+          "bits": [ 2128 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y32/V06N0003;X31/Y35/0_0_F3->0_-3_V06N0003;1;X31/Y26/V06N0103;X31/Y29/0_3_V06N0003->0_-3_V06N0103;1;X31/Y20/V06N0103;X31/Y23/0_3_V06N0103->0_-3_V06N0103;1;X31/Y14/V06N0203;X31/Y17/0_3_V06N0103->0_-3_V06N0203;1;X31/Y8/V06N0303;X31/Y11/0_3_V06N0203->0_-3_V06N0303;1;X31/Y4/V02N0501;X31/Y5/0_3_V06N0303->0_-1_V02N0501;1;X31/Y2/V02N0501;X31/Y3/0_1_V02N0501->0_-1_V02N0501;1;X30/Y1/H02W0501;X31/Y1/0_1_V02N0501->-1_0_H02W0501;1;X29/Y1/JA0;X29/Y1/1_0_H02W0501->0_0_JA0;1;X29/Y0/JPADDOA;X29/Y0/0_1_JA0->0_0_JPADDOA;1;X29/Y0/PADDOA_PIO;X29/Y0/0_0_JPADDOA->0_0_PADDOA_PIO;1;X31/Y35/F3_SLICE;;1;X31/Y35/F3;X31/Y35/0_0_F3_SLICE->0_0_F3;1;X31/Y35/DI3;X31/Y35/0_0_F3->0_0_DI3;1;X31/Y35/DI3_SLICE;X31/Y35/0_0_DI3->0_0_DI3_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "result[0]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2208 ] ,
+          "bits": [ 2130 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X34/Y35/H06E0103;X31/Y35/0_0_F2->3_0_H06E0103;1;X34/Y32/V06N0103;X34/Y35/0_0_H06E0103->0_-3_V06N0103;1;X34/Y26/V06N0103;X34/Y29/0_3_V06N0103->0_-3_V06N0103;1;X34/Y20/V06N0203;X34/Y23/0_3_V06N0103->0_-3_V06N0203;1;X34/Y14/V06N0303;X34/Y17/0_3_V06N0203->0_-3_V06N0303;1;X34/Y8/V06N0303;X34/Y11/0_3_V06N0303->0_-3_V06N0303;1;X34/Y4/V02N0601;X34/Y5/0_3_V06N0303->0_-1_V02N0601;1;X34/Y2/V02N0701;X34/Y3/0_1_V02N0601->0_-1_V02N0701;1;X35/Y1/H02E0701;X34/Y1/0_1_V02N0701->1_0_H02E0701;1;X36/Y1/JA0;X36/Y1/-1_0_H02E0701->0_0_JA0;1;X35/Y0/JPADDOB;X35/Y0/1_1_JA0->0_0_JPADDOB;1;X35/Y0/PADDOB_PIO;X35/Y0/0_0_JPADDOB->0_0_PADDOB_PIO;1;X31/Y35/F2_SLICE;;1;X31/Y35/F2;X31/Y35/0_0_F2_SLICE->0_0_F2;1;X31/Y35/DI2;X31/Y35/0_0_F2->0_0_DI2;1;X31/Y35/DI2_SLICE;X31/Y35/0_0_DI2->0_0_DI2_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "$PACKER_VCC_NET": {
           "hide_name": 1,
-          "bits": [ 2230 ] ,
+          "bits": [ 2152 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "$PACKER_GND_NET": {
           "hide_name": 1,
-          "bits": [ 2228 ] ,
+          "bits": [ 2150 ] ,
           "attributes": {
-            "ROUTING": " "
+            "ROUTING": "X31/Y34/F5_SLICE;;1;X31/Y34/F5;X31/Y34/0_0_F5_SLICE->0_0_F5;1;X31/Y35/V02S0701;X31/Y34/0_0_F5->0_1_V02S0701;1;X31/Y35/A0;X31/Y35/0_0_V02S0701->0_0_A0;1;X31/Y35/A0_SLICE;X31/Y35/0_0_A0->0_0_A0_SLICE;1"
           }
         },
         "c$arg[0]": {
           "hide_name": 0,
-          "bits": [ 2156 ] ,
+          "bits": [ 2078 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[1]": {
           "hide_name": 0,
-          "bits": [ 2157 ] ,
+          "bits": [ 2079 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[2]": {
           "hide_name": 0,
-          "bits": [ 2137 ] ,
+          "bits": [ 2059 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[1]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2224 ] ,
+          "bits": [ 2146 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X0/Y35/JPADDIC_PIO;;1;X0/Y35/JDIC;X0/Y35/0_0_JPADDIC_PIO->0_0_JDIC;1;X1/Y37/JF5;X0/Y35/0_0_JDIC->1_2_JF5;1;X4/Y37/H06E0303;X1/Y37/0_0_JF5->3_0_H06E0303;1;X10/Y37/H06E0003;X7/Y37/-3_0_H06E0303->3_0_H06E0003;1;X16/Y37/H06E0103;X13/Y37/-3_0_H06E0003->3_0_H06E0103;1;X22/Y37/H06E0103;X19/Y37/-3_0_H06E0103->3_0_H06E0103;1;X28/Y37/H06E0103;X25/Y37/-3_0_H06E0103->3_0_H06E0103;1;X31/Y36/V02N0101;X31/Y37/-3_0_H06E0103->0_-1_V02N0101;1;X31/Y35/H00L0100;X31/Y35/0_1_V02N0101->0_0_H00L0100;1;X31/Y35/A3;X31/Y35/0_0_H00L0100->0_0_A3;1;X31/Y35/B3_SLICE;X31/Y35/0_0_A3->0_0_B3_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "c$arg[0]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2226 ] ,
+          "bits": [ 2148 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X72/Y35/JPADDIB_PIO;;1;X72/Y35/JDIB;X72/Y35/0_0_JPADDIB_PIO->0_0_JDIB;1;X71/Y35/JQ5;X72/Y35/0_0_JDIB->-1_0_JQ5;1;X68/Y35/H06W0303;X71/Y35/0_0_JQ5->-3_0_H06W0303;1;X62/Y35/H06W0003;X65/Y35/3_0_H06W0303->-3_0_H06W0003;1;X56/Y35/H06W0003;X59/Y35/3_0_H06W0003->-3_0_H06W0003;1;X50/Y35/H06W0003;X53/Y35/3_0_H06W0003->-3_0_H06W0003;1;X44/Y35/H06W0103;X47/Y35/3_0_H06W0003->-3_0_H06W0103;1;X38/Y35/H06W0103;X41/Y35/3_0_H06W0103->-3_0_H06W0103;1;X34/Y35/H02W0201;X35/Y35/3_0_H06W0103->-1_0_H02W0201;1;X32/Y35/H02W0301;X33/Y35/1_0_H02W0201->-1_0_H02W0301;1;X31/Y35/B2;X31/Y35/1_0_H02W0301->0_0_B2;1;X31/Y35/B2_SLICE;X31/Y35/0_0_B2->0_0_B2_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "state[1]": {
           "hide_name": 0,
-          "bits": [ 2155 ] ,
+          "bits": [ 2077 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/Q3_SLICE;;1;X31/Y35/Q3;X31/Y35/0_0_Q3_SLICE->0_0_Q3;1;X31/Y35/B3;X31/Y35/0_0_Q3->0_0_B3;1;X31/Y35/A3_SLICE;X31/Y35/0_0_B3->0_0_A3_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "state[0]": {
           "hide_name": 0,
-          "bits": [ 2154 ] ,
+          "bits": [ 2076 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/Q2_SLICE;;1;X31/Y35/Q2;X31/Y35/0_0_Q2_SLICE->0_0_Q2;1;X31/Y35/V00T0000;X31/Y35/0_0_Q2->0_0_V00T0000;1;X31/Y35/A2;X31/Y35/0_0_V00T0000->0_0_A2;1;X31/Y35/A2_SLICE;X31/Y35/0_0_A2->0_0_A2_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "result[3]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2202 ] ,
+          "bits": [ 2124 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X34/Y35/H06E0303;X31/Y35/0_0_F5->3_0_H06E0303;1;X40/Y35/H06E0303;X37/Y35/-3_0_H06E0303->3_0_H06E0303;1;X46/Y35/H06E0303;X43/Y35/-3_0_H06E0303->3_0_H06E0303;1;X52/Y35/H06E0303;X49/Y35/-3_0_H06E0303->3_0_H06E0303;1;X58/Y35/H06E0003;X55/Y35/-3_0_H06E0303->3_0_H06E0003;1;X64/Y35/H06E0103;X61/Y35/-3_0_H06E0003->3_0_H06E0103;1;X68/Y35/H02E0201;X67/Y35/-3_0_H06E0103->1_0_H02E0201;1;X70/Y35/H02E0201;X69/Y35/-1_0_H02E0201->1_0_H02E0201;1;X71/Y35/H00L0000;X71/Y35/-1_0_H02E0201->0_0_H00L0000;1;X71/Y35/JA0;X71/Y35/0_0_H00L0000->0_0_JA0;1;X72/Y35/JPADDOA;X72/Y35/-1_0_JA0->0_0_JPADDOA;1;X72/Y35/PADDOA_PIO;X72/Y35/0_0_JPADDOA->0_0_PADDOA_PIO;1;X31/Y35/F5_SLICE;;1;X31/Y35/F5;X31/Y35/0_0_F5_SLICE->0_0_F5;1;X31/Y35/DI5;X31/Y35/0_0_F5->0_0_DI5;1;X31/Y35/DI5_SLICE;X31/Y35/0_0_DI5->0_0_DI5_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "result[2]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2204 ] ,
+          "bits": [ 2126 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X34/Y35/H06E0203;X31/Y35/0_0_F4->3_0_H06E0203;1;X40/Y35/H06E0203;X37/Y35/-3_0_H06E0203->3_0_H06E0203;1;X46/Y35/H06E0203;X43/Y35/-3_0_H06E0203->3_0_H06E0203;1;X52/Y35/H06E0203;X49/Y35/-3_0_H06E0203->3_0_H06E0203;1;X58/Y35/H06E0303;X55/Y35/-3_0_H06E0203->3_0_H06E0303;1;X64/Y35/H06E0003;X61/Y35/-3_0_H06E0303->3_0_H06E0003;1;X68/Y35/H01E0001;X67/Y35/-3_0_H06E0003->1_0_H01E0001;1;X71/Y35/H06E0203;X68/Y35/0_0_H01E0001->3_0_H06E0203;1;X71/Y36/V02S0701;X71/Y35/0_0_H06E0203->0_1_V02S0701;1;X71/Y37/JA0;X71/Y37/0_-1_V02S0701->0_0_JA0;1;X72/Y35/JPADDOC;X72/Y35/-1_2_JA0->0_0_JPADDOC;1;X72/Y35/PADDOC_PIO;X72/Y35/0_0_JPADDOC->0_0_PADDOC_PIO;1;X31/Y35/F4_SLICE;;1;X31/Y35/F4;X31/Y35/0_0_F4_SLICE->0_0_F4;1;X31/Y35/DI4;X31/Y35/0_0_F4->0_0_DI4;1;X31/Y35/DI4_SLICE;X31/Y35/0_0_DI4->0_0_DI4_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "c$arg[3]": {
           "hide_name": 0,
-          "bits": [ 2138 ] ,
+          "bits": [ 2060 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[4]": {
           "hide_name": 0,
-          "bits": [ 2118 ] ,
+          "bits": [ 2040 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result_CCU2C_S0_3_COUT[2]": {
           "hide_name": 0,
-          "bits": [ 2144 ] ,
+          "bits": [ 2066 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/FCOB_SLICE;;1;X31/Y35/FCIC_SLICE;X31/Y35/0_0_FCOB_SLICE->0_0_FCIC_SLICE;1",
             "unused_bits": "0 2 4 6 7",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
             "force_downto": "00000000000000000000000000000001"
@@ -1889,85 +1898,85 @@
         },
         "c$arg[5]": {
           "hide_name": 0,
-          "bits": [ 2119 ] ,
+          "bits": [ 2041 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[6]": {
           "hide_name": 0,
-          "bits": [ 2097 ] ,
+          "bits": [ 2019 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[3]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2220 ] ,
+          "bits": [ 2142 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X0/Y35/JPADDIB_PIO;;1;X0/Y35/JDIB;X0/Y35/0_0_JPADDIB_PIO->0_0_JDIB;1;X1/Y35/JQ5;X0/Y35/0_0_JDIB->1_0_JQ5;1;X4/Y35/H06E0303;X1/Y35/0_0_JQ5->3_0_H06E0303;1;X10/Y35/H06E0003;X7/Y35/-3_0_H06E0303->3_0_H06E0003;1;X16/Y35/H06E0003;X13/Y35/-3_0_H06E0003->3_0_H06E0003;1;X22/Y35/H06E0103;X19/Y35/-3_0_H06E0003->3_0_H06E0103;1;X28/Y35/H06E0203;X25/Y35/-3_0_H06E0103->3_0_H06E0203;1;X32/Y35/H01E0101;X31/Y35/-3_0_H06E0203->1_0_H01E0101;1;X31/Y35/H02W0101;X32/Y35/0_0_H01E0101->-1_0_H02W0101;1;X31/Y35/B5;X31/Y35/0_0_H02W0101->0_0_B5;1;X31/Y35/B5_SLICE;X31/Y35/0_0_B5->0_0_B5_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "c$arg[2]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2222 ] ,
+          "bits": [ 2144 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X27/Y0/JPADDIB_PIO;;1;X27/Y0/JDIB;X27/Y0/0_0_JPADDIB_PIO->0_0_JDIB;1;X28/Y1/JQ0;X27/Y0/0_0_JDIB->1_1_JQ0;1;X31/Y1/H06E0003;X28/Y1/0_0_JQ0->3_0_H06E0003;1;X31/Y4/V06S0003;X31/Y1/0_0_H06E0003->0_3_V06S0003;1;X31/Y10/V06S0103;X31/Y7/0_-3_V06S0003->0_3_V06S0103;1;X31/Y16/V06S0203;X31/Y13/0_-3_V06S0103->0_3_V06S0203;1;X31/Y22/V06S0203;X31/Y19/0_-3_V06S0203->0_3_V06S0203;1;X31/Y28/V06S0203;X31/Y25/0_-3_V06S0203->0_3_V06S0203;1;X31/Y34/V06S0303;X31/Y31/0_-3_V06S0203->0_3_V06S0303;1;X31/Y36/V02N0501;X31/Y37/0_-3_V06S0303->0_-1_V02N0501;1;X31/Y35/B4;X31/Y35/0_1_V02N0501->0_0_B4;1;X31/Y35/B4_SLICE;X31/Y35/0_0_B4->0_0_B4_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "state[3]": {
           "hide_name": 0,
-          "bits": [ 2136 ] ,
+          "bits": [ 2058 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/Q5_SLICE;;1;X31/Y35/Q5;X31/Y35/0_0_Q5_SLICE->0_0_Q5;1;X31/Y35/A5;X31/Y35/0_0_Q5->0_0_A5;1;X31/Y35/A5_SLICE;X31/Y35/0_0_A5->0_0_A5_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "state[2]": {
           "hide_name": 0,
-          "bits": [ 2135 ] ,
+          "bits": [ 2057 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/Q4_SLICE;;1;X31/Y35/Q4;X31/Y35/0_0_Q4_SLICE->0_0_Q4;1;X31/Y35/V00B0000;X31/Y35/0_0_Q4->0_0_V00B0000;1;X31/Y35/A4;X31/Y35/0_0_V00B0000->0_0_A4;1;X31/Y35/A4_SLICE;X31/Y35/0_0_A4->0_0_A4_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "result[5]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2198 ] ,
+          "bits": [ 2120 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y32/V06N0203;X31/Y35/0_0_F7->0_-3_V06N0203;1;X31/Y26/V06N0203;X31/Y29/0_3_V06N0203->0_-3_V06N0203;1;X31/Y20/V06N0303;X31/Y23/0_3_V06N0203->0_-3_V06N0303;1;X31/Y14/V06N0003;X31/Y17/0_3_V06N0303->0_-3_V06N0003;1;X31/Y8/V06N0103;X31/Y11/0_3_V06N0003->0_-3_V06N0103;1;X31/Y2/V06N0203;X31/Y5/0_3_V06N0103->0_-3_V06N0203;1;X30/Y2/H02W0701;X31/Y2/0_0_V06N0203->-1_0_H02W0701;1;X30/Y1/V02N0701;X30/Y2/0_0_H02W0701->0_-1_V02N0701;1;X30/Y1/JA0;X30/Y1/0_0_V02N0701->0_0_JA0;1;X29/Y0/JPADDOB;X29/Y0/1_1_JA0->0_0_JPADDOB;1;X29/Y0/PADDOB_PIO;X29/Y0/0_0_JPADDOB->0_0_PADDOB_PIO;1;X31/Y35/F7_SLICE;;1;X31/Y35/F7;X31/Y35/0_0_F7_SLICE->0_0_F7;1;X31/Y35/DI7;X31/Y35/0_0_F7->0_0_DI7;1;X31/Y35/DI7_SLICE;X31/Y35/0_0_DI7->0_0_DI7_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "result[4]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2200 ] ,
+          "bits": [ 2122 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X28/Y35/H06W0303;X31/Y35/0_0_F6->-3_0_H06W0303;1;X22/Y35/H06W0003;X25/Y35/3_0_H06W0303->-3_0_H06W0003;1;X16/Y35/H06W0003;X19/Y35/3_0_H06W0003->-3_0_H06W0003;1;X16/Y38/V06S0003;X16/Y35/0_0_H06W0003->0_3_V06S0003;1;X16/Y44/V06S0003;X16/Y41/0_-3_V06S0003->0_3_V06S0003;1;X16/Y48/V02S0001;X16/Y47/0_-3_V06S0003->0_1_V02S0001;1;X16/Y49/H00L0000;X16/Y49/0_-1_V02S0001->0_0_H00L0000;1;X16/Y49/JA0;X16/Y49/0_0_H00L0000->0_0_JA0;1;X15/Y50/JPADDOB;X15/Y50/1_-1_JA0->0_0_JPADDOB;1;X15/Y50/PADDOB_PIO;X15/Y50/0_0_JPADDOB->0_0_PADDOB_PIO;1;X31/Y35/F6_SLICE;;1;X31/Y35/F6;X31/Y35/0_0_F6_SLICE->0_0_F6;1;X31/Y35/DI6;X31/Y35/0_0_F6->0_0_DI6;1;X31/Y35/DI6_SLICE;X31/Y35/0_0_DI6->0_0_DI6_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "c$arg[7]": {
           "hide_name": 0,
-          "bits": [ 2098 ] ,
+          "bits": [ 2020 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "clk": {
           "hide_name": 0,
-          "bits": [ 2089 ] ,
+          "bits": [ 2011 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result_CCU2C_S0_3_COUT[4]": {
           "hide_name": 0,
-          "bits": [ 2125 ] ,
+          "bits": [ 2047 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/FCOC_SLICE;;1;X31/Y35/FCID_SLICE;X31/Y35/0_0_FCOC_SLICE->0_0_FCID_SLICE;1",
             "unused_bits": "0 2 4 6 7",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
             "force_downto": "00000000000000000000000000000001"
@@ -1975,83 +1984,83 @@
         },
         "result[0]": {
           "hide_name": 0,
-          "bits": [ 2168 ] ,
+          "bits": [ 2090 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result[1]": {
           "hide_name": 0,
-          "bits": [ 2170 ] ,
+          "bits": [ 2092 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[5]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2216 ] ,
+          "bits": [ 2138 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X15/Y50/JPADDIA_PIO;;1;X15/Y50/JDIA;X15/Y50/0_0_JPADDIA_PIO->0_0_JDIA;1;X15/Y49/JQ0;X15/Y50/0_0_JDIA->0_-1_JQ0;1;X15/Y46/V06N0003;X15/Y49/0_0_JQ0->0_-3_V06N0003;1;X15/Y40/V06N0103;X15/Y43/0_3_V06N0003->0_-3_V06N0103;1;X18/Y37/H06E0103;X15/Y37/0_3_V06N0103->3_0_H06E0103;1;X24/Y37/H06E0103;X21/Y37/-3_0_H06E0103->3_0_H06E0103;1;X30/Y37/H06E0103;X27/Y37/-3_0_H06E0103->3_0_H06E0103;1;X33/Y36/V02N0101;X33/Y37/-3_0_H06E0103->0_-1_V02N0101;1;X32/Y35/H02W0101;X33/Y35/0_1_V02N0101->-1_0_H02W0101;1;X31/Y35/B7;X31/Y35/1_0_H02W0101->0_0_B7;1;X31/Y35/B7_SLICE;X31/Y35/0_0_B7->0_0_B7_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "c$arg[4]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2218 ] ,
+          "bits": [ 2140 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X72/Y35/JPADDID_PIO;;1;X72/Y35/JDID;X72/Y35/0_0_JPADDID_PIO->0_0_JDID;1;X71/Y37/JQ5;X72/Y35/0_0_JDID->-1_2_JQ5;1;X68/Y37/H06W0303;X71/Y37/0_0_JQ5->-3_0_H06W0303;1;X62/Y37/H06W0003;X65/Y37/3_0_H06W0303->-3_0_H06W0003;1;X56/Y37/H06W0003;X59/Y37/3_0_H06W0003->-3_0_H06W0003;1;X50/Y37/H06W0103;X53/Y37/3_0_H06W0003->-3_0_H06W0103;1;X44/Y37/H06W0203;X47/Y37/3_0_H06W0103->-3_0_H06W0203;1;X38/Y37/H06W0203;X41/Y37/3_0_H06W0203->-3_0_H06W0203;1;X35/Y36/V02N0701;X35/Y37/3_0_H06W0203->0_-1_V02N0701;1;X34/Y35/H02W0701;X35/Y35/0_1_V02N0701->-1_0_H02W0701;1;X32/Y35/H02W0701;X33/Y35/1_0_H02W0701->-1_0_H02W0701;1;X31/Y35/V00B0100;X31/Y35/1_0_H02W0701->0_0_V00B0100;1;X31/Y35/B6;X31/Y35/0_0_V00B0100->0_0_B6;1;X31/Y35/B6_SLICE;X31/Y35/0_0_B6->0_0_B6_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "state[5]": {
           "hide_name": 0,
-          "bits": [ 2117 ] ,
+          "bits": [ 2039 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/Q7_SLICE;;1;X31/Y35/Q7;X31/Y35/0_0_Q7_SLICE->0_0_Q7;1;X31/Y35/A7;X31/Y35/0_0_Q7->0_0_A7;1;X31/Y35/A7_SLICE;X31/Y35/0_0_A7->0_0_A7_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "state[4]": {
           "hide_name": 0,
-          "bits": [ 2116 ] ,
+          "bits": [ 2038 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/Q6_SLICE;;1;X31/Y35/Q6;X31/Y35/0_0_Q6_SLICE->0_0_Q6;1;X31/Y35/H00R0000;X31/Y35/0_0_Q6->0_0_H00R0000;1;X31/Y35/A6;X31/Y35/0_0_H00R0000->0_0_A6;1;X31/Y35/A6_SLICE;X31/Y35/0_0_A6->0_0_A6_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "result[7]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2193 ] ,
+          "bits": [ 2115 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X35/Y35/H06E0103;X32/Y35/0_0_F1->3_0_H06E0103;1;X35/Y32/V06N0103;X35/Y35/0_0_H06E0103->0_-3_V06N0103;1;X35/Y26/V06N0203;X35/Y29/0_3_V06N0103->0_-3_V06N0203;1;X35/Y20/V06N0203;X35/Y23/0_3_V06N0203->0_-3_V06N0203;1;X35/Y14/V06N0203;X35/Y17/0_3_V06N0203->0_-3_V06N0203;1;X35/Y8/V06N0303;X35/Y11/0_3_V06N0203->0_-3_V06N0303;1;X35/Y4/V02N0601;X35/Y5/0_3_V06N0303->0_-1_V02N0601;1;X35/Y2/V02N0701;X35/Y3/0_1_V02N0601->0_-1_V02N0701;1;X35/Y1/JA0;X35/Y1/0_1_V02N0701->0_0_JA0;1;X35/Y0/JPADDOA;X35/Y0/0_1_JA0->0_0_JPADDOA;1;X35/Y0/PADDOA_PIO;X35/Y0/0_0_JPADDOA->0_0_PADDOA_PIO;1;X32/Y35/F1_SLICE;;1;X32/Y35/F1;X32/Y35/0_0_F1_SLICE->0_0_F1;1;X32/Y35/DI1;X32/Y35/0_0_F1->0_0_DI1;1;X32/Y35/DI1_SLICE;X32/Y35/0_0_DI1->0_0_DI1_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "result[6]$TRELLIS_IO_OUT": {
           "hide_name": 0,
-          "bits": [ 2196 ] ,
+          "bits": [ 2118 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X29/Y35/H06W0003;X32/Y35/0_0_F0->-3_0_H06W0003;1;X23/Y35/H06W0103;X26/Y35/3_0_H06W0003->-3_0_H06W0103;1;X17/Y35/H06W0203;X20/Y35/3_0_H06W0103->-3_0_H06W0203;1;X11/Y35/H06W0303;X14/Y35/3_0_H06W0203->-3_0_H06W0303;1;X8/Y35/H01W0100;X8/Y35/3_0_H06W0303->0_0_H01W0100;1;X4/Y35/H06W0303;X7/Y35/1_0_H01W0100->-3_0_H06W0303;1;X1/Y36/V02S0501;X1/Y35/3_0_H06W0303->0_1_V02S0501;1;X1/Y37/JA3;X1/Y37/0_-1_V02S0501->0_0_JA3;1;X0/Y35/JPADDOD;X0/Y35/1_2_JA3->0_0_JPADDOD;1;X0/Y35/PADDOD_PIO;X0/Y35/0_0_JPADDOD->0_0_PADDOD_PIO;1;X32/Y35/F0_SLICE;;1;X32/Y35/F0;X32/Y35/0_0_F0_SLICE->0_0_F0;1;X32/Y35/DI0;X32/Y35/0_0_F0->0_0_DI0;1;X32/Y35/DI0_SLICE;X32/Y35/0_0_DI0->0_0_DI0_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:12.25-12.31"
           }
         },
         "result[2]": {
           "hide_name": 0,
-          "bits": [ 2149 ] ,
+          "bits": [ 2071 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result[3]": {
           "hide_name": 0,
-          "bits": [ 2151 ] ,
+          "bits": [ 2073 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result_CCU2C_S0_COUT[7]": {
           "hide_name": 0,
-          "bits": [ 2105 ] ,
+          "bits": [ 2027 ] ,
           "attributes": {
             "ROUTING": " ",
             "unused_bits": "0 2 4 6 7",
@@ -2061,9 +2070,9 @@
         },
         "result_CCU2C_S0_3_COUT[6]": {
           "hide_name": 0,
-          "bits": [ 2104 ] ,
+          "bits": [ 2026 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X31/Y35/FCO_SLICE;;1;X31/Y35/FCO;X31/Y35/0_0_FCO_SLICE->0_0_FCO;1;X32/Y35/HFIE0000;X31/Y35/0_0_FCO->1_0_HFIE0000;1;X32/Y35/FCI;X32/Y35/0_0_HFIE0000->0_0_FCI;1;X32/Y35/FCI_SLICE;X32/Y35/0_0_FCI->0_0_FCI_SLICE;1",
             "unused_bits": "0 2 4 6 7",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:19.25-19.38|/usr/bin/../share/yosys/ecp5/arith_map.v:38.23-38.25",
             "force_downto": "00000000000000000000000000000001"
@@ -2071,47 +2080,47 @@
         },
         "result[4]": {
           "hide_name": 0,
-          "bits": [ 2130 ] ,
+          "bits": [ 2052 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "result[5]": {
           "hide_name": 0,
-          "bits": [ 2132 ] ,
+          "bits": [ 2054 ] ,
           "attributes": {
             "ROUTING": " "
           }
         },
         "c$arg[7]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2212 ] ,
+          "bits": [ 2134 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X18/Y50/JPADDIA_PIO;;1;X18/Y50/JDIA;X18/Y50/0_0_JPADDIA_PIO->0_0_JDIA;1;X18/Y49/JQ0;X18/Y50/0_0_JDIA->0_-1_JQ0;1;X18/Y46/V06N0003;X18/Y49/0_0_JQ0->0_-3_V06N0003;1;X18/Y40/V06N0003;X18/Y43/0_3_V06N0003->0_-3_V06N0003;1;X21/Y37/H06E0003;X18/Y37/0_3_V06N0003->3_0_H06E0003;1;X27/Y37/H06E0003;X24/Y37/-3_0_H06E0003->3_0_H06E0003;1;X30/Y36/V02N0001;X30/Y37/-3_0_H06E0003->0_-1_V02N0001;1;X31/Y35/H02E0001;X30/Y35/0_1_V02N0001->1_0_H02E0001;1;X32/Y35/H00L0000;X32/Y35/-1_0_H02E0001->0_0_H00L0000;1;X32/Y35/A1;X32/Y35/0_0_H00L0000->0_0_A1;1;X32/Y35/B1_SLICE;X32/Y35/0_0_A1->0_0_B1_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "c$arg[6]$TRELLIS_IO_IN": {
           "hide_name": 0,
-          "bits": [ 2214 ] ,
+          "bits": [ 2136 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X33/Y0/JPADDIB_PIO;;1;X33/Y0/JDIB;X33/Y0/0_0_JPADDIB_PIO->0_0_JDIB;1;X34/Y1/JQ0;X33/Y0/0_0_JDIB->1_1_JQ0;1;X34/Y1/H01W0100;X34/Y1/0_0_JQ0->0_0_H01W0100;1;X33/Y4/V06S0103;X33/Y1/1_0_H01W0100->0_3_V06S0103;1;X33/Y10/V06S0103;X33/Y7/0_-3_V06S0103->0_3_V06S0103;1;X33/Y16/V06S0103;X33/Y13/0_-3_V06S0103->0_3_V06S0103;1;X33/Y22/V06S0103;X33/Y19/0_-3_V06S0103->0_3_V06S0103;1;X33/Y28/V06S0103;X33/Y25/0_-3_V06S0103->0_3_V06S0103;1;X33/Y34/V06S0203;X33/Y31/0_-3_V06S0103->0_3_V06S0203;1;X32/Y34/H02W0701;X33/Y34/0_0_V06S0203->-1_0_H02W0701;1;X32/Y35/V02S0701;X32/Y34/0_0_H02W0701->0_1_V02S0701;1;X32/Y35/A0;X32/Y35/0_0_V02S0701->0_0_A0;1;X32/Y35/B0_SLICE;X32/Y35/0_0_A0->0_0_B0_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:9.19-9.24"
           }
         },
         "state[7]": {
           "hide_name": 0,
-          "bits": [ 2096 ] ,
+          "bits": [ 2018 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X32/Y35/Q1_SLICE;;1;X32/Y35/Q1;X32/Y35/0_0_Q1_SLICE->0_0_Q1;1;X32/Y35/B1;X32/Y35/0_0_Q1->0_0_B1;1;X32/Y35/A1_SLICE;X32/Y35/0_0_B1->0_0_A1_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         },
         "state[6]": {
           "hide_name": 0,
-          "bits": [ 2095 ] ,
+          "bits": [ 2017 ] ,
           "attributes": {
-            "ROUTING": " ",
+            "ROUTING": "X32/Y35/Q0_SLICE;;1;X32/Y35/Q0;X32/Y35/0_0_Q0_SLICE->0_0_Q0;1;X32/Y35/V00T0000;X32/Y35/0_0_Q0->0_0_V00T0000;1;X32/Y35/B0;X32/Y35/0_0_V00T0000->0_0_B0;1;X32/Y35/A0_SLICE;X32/Y35/0_0_B0->0_0_A0_SLICE;1",
             "src": "/home/bram/Uni/master-assignment-git/clash-examples/SimpleAdder.v:17.13-17.18"
           }
         }

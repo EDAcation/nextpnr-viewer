@@ -16,6 +16,7 @@ import {
 
 export class ECP5Arch implements Architecture<ECP5DecalID> {
     private _active_bels: Array<{x: number, y: number, name: string}> = [];
+    private _active_wires: Array<{x: number, y: number, name: string}> = [];
 
     constructor(
         private _chipdb: ChipInfoPOD
@@ -115,13 +116,16 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
                 cursor_index = 0;
                 cursor_tile++;
             }
+            const x = cursor_tile % this._chipdb.width;
+            const y = Math.floor(cursor_tile / this._chipdb.width);
+            const name = this._chipdb.locations[this._chipdb.location_type[cursor_tile]]?.wire_data[cursor_index].name;
 
             ret.push(new DecalXY<ECP5DecalID>(
                 new ECP5DecalID(
                     ECP5DecalType.TYPE_WIRE,
-                    {x: cursor_tile % this._chipdb.width, y: Math.floor(cursor_tile / this._chipdb.width)},
+                    {x, y},
                     cursor_index,
-                    false
+                    this._active_wires.filter(aw => aw.x === x && aw.y === y && aw.name === name).length === 1
                 ),
                 0,
                 0
@@ -164,6 +168,17 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
         const bname = parts[2];
 
         this._active_bels.push({x: x_idx, y: y_idx, name: bname});
+    }
+
+    public activateWireByName(name: string) {
+        const parts = name.split('/');
+
+        const x_idx = parseInt(parts[0].replace('X', ''), 10);
+        const y_idx = parseInt(parts[1].replace('Y', ''), 10);
+        const wname = parts[2];
+
+        this._active_wires.push({x: x_idx, y: y_idx, name: wname})
+        console.log(this._active_wires);
     }
 
 }

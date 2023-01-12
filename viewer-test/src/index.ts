@@ -6,5 +6,5 @@ window.onload = () => {
     if (div === null) { console.error("Cannot find canvas"); return; }
 
     const nextpnrViewer = viewer(div, {width: 1280, height: 720});
-    nextpnrViewer.showJson(placejson);
+    nextpnrViewer.showJson(<unknown>placejson as string);
 };

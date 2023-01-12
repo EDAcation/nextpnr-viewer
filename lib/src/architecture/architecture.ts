@@ -9,4 +9,5 @@ export interface Architecture<DecalID> {
     getGroupDecals(): Array<DecalXY<DecalID>>;
 
     activateBelByName(name: string): void;
+    activateWireByName(name: string): void;
 }
