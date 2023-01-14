@@ -32,6 +32,7 @@ export class NextPNRViewer implements ViewerInterface {
         this._canvas = canvas;
 
         this._renderer = new Renderer(canvas, getChipDb(), this._config.colors);
+
         this._addEventListeners(canvas);
         const toggleDefaults = {
             showWires: true,
@@ -42,7 +43,7 @@ export class NextPNRViewer implements ViewerInterface {
         if (this._config.createToggles) this._createToggles(toggleDefaults);
 
         this.resize(this._config.width, this._config.height);
-        this._renderer.changeViewMode(toggleDefaults); // This also forces the first render
+        this._renderer.changeViewMode(toggleDefaults);
     }
 
     private _createToggles(defaults: {
@@ -55,21 +56,30 @@ export class NextPNRViewer implements ViewerInterface {
         this._createToggle(
             'show_wires',
             'Show Wires',
-            (r, v) => r.changeViewMode({showWires: v}),
+            (r, v) => {
+                r.changeViewMode({showWires: v})
+                r.render();
+            },
             defaults.showWires,
             toggleContainer
         );
         this._createToggle(
             'show_groups',
             'Show Groups',
-            (r, v) => r.changeViewMode({showGroups: v}),
+            (r, v) => {
+                r.changeViewMode({showGroups: v})
+                r.render();
+            },
             defaults.showGroups,
             toggleContainer
         );
         this._createToggle(
             'show_bels',
             'Show BELs',
-            (r, v) => r.changeViewMode({showBels: v}),
+            (r, v) => {
+                r.changeViewMode({showBels: v})
+                r.render();
+            },
             defaults.showBels,
             toggleContainer
         );
