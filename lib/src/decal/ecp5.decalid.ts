@@ -11,13 +11,9 @@ export class ECP5DecalID {
         public type: ECP5DecalType,
         public location: {x: number, y: number},
         public z: number,
-        public active: boolean
     ) {}
 
     public static instance(): ECP5DecalID {
-        return new ECP5DecalID(ECP5DecalType.TYPE_NONE,
-                               {x: 0, y: 0},
-                               0,
-                               false);
+        return new ECP5DecalID(ECP5DecalType.TYPE_NONE, {x: 0, y: 0}, 0);
     }
 }

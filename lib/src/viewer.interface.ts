@@ -12,9 +12,10 @@ export const defaultConfig: ViewerConfig = {
     height: 720,
     createToggles: true,
     colors: {
-        active:   "#F8F8F2",
-        inactive: "#6272A4",
-        frame:    "#BD93F9",
+        active:     "#F8F8F2",
+        inactive:   "#6272A4",
+        frame:      "#BD93F9",
+        background: "#282A36"
     }
 }
 

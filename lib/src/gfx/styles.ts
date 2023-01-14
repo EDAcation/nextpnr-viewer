@@ -1,5 +1,6 @@
 export enum Style {
     Active,
     Inactive,
-    Frame
+    Frame,
+    Hidden
 }

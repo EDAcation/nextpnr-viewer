@@ -1,3 +1,4 @@
+import { LocationPOD } from '../chipdb/ecp5.chipdb';
 import { DecalXY } from '../decal/decal';
 import { GraphicElement } from '../gfx/gfx';
 
@@ -7,7 +8,7 @@ export interface Architecture<DecalID> {
     getWireDecals(): Array<DecalXY<DecalID>>;
     getPipDecals(): Array<DecalXY<DecalID>>;
     getGroupDecals(): Array<DecalXY<DecalID>>;
-
-    activateBelByName(name: string): void;
-    activateWireByName(name: string): void;
+    findPipDecalByLocFromTo(location: LocationPOD,
+                            from: {location: LocationPOD, name: string},
+                            to: {location: LocationPOD, name: string}): DecalXY<DecalID>;
 }

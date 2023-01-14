@@ -6,13 +6,20 @@ import { NextpnrJSON } from './pnr-json/pnr-json';
 import { Renderer as RendererInterface, ColorConfig } from './renderer.interface';
 import { Line } from './webgl/line';
 
-type ElementType = 'wire'|'group'|'bel';
+type ElementType = 'wire'|'group'|'bel'|'pip';
+type Elements = {
+    wire: Record<string, GraphicElement[]>,
+    group: Record<string, GraphicElement[]>,
+    bel: Record<string, GraphicElement[]>,
+    pip: Record<string, GraphicElement[]>
+}
 
 export class Renderer<T> implements RendererInterface {
     private animationFrameId?: number;
 
-    private lines: Array<{line: Line, type: ElementType}> = [];
+    private _lines: Array<{line: Line, type: ElementType}>;
     private _gl: WebGL2RenderingContext;
+    private _elements: Elements;
 
     constructor(
         private canvas: HTMLCanvasElement,
@@ -23,11 +30,6 @@ export class Renderer<T> implements RendererInterface {
         private _offY: number = -52.1,
         private _visibleWidth = 0,
         private _visibleHeight = 0,
-        private _elements: {
-            wire: Array<GraphicElement>,
-            group: Array<GraphicElement>,
-            bel: Array<GraphicElement>
-        } = { wire: [], group: [], bel: [] },
         private _viewMode = { showWires: true, showGroups: true, showBels: true },
     ) {
         const gl: WebGL2RenderingContext|null = this.canvas.getContext('webgl2');
@@ -38,7 +40,8 @@ export class Renderer<T> implements RendererInterface {
         this._visibleWidth = this.canvas.width;
         this._visibleHeight = this.canvas.height;
 
-        this.createGraphicElements();
+        this._elements = this.createGraphicElements();
+        this._lines = this._updateLines();
     }
 
     public render(): void {
@@ -47,13 +50,14 @@ export class Renderer<T> implements RendererInterface {
         this.animationFrameId = window.requestAnimationFrame(() => {
             this._gl.viewport(0, 0, this._gl.canvas.width, this._gl.canvas.height);
 
-            this._gl.clearColor(0.1568627450980392, 0.16470588235294117, 0.21176470588235294, 1.0);
+            const bgColor = this.colorStrToObj(this._colors.background);
+            this._gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
             this._gl.clear(this._gl.COLOR_BUFFER_BIT);
 
-            this.lines.forEach(l => {
+            this._lines.forEach(l => {
                 if (this._viewMode.showWires && l.type === 'wire')
                     l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
-                if (this._viewMode.showGroups && l.type === 'group')
+                if (this._viewMode.showGroups && (l.type === 'group' || l.type === 'pip'))
                     l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
                 if (this._viewMode.showBels && l.type === 'bel')
                     l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
@@ -89,8 +93,29 @@ export class Renderer<T> implements RendererInterface {
     }
 
     public loadJson(json: string|object) {
-        NextpnrJSON.load(this.architecture, typeof json === 'string' ? JSON.parse(json) : json);
-        this.createGraphicElements();
+        const active = NextpnrJSON.load(typeof json === 'string' ? JSON.parse(json) : json);
+
+        active.wire.forEach(w => {
+            const ge = this._elements.wire[w];
+            ge.forEach(ge => ge.style = GraphicElementStyle.Active);
+        });
+
+        active.bel.forEach(w => {
+            const ge = this._elements.bel[w];
+            ge.forEach(ge => ge.style = GraphicElementStyle.Active);
+        });
+
+        this._elements.pip = {};
+        active.pip.forEach(({location, pip_from, pip_to, pip_name}) => {
+            const pip_decal = this.architecture.findPipDecalByLocFromTo(location, pip_from, pip_to);
+            let ges = this.architecture.getDecalGraphics(pip_decal.decal);
+            ges.forEach(ge => ge.style = GraphicElementStyle.Active);
+
+            this._elements.pip[pip_decal.id] = ges;
+        });
+
+        this._lines = this._updateLines();
+        
         this.render();
     }
 
@@ -99,43 +124,52 @@ export class Renderer<T> implements RendererInterface {
         showGroups?: boolean,
         showBels?: boolean,
     }) {
-        if (viewMode.showWires !== undefined)    this._viewMode.showWires = viewMode.showWires;
-        if (viewMode.showGroups !== undefined)   this._viewMode.showGroups = viewMode.showGroups;
-        if (viewMode.showBels !== undefined)     this._viewMode.showBels = viewMode.showBels;
-
-        this.render();
+        if (viewMode.showWires !== undefined)  this._viewMode.showWires = viewMode.showWires;
+        if (viewMode.showGroups !== undefined) this._viewMode.showGroups = viewMode.showGroups;
+        if (viewMode.showBels !== undefined)   this._viewMode.showBels = viewMode.showBels;
     }
 
     public get viewMode() {
         return Object.assign({}, this._viewMode); // Ensure readonly
     }
 
-    private createGraphicElements() {
-        this._elements.wire = this.architecture.getWireDecals().map(decal => {
-            return this.architecture.getDecalGraphics(decal.decal);
-        }).flat();
+    private createGraphicElements(): Elements {
+        const elements: Elements = {
+            wire: {},
+            bel: {},
+            group: {},
+            pip: {}
+        };
 
-        this._elements.bel = this.architecture.getBelDecals().map(decal => {
-            return this.architecture.getDecalGraphics(decal.decal);
-        }).flat();
+        this.architecture.getWireDecals().forEach(decal => {
+            const graphics = this.architecture.getDecalGraphics(decal.decal);
+            elements.wire[decal.id] = graphics;
+        });
 
-        this._elements.group = this.architecture.getGroupDecals().map(decal => {
-            return this.architecture.getDecalGraphics(decal.decal);
-        }).flat();
+        this.architecture.getBelDecals().forEach(decal => {
+            const graphics = this.architecture.getDecalGraphics(decal.decal);
+            elements.bel[decal.id] = graphics;
+        });
 
-        this.lines = [];
-        this.lines = this.lines.concat(this.toLines(this._elements.bel).map(line => ({line, type: 'bel'})));
-        this.lines = this.lines.concat(this.toLines(this._elements.group).map(line => ({line, type: 'group'})));
-        this.lines = this.lines.concat(this.toLines(this._elements.wire).map(line => ({line, type: 'wire'})));
+        this.architecture.getGroupDecals().forEach(decal => {
+            const graphics = this.architecture.getDecalGraphics(decal.decal);
+            elements.group[decal.id] = graphics;
+        });
+
+        // this.architecture.getPipDecals().forEach(decal => {
+        //     elements.pip[decal.id] = this.architecture.getDecalGraphics(decal.decal);
+        // });
+
+        return elements;
     }
 
     private toLines(ges: Array<GraphicElement>): Array<Line> {
         const groups = ges.filter((v, i, self) => self.findIndex(e => e.style === v.style && e.type === e.type) === i)
                           .map(g => ges.filter(e => e.style === g.style && e.type === g.type));
-        
+
         const ret: Array<Line> = [];
         groups.forEach(g => {
-            if (g.length === 0) return;
+            if (g.length === 0 || g[0].style === GraphicElementStyle.Hidden) return;
             if (g[0].type === GraphicElementType.Box) {
                 const ls = g.flatMap(e => {
                     return [
@@ -153,8 +187,8 @@ export class Renderer<T> implements RendererInterface {
         return ret;
     }
 
-    private getColorObj(style: GraphicElementStyle): {r: number, g: number, b: number} {
-        const col = this.getColor(style).replace('#', '');
+    private colorStrToObj(col: string): {r: number, g: number, b: number} {
+        col = col.replace('#', '');
         const rstr = col.slice(0,2);
         const gstr = col.slice(2,4);
         const bstr = col.slice(4,6);
@@ -162,13 +196,31 @@ export class Renderer<T> implements RendererInterface {
         return {r: parseInt(rstr, 16) / 255, g: parseInt(gstr, 16) / 255, b: parseInt(bstr, 16) / 255};
     }
 
+    private getColorObj(style: GraphicElementStyle): {r: number, g: number, b: number} {
+        const col = this.getColor(style);
+        return this.colorStrToObj(col);
+    }
+
     private getColor(style: GraphicElementStyle): string {
         switch (style) {
             case GraphicElementStyle.Active: return this._colors.active;
             case GraphicElementStyle.Inactive: return this._colors.inactive;
             case GraphicElementStyle.Frame: return this._colors.frame;
+            case GraphicElementStyle.Hidden: throw 'can not color a hidden element!';
+        }
+    }
+
+    private _updateLines() {
+        let newLines: typeof this._lines = [];
+
+        for (let typeKey in this._elements) {
+            const type = <ElementType>typeKey;
+
+            const elem = this._elements[type];
+            const lines = this.toLines(Object.values(elem).flat());
+            newLines = newLines.concat(lines.map(line => ({line, type})));
         }
 
-        //return "#FF0000";
+        return newLines;
     }
 }

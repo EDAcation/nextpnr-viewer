@@ -2,6 +2,7 @@ export type ColorConfig = {
     active: string,
     inactive: string,
     frame: string,
+    background: string,
 }
 export interface Renderer {
     render(): void;
