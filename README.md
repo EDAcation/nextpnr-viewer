@@ -1,16 +1,20 @@
-# Nextpnr Viewer
+# nextpnr viewer
 
-## building the package
+Web based FGPA viewer for [nextpnr](https://github.com/YosysHQ/nextpnr) place and route visualizations.
 
-```shell
-npm i
-npm exec -w parcel-optimizer-array-buffer parcel build
-npm run -w lib build
-```
+## Documentation
+The documentation is available [here](docs/index.md).
 
-## publishing the package
+## Contributing
+See the [development documentation](docs/development.md). In the future more specific guidelines for contributing could be drafted.
 
-```shell
-cd lib
-npm publish
-```
+## License
+This project is available under the [MIT license](LICENSE.md). Note that some dependencies have different licenses.
+
+## Other projects
+EDAcation consists of several projects:
+- [vscode-edacation](https://github.com/EDAcation/vscode-edacation) - VS Code extension
+- [edacation](https://github.com/EDAcation/edacation) - Libary and CLI
+- [yosys.js](https://github.com/EDAcation/yosys.js) - WebAssembly version of Yosys
+- [nextpnr.js](https://github.com/EDAcation/nextpnr.js) - WebAssembly version of nextpnr
+- [nextpnr-viewer](https://github.com/EDAcation/nextpnr-viewer) - FPGA viewer for nextpnr

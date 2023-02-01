@@ -1,29 +1,29 @@
 {
   "name": "nextpnr-viewer",
-  "version": "0.4.0",
-  "author": {
-    "name": "EDAcation"
-  },
-  "contributors": [
-    {
-      "email": "wesselinkbram@gmail.com",
-      "name": "Bram Wesselink",
-      "url": "https://brammie.nl"
-    }
-  ],
   "description": "A HTML 5 Canvas based viewer for nextpnr place and route visualizations.",
-  "scripts": {
-    "check": "tsc --noEmit",
-    "build": "parcel build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/EDAcation/nextpnr-viewer.git"
-  },
-  "keywords": [],
+  "version": "0.4.0",
+  "license": "MIT",
+  "contributors": [
+    "Bram Wesselink <wesselinkbram@gmail.com>"
+  ],
+  "repository": "github:EDAcation/nextpnr-viewer",
+  "keywords": [
+    "nextpnr",
+    "viewer",
+    "place",
+    "route",
+    "visualization"
+  ],
   "source": "src/index.ts",
   "main": "dist/main.js",
   "module": "dist/module.js",
   "types": "dist/types.d.ts",
-  "files": ["dist/**/*"]
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "parcel build"
+  }
 }
