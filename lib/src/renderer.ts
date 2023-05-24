@@ -95,13 +95,22 @@ export class Renderer<T> implements RendererInterface {
     public loadJson(json: string|object) {
         const active = NextpnrJSON.load(typeof json === 'string' ? JSON.parse(json) : json);
 
+        console.log(active);
+        console.log(this._elements);
+
         active.wire.forEach(w => {
             const ge = this._elements.wire[w];
+            if (ge === undefined) {
+                return;
+            }
             ge.forEach(ge => ge.style = GraphicElementStyle.Active);
         });
 
         active.bel.forEach(w => {
             const ge = this._elements.bel[w];
+            if (ge === undefined) {
+                return;
+            }
             ge.forEach(ge => ge.style = GraphicElementStyle.Active);
         });
 
@@ -155,6 +164,8 @@ export class Renderer<T> implements RendererInterface {
             const graphics = this.architecture.getDecalGraphics(decal.decal);
             elements.group[decal.id] = graphics;
         });
+
+        console.log(elements.bel);
 
         // this.architecture.getPipDecals().forEach(decal => {
         //     elements.pip[decal.id] = this.architecture.getDecalGraphics(decal.decal);

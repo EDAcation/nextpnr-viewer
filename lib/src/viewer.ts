@@ -4,10 +4,23 @@ import { Renderer } from './renderer';
 import { ChipInfoPODImpl } from './chipdb/ecp5-impl.chipdb';
 import { ECP5Arch } from './architecture/ecp5.arch';
 import { ECP5DecalID } from './decal/ecp5.decalid';
-// @ts-ignore
-import chipdb from 'array-buffer:./chipdb/ecp5-bins/chipdb-25k.bin';
+import { first, lastValueFrom, ReplaySubject } from 'rxjs';
 
-function getChipDb(): ECP5Arch {
+async function getChipDb(db: '25k'|'45k'|'85k'): Promise<ECP5Arch> {
+    let input;
+    switch (db) {
+        case '25k':
+            input = new URL(`../static/chipdb/ecp5/25k.bin`, import.meta.url);
+            break;
+        case '45k':
+            input = new URL(`../static/chipdb/ecp5/45k.bin`, import.meta.url);
+            break;
+        case '85k':
+            input = new URL(`../static/chipdb/ecp5/85k.bin`, import.meta.url);
+            break;
+    }
+
+    let chipdb = await fetch(input).then(resp => resp.arrayBuffer());
     let dataview = new DataView(chipdb);
     const impl = new ChipInfoPODImpl(new DataView(dataview.buffer, dataview.getInt32(0, true)));
 
@@ -15,7 +28,7 @@ function getChipDb(): ECP5Arch {
 }
 
 export class NextPNRViewer implements ViewerInterface {
-    private _renderer: Renderer<ECP5DecalID>;
+    private _renderer: ReplaySubject<Renderer<ECP5DecalID>> = new ReplaySubject<Renderer<ECP5DecalID>>(1);
     private _canvas: HTMLCanvasElement;
     private _config: ViewerConfig;
 
@@ -31,19 +44,22 @@ export class NextPNRViewer implements ViewerInterface {
         this._element.appendChild(canvas);
         this._canvas = canvas;
 
-        this._renderer = new Renderer(canvas, getChipDb(), this._config.colors);
+        getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
+            const renderer = new Renderer(canvas, arch, this._config.colors)
+            this._renderer.next(renderer);
 
-        this._addEventListeners(canvas);
-        const toggleDefaults = {
-            showWires: true,
-            showGroups: true,
-            showBels: true,
-        };
+            this._addEventListeners(canvas);
+            const toggleDefaults = {
+                showWires: true,
+                showGroups: true,
+                showBels: true,
+            };
 
-        if (this._config.createToggles) this._createToggles(toggleDefaults);
+            if (this._config.createToggles) this._createToggles(toggleDefaults);
 
-        this.resize(this._config.width, this._config.height);
-        this._renderer.changeViewMode(toggleDefaults);
+            this.resize(this._config.width, this._config.height);
+            renderer.changeViewMode(toggleDefaults);
+        })
     }
 
     private _createToggles(defaults: {
@@ -104,7 +120,10 @@ export class NextPNRViewer implements ViewerInterface {
             const res = (v.target as {checked: boolean}|null)?.checked;
             if (res === undefined) throw 'no checked attribute on toggle?';
 
-            toggle_action(this._renderer, res);
+            this._renderer
+                    .asObservable()
+                    .pipe(first())
+                    .subscribe(renderer => toggle_action(renderer, res));
         });
 
         const labelElement: HTMLLabelElement = document.createElement('label');
@@ -117,35 +136,50 @@ export class NextPNRViewer implements ViewerInterface {
 
     private _addEventListeners(canvas: HTMLCanvasElement) {
         let down = false;
-        let first = true;
+        let firstEvent = true;
         let oldx = 0;
         let oldy = 0;
         canvas.addEventListener('wheel', e => {
             e.preventDefault();
             if (e.deltaY === 0) return;
-            this._renderer.zoom(e.deltaY > 0 ? 0.05 : -0.05, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            this._renderer
+                    .asObservable()
+                    .pipe(first())
+                    .subscribe(renderer => {
+                        renderer.zoom(e.deltaY > 0 ? 0.05 : -0.05, e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+                    });
         });
-        canvas.addEventListener('mousedown', _ => { down = true; first = true; });
+        canvas.addEventListener('mousedown', _ => { down = true; firstEvent = true; });
         canvas.addEventListener('mouseup', _ => { down = false; });
         canvas.addEventListener('mousemove', e => {
             if (down) {
-                if (!first) {
-                    this._renderer.pan(e.clientX - oldx, e.clientY - oldy);
+                if (!firstEvent) {
+                    this._renderer
+                            .asObservable()
+                            .pipe(first())
+                            .subscribe(renderer => {
+                                renderer.pan(e.clientX - oldx, e.clientY - oldy);
+                            });
                 }
 
-                first = false;
+                firstEvent = false;
                 oldx = e.clientX;
                 oldy = e.clientY;
             }
         });
     }
 
-    public get renderer(): RendererInterface {
-        return this._renderer;
+    public get renderer(): Promise<RendererInterface> {
+        return lastValueFrom(this._renderer.asObservable());
     }
 
     public showJson(jsonString: string) {
-        this._renderer.loadJson(jsonString);
+        this._renderer
+                .asObservable()
+                .pipe(first())
+                .subscribe(renderer => {
+                    renderer.loadJson(jsonString);
+                });
     }
 
     public resize(width: number, height: number) {
@@ -159,6 +193,11 @@ export class NextPNRViewer implements ViewerInterface {
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
 
-        this._renderer.render();
+        this._renderer
+                .asObservable()
+                .pipe(first())
+                .subscribe(renderer => {
+                    renderer.render();
+                });
     }
 }

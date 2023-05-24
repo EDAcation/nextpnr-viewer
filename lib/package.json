@@ -25,5 +25,8 @@
   "scripts": {
     "check": "tsc --noEmit",
     "build": "parcel build"
+  },
+  "dependencies": {
+    "rxjs": "^7.8.0"
   }
 }

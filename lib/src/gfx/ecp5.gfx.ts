@@ -128,32 +128,47 @@ export class GFX {
             el.y2 = y + 0.25;
             ret.push(el.clone());
         } else if (type === ConstIncs.TRELLIS_COMB) { // TRELLIS_COMB
-            el.x1 = x + gfxconstants.slice_x1;
-            el.x2 = x + gfxconstants.slice_x2_comb;
-            el.y1 = y + gfxconstants.slice_y1 + Math.floor(z / 4) * gfxconstants.slice_pitch;
-            el.y2 = y + gfxconstants.slice_y2 + Math.floor(z / 4) * gfxconstants.slice_pitch;
+            let lc: number = Math.floor(z / 4);
+
+            el.x1 = x + gfxconstants.slice_x1 + gfxconstants.slice_comb_dx1;
+            el.x2 = el.x1 + gfxconstants.slice_comb_w;
+            el.y1 = y + gfxconstants.slice_y1 + Math.floor(lc / 2) * gfxconstants.slice_pitch + ((lc % 2) ? gfxconstants.slice_comb_dy2 : gfxconstants.slice_comb_dy1);
+            el.y2 = el.y1 + gfxconstants.slice_comb_h;
             ret.push(el.clone());
 
             el.style = Style.Frame;
-            el.x1 = x + gfxconstants.slice_x2_comb + 15 * gfxconstants.wire_distance;
-            el.x2 = el.x1 + gfxconstants.wire_distance;
-            el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (GfxTileWireId.TILE_WIRE_CLK3_SLICE - GfxTileWireId.TILE_WIRE_DUMMY_D2 + 5 + (3 - z) * 26) +
-                3 * gfxconstants.slice_pitch - 0.0007;
-            el.y2 = el.y1 + gfxconstants.wire_distance * 5;
+            if ((lc % 2) == 0) {
+                // SLICE frame
+                el.x1 = x + gfxconstants.slice_x1;
+                el.x2 = x + gfxconstants.slice_x2;
+                el.y1 = y + gfxconstants.slice_y1 + Math.floor(lc / 2) * gfxconstants.slice_pitch;
+                el.y2 = y + gfxconstants.slice_y2 + Math.floor(lc / 2) * gfxconstants.slice_pitch;
+                ret.push(el.clone());
+
+                // SLICE control set switchbox
+                el.x1 = x + gfxconstants.slice_x2 + 15 * gfxconstants.wire_distance;
+                el.x2 = el.x1 + gfxconstants.wire_distance;
+                el.y1 = y + gfxconstants.slice_y2 -
+                        gfxconstants.wire_distance * (GfxTileWireId.TILE_WIRE_CLK3_SLICE - GfxTileWireId.TILE_WIRE_DUMMY_D2 + 5 + (3 - Math.floor(lc / 2)) * 26) +
+                        3 * gfxconstants.slice_pitch - 0.0007;
+                el.y2 = el.y1 + gfxconstants.wire_distance * 5;
+                ret.push(el.clone());
+            }
+
+            // LUT permutation switchbox
+            el.x1 = x + gfxconstants.slice_x1 - gfxconstants.wire_length_lut;
+            el.x2 = x + gfxconstants.slice_x1 - gfxconstants.wire_length;
+            let start_wire = (GfxTileWireId.TILE_WIRE_D7 + 24 * Math.floor(lc / 2) + 4 * (lc % 2));
+            el.y2 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (start_wire - GfxTileWireId.TILE_WIRE_FCO + 1 + (lc / 2) * 2) + 3 * gfxconstants.slice_pitch +
+                    0.25 * gfxconstants.wire_distance;
+            el.y1 = el.y2 - 3.5 * gfxconstants.wire_distance;
             ret.push(el.clone());
         } else if (type === ConstIncs.TRELLIS_FF) { // TRELLIS_FF
-            el.x1 = x + gfxconstants.slice_x1_ff;
-            el.x2 = x + gfxconstants.slice_x2;
-            el.y1 = y + gfxconstants.slice_y1 + Math.floor(z / 4) * gfxconstants.slice_pitch;
-            el.y2 = y + gfxconstants.slice_y2 + Math.floor(z / 4) * gfxconstants.slice_pitch;
-            ret.push(el.clone());
-
-            el.style = Style.Frame;
-            el.x1 = x + gfxconstants.slice_x2 + 15 * gfxconstants.wire_distance;
-            el.x2 = el.x1 + gfxconstants.wire_distance;
-            el.y1 = y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (GfxTileWireId.TILE_WIRE_CLK3_SLICE - GfxTileWireId.TILE_WIRE_DUMMY_D2 + 5 + (3 - z) * 26) +
-                3 * gfxconstants.slice_pitch - 0.0007;
-            el.y2 = el.y1 + gfxconstants.wire_distance * 5;
+            let lc = Math.floor(z / 4);
+            el.x1 = x + gfxconstants.slice_x1 + gfxconstants.slice_ff_dx1;
+            el.x2 = el.x1 + gfxconstants.slice_ff_w;
+            el.y1 = y + gfxconstants.slice_y1 + Math.floor(lc / 2) * gfxconstants.slice_pitch + ((lc % 2) ? gfxconstants.slice_comb_dy2 : gfxconstants.slice_comb_dy1);
+            el.y2 = el.y1 + gfxconstants.slice_comb_h;
             ret.push(el.clone());
         } else if (type === ConstIncs.TRELLIS_RAMW) { // TRELLIS_RAMW
             // do not draw
@@ -165,6 +180,8 @@ export class GFX {
             console.log(x,y,z,type);
             first = false;
         }
+
+        if (x === 10 && y === 11) console.log(ret, type, ConstIncs.TRELLIS_RAMW);
 
         return ret;
     }
@@ -1285,6 +1302,19 @@ export class GFX {
         g.push(el2.clone());
     }
 
+    private static lutPermPip(g: GraphicElement[], el: GraphicElement, x: number, y: number, w: number, h: number, src: WireId,
+                src_type: ConstIncs, src_id: GfxTileWireId, dst: WireId, dst_type: ConstIncs, dst_id: GfxTileWireId)
+{
+    let gap = Math.floor((src_id - GfxTileWireId.TILE_WIRE_FCO) / 24);
+    el.x1 = src.location.x + gfxconstants.slice_x1 - gfxconstants.wire_length_lut;
+    el.y1 = src.location.y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (src_id - GfxTileWireId.TILE_WIRE_FCO + 1 + gap * 2) + 3 * gfxconstants.slice_pitch;
+    el.x2 = src.location.x + gfxconstants.slice_x1 - gfxconstants.wire_length;
+    el.y2 = src.location.y + gfxconstants.slice_y2 - gfxconstants.wire_distance * (dst_id - GfxTileWireId.TILE_WIRE_FCO_SLICE + 1 + gap * 2) + 3 * gfxconstants.slice_pitch;
+    g.push(el.clone());
+}
+
+
+
     private static toSameSideH1Hor(g: GraphicElement[], el: GraphicElement, x: number, y: number, w: number, h: number, src: WireId,
                                    src_type: ConstIncs, src_id: GfxTileWireId, dst: WireId, dst_type: ConstIncs, dst_id: GfxTileWireId,
                                    style: Style, idx: number) {
@@ -1537,6 +1567,20 @@ export class GFX {
         if (dst_type == ConstIncs.WIRE_TYPE_NONE && (dst_id >= GfxTileWireId.TILE_WIRE_JCE0 && dst_id <= GfxTileWireId.TILE_WIRE_JCE0) &&
             src_type == ConstIncs.WIRE_TYPE_NONE && (src_id >= GfxTileWireId.TILE_WIRE_JCE0 && src_id <= GfxTileWireId.TILE_WIRE_JCE0)) {
             GFX.toSameSideVer(ret, el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id, style, src_id - GfxTileWireId.TILE_WIRE_JCE0);
+        }
+
+        if (dst_type == ConstIncs.WIRE_TYPE_SLICE && src_type == ConstIncs.WIRE_TYPE_NONE) {
+            if (src_id >= GfxTileWireId.TILE_WIRE_FCO && src_id <= GfxTileWireId.TILE_WIRE_FCI && dst_id >= GfxTileWireId.TILE_WIRE_FCO_SLICE &&
+                dst_id <= GfxTileWireId.TILE_WIRE_FCI_SLICE) {
+                // LUT permutation pseudo-pip
+                let src_purpose = (src_id - GfxTileWireId.TILE_WIRE_FCO) % 24;
+                let dst_purpose = (dst_id - GfxTileWireId.TILE_WIRE_FCO_SLICE) % 24;
+                if (src_purpose >= (GfxTileWireId.TILE_WIRE_D7 - GfxTileWireId.TILE_WIRE_FCO) && src_purpose <= (GfxTileWireId.TILE_WIRE_A6 - GfxTileWireId.TILE_WIRE_FCO) &&
+                    dst_purpose >= (GfxTileWireId.TILE_WIRE_D7_SLICE - GfxTileWireId.TILE_WIRE_FCO_SLICE) &&
+                    dst_purpose <= (GfxTileWireId.TILE_WIRE_A6_SLICE - GfxTileWireId.TILE_WIRE_FCO_SLICE)) {
+                    // lutPermPip(g, el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id);
+                }
+            }
         }
 
         if (src_type == ConstIncs.WIRE_TYPE_NONE &&

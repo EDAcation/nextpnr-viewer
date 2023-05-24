@@ -1,10 +1,19 @@
 import { Renderer, ColorConfig } from './renderer.interface';
 
+type Chip = {
+    family: 'ecp5',
+    device: '25k' | '45k' | '85k'
+} | {
+    family: 'ice40',
+    device: never
+};
+
 export type ViewerConfig = {
     width: number,
     height: number,
     createToggles: boolean,
-    colors: ColorConfig
+    colors: ColorConfig,
+    chip: Chip
 };
 
 export const defaultConfig: ViewerConfig = {
@@ -16,11 +25,15 @@ export const defaultConfig: ViewerConfig = {
         inactive:   "#6272A4",
         frame:      "#BD93F9",
         background: "#282A36"
+    },
+    chip: {
+        'family': 'ecp5',
+        'device': '25k'
     }
-}
+};
 
 export interface NextPNRViewer {
-    get renderer(): Renderer;
+    get renderer(): Promise<Renderer>;
     showJson(jsonString: string): void;
     resize(width: number, height: number): void;
 }
