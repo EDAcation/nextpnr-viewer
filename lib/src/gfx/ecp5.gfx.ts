@@ -181,8 +181,6 @@ export class GFX {
             first = false;
         }
 
-        if (x === 10 && y === 11) console.log(ret, type, ConstIncs.TRELLIS_RAMW);
-
         return ret;
     }
 
@@ -825,7 +823,7 @@ export class GFX {
 
         else if (first) {
             console.log(x,y,type);
-            //first = false;
+            first = false;
         }
 
         return ret;

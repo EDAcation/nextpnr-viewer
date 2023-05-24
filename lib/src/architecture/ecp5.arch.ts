@@ -17,9 +17,7 @@ import {
 export class ECP5Arch implements Architecture<ECP5DecalID> {
     constructor(
         private _chipdb: ChipInfoPOD
-    ) {
-        console.log(_chipdb);
-    }
+    ) { }
 
     public getDecalGraphics(decal: ECP5DecalID): Array<GraphicElement> {
         if (decal.type === ECP5DecalType.TYPE_BEL) {
@@ -34,8 +32,6 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
             const height = this._chipdb.height;
             const type = loc_info.bel_data[decal.z].type;
             const style = Style.Inactive;
-
-            if (x == 10 && y == 11) console.log(x,y,decal.z,z);
 
             return GFX.tileBel(x,y,z,width,height,type,style);
         } else if (decal.type === ECP5DecalType.TYPE_WIRE) {
