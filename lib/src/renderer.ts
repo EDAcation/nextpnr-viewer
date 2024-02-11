@@ -114,6 +114,14 @@ export class Renderer<T> implements RendererInterface {
         this._elements.pip = {};
         active.pip.forEach(({location, pip_from, pip_to, pip_name}) => {
             const pip_decal = this.architecture.findPipDecalByLocFromTo(location, pip_from, pip_to);
+            if (!pip_decal) {
+                console.warn(
+                    `Could not find pip decal ${pip_name}: 
+                    ${JSON.stringify(location)} - ${JSON.stringify(pip_from)} - ${JSON.stringify(pip_to)}`
+                    )
+                return;
+            }
+
             let ges = this.architecture.getDecalGraphics(pip_decal.decal);
             ges.forEach(ge => ge.style = GraphicElementStyle.Active);
 
