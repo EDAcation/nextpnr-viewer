@@ -17,6 +17,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "edacation": "github:EDAcation/edacation#add-element-colors",
     "rxjs": "^7.8.0"
   }
 }

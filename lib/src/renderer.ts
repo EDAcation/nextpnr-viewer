@@ -5,6 +5,7 @@ import { Style as GraphicElementStyle } from './gfx/styles';
 import { NextpnrJSON } from './pnr-json/pnr-json';
 import { Renderer as RendererInterface, ColorConfig } from './renderer.interface';
 import { Line } from './webgl/line';
+import { getElementGroup } from 'edacation';
 
 type ElementType = 'wire'|'group'|'bel'|'pip';
 type Elements = {
@@ -20,6 +21,7 @@ export class Renderer<T> implements RendererInterface {
     private _lines: Array<{line: Line, type: ElementType}>;
     private _gl: WebGL2RenderingContext;
     private _elements: Elements;
+    private _colorCanvasCtx: CanvasRenderingContext2D | null;
 
     constructor(
         private canvas: HTMLCanvasElement,
@@ -42,6 +44,8 @@ export class Renderer<T> implements RendererInterface {
 
         this._elements = this.createGraphicElements();
         this._lines = this._updateLines();
+
+        this._colorCanvasCtx = document.createElement('canvas').getContext('2d');
     }
 
     public render(): void {
@@ -104,11 +108,16 @@ export class Renderer<T> implements RendererInterface {
         });
 
         active.bel.forEach(w => {
-            const ge = this._elements.bel[w];
+            const ge = this._elements.bel[w.nextpnrBel];
             if (ge === undefined) {
                 return;
             }
-            ge.forEach(ge => ge.style = GraphicElementStyle.Active);
+            const cellName = w.origType?.replace("$", "") || "";
+            const elemColor = getElementGroup(cellName)?.color || null;
+            ge.forEach(ge => {
+                ge.style = GraphicElementStyle.Active;
+                ge.color = elemColor;
+            });
         });
 
         this._elements.pip = {};
@@ -178,8 +187,12 @@ export class Renderer<T> implements RendererInterface {
     }
 
     private toLines(ges: Array<GraphicElement>): Array<Line> {
-        const groups = ges.filter((v, i, self) => self.findIndex(e => e.style === v.style && e.type === e.type) === i)
-                          .map(g => ges.filter(e => e.style === g.style && e.type === g.type));
+        const groups = ges.filter((v, i, self) =>
+            self.findIndex(e => e.style === v.style && e.type === v.type && e.color === v.color) === i
+        ).map(g =>
+            ges.filter(e => e.style === g.style && e.type === g.type && e.color === g.color)
+        );
+        
 
         const ret: Array<Line> = [];
         groups.forEach(g => {
@@ -193,15 +206,21 @@ export class Renderer<T> implements RendererInterface {
                         {x1: e.x2, x2: e.x2, y1: e.y1, y2: e.y2},
                     ];
                 });
-                ret.push(new Line(this._gl, ls, this.getColorObj(g[0].style)));
+                ret.push(new Line(this._gl, ls, this.getColorObj(g[0])));
             } else {
-                ret.push(new Line(this._gl, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
+                ret.push(new Line(this._gl, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0])));
             }
         });
         return ret;
     }
 
     private colorStrToObj(col: string): {r: number, g: number, b: number} {
+        // Normalize CSS color names to hex
+        if (this._colorCanvasCtx) {
+            this._colorCanvasCtx.fillStyle = col;
+            col = this._colorCanvasCtx.fillStyle;
+        }
+
         col = col.replace('#', '');
         const rstr = col.slice(0,2);
         const gstr = col.slice(2,4);
@@ -210,14 +229,14 @@ export class Renderer<T> implements RendererInterface {
         return {r: parseInt(rstr, 16) / 255, g: parseInt(gstr, 16) / 255, b: parseInt(bstr, 16) / 255};
     }
 
-    private getColorObj(style: GraphicElementStyle): {r: number, g: number, b: number} {
-        const col = this.getColor(style);
+    private getColorObj(elem: GraphicElement): {r: number, g: number, b: number} {
+        const col = this.getColor(elem);
         return this.colorStrToObj(col);
     }
 
-    private getColor(style: GraphicElementStyle): string {
-        switch (style) {
-            case GraphicElementStyle.Active: return this._colors.active;
+    private getColor(elem: GraphicElement): string {
+        switch (elem.style) {
+            case GraphicElementStyle.Active: return elem.color || this._colors.active;
             case GraphicElementStyle.Inactive: return this._colors.inactive;
             case GraphicElementStyle.Frame: return this._colors.frame;
             case GraphicElementStyle.Hidden: throw 'can not color a hidden element!';
