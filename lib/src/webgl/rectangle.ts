@@ -1,22 +1,23 @@
 import {Program} from './program';
 
-/** Class for rendering line primitives
+/** Class for rendering rectangle primitives
 
-    This is a helper class for webgl to render line primitives.
+    This is a helper class for webgl to render rectangle primitives.
 
-    The constructor takes in a rendering context and an array of lines plus a color.
-    It then creates a Vertex buffer (GPU memory to store the locations of the lines)
+    The constructor takes in a rendering context and an array of rectangles plus a color.
+    It then creates a Vertex buffer (GPU memory to store the locations of the rectangles)
     and a Vertex array (OpenGL state object that contains settings and the layout of the GPU memory).
     
     The draw() method passes some additional configruation about the viewport to the GPU
-    and then batch renders all the lines that were passed in the constructor.
+    and then batch renders all the rectangles that were passed in the constructor.
 
-    For optimal performance try to batch as many lines in an object of this class as possible,
+    For optimal performance try to batch as many rectangles in an object of this class as possible,
     because that allows the GPU to do as much of it as possible in parallel.
 */
-export class Line {
+export class Rectangle {
     private _vao: WebGLVertexArrayObject; // Vertex array object
     private _vbo: WebGLBuffer;            // Vertex buffer object
+    private _ebo: WebGLBuffer;            // Element buffer object
     private _gl: WebGL2RenderingContext;  // Rendering context
     private _program: Program;            // Rendering program
 
@@ -24,7 +25,7 @@ export class Line {
 
     constructor(gl: WebGL2RenderingContext,
                 program: Program,
-                lines: Array<{x1: number, x2: number, y1: number, y2: number}>,
+                rectangles: Array<{x1: number, x2: number, y1: number, y2: number}>,
                 private _color: {r: number, g: number, b: number}) {
         this._gl = gl;
         this._program = program;
@@ -39,11 +40,38 @@ export class Line {
         if (vbo === null) throw 'unable to create vbo';
         this._vbo = vbo;
 
+        // Create element buffer object
+        const ebo = gl.createBuffer();
+        if (ebo === null) throw 'unable to create ebo';
+        this._ebo = ebo;
+
         // Setup the data and pass it to the GPU using gl.bufferData()
         gl.bindBuffer(gl.ARRAY_BUFFER, this._vbo);
-        const verts = new Float32Array(lines.flatMap(l => [l.x1, l.y1, l.x2, l.y2]));
-        this._amount = lines.length * 2; // 2 verts per line
+        const verts = new Float32Array(rectangles.flatMap(l => [l.x1, l.y1,    // Vertex 0: Bottom left
+                                                                l.x2, l.y1,    // Vertex 1: Bottom right
+                                                                l.x1, l.y2,    // Vertex 2: Top left 
+                                                                l.x2, l.y2])); // Vertex 3: Top right
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+        // Setup the indices and pass them to the element array buffer
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+        // A rectangle consist of two triangles
+        // +--------+
+        // |       /|
+        // |  2   / |
+        // |     /  |
+        // |    /   |
+        // |   /    |
+        // |  /     |
+        // | /   1  |
+        // |/       |
+        // +--------+
+        const indices = new Uint32Array(rectangles.flatMap((_, index) => [
+            0 + (4 * index), 1 + (4 * index), 3 + (4 * index), // Triangle 1
+            3 + (4 * index), 2 + (4 * index), 0 + (4 * index), // Triangle 2
+        ]));
+        this._amount = rectangles.length * 6; // 6 elements per rectangle
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
         gl.bindVertexArray(this._vao);
         gl.enableVertexAttribArray(0);
@@ -58,6 +86,7 @@ export class Line {
         // Reset bindings, technically not required, but can prevent nasty bugs once more vertex
         // arrays are used in the same rendering context.
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
     }
 
@@ -71,6 +100,7 @@ export class Line {
         this._program.setUniformVec4f('u_color', this._color.r, this._color.g, this._color.b, 1);
 
         gl.bindVertexArray(this._vao);
-        gl.drawArrays(gl.LINES, 0, this._amount);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._ebo);
+        gl.drawElements(gl.TRIANGLES, this._amount, gl.UNSIGNED_INT, 0);
     }
 }

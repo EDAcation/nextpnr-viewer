@@ -5,6 +5,8 @@ import { Style as GraphicElementStyle } from './gfx/styles';
 import { NextpnrJSON } from './pnr-json/pnr-json';
 import { Renderer as RendererInterface, ColorConfig } from './renderer.interface';
 import { Line } from './webgl/line';
+import { Program } from './webgl/program';
+import { Rectangle } from './webgl/rectangle';
 
 type ElementType = 'wire'|'group'|'bel'|'pip';
 type Elements = {
@@ -19,7 +21,10 @@ export class Renderer<T> implements RendererInterface {
 
     private _lines: Array<{line: Line, type: ElementType}>;
     private _gl: WebGL2RenderingContext;
+    private _renderingProgram: Program;
     private _elements: Elements;
+
+    private _rectangles: Array<Rectangle>;
 
     constructor(
         private canvas: HTMLCanvasElement,
@@ -36,12 +41,47 @@ export class Renderer<T> implements RendererInterface {
         if (!gl) throw 'couldnt get gl2 context';
 
         this._gl = gl;
+        this._renderingProgram = new Program(this._gl);
 
         this._visibleWidth = this.canvas.width;
         this._visibleHeight = this.canvas.height;
 
         this._elements = this.createGraphicElements();
         this._lines = this._updateLines();
+
+        // These rectangles are added as a test, feel free to remove them!
+        this._rectangles = [
+            new Rectangle(
+                this._gl,
+                this._renderingProgram,
+                [
+                    {x1: 10, x2: 30, y1: 10, y2: 30},
+                    {x1: 10, x2: 30, y1: 40, y2: 60},
+                    {x1: 10, x2: 30, y1: 70, y2: 90},
+                ],
+                this.colorStrToObj("#FF0000")
+            ),
+            new Rectangle(
+                this._gl,
+                this._renderingProgram,
+                [
+                    {x1: 40, x2: 60, y1: 10, y2: 30},
+                    {x1: 40, x2: 60, y1: 40, y2: 60},
+                    {x1: 40, x2: 60, y1: 70, y2: 90},
+                ],
+                this.colorStrToObj("#00FF00")
+            ),
+            new Rectangle(
+                this._gl,
+                this._renderingProgram,
+                [
+                    {x1: 70, x2: 90, y1: 10, y2: 30},
+                    {x1: 70, x2: 90, y1: 40, y2: 60},
+                    {x1: 70, x2: 90, y1: 70, y2: 90},
+                ],
+                this.colorStrToObj("#0000FF")
+            )
+        ];
     }
 
     public render(): void {
@@ -62,6 +102,11 @@ export class Renderer<T> implements RendererInterface {
                 if (this._viewMode.showBels && l.type === 'bel')
                     l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
             });
+
+            this._rectangles.forEach(rect => {
+                rect.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height);
+            });
+
 
             this.animationFrameId = undefined;
         });
@@ -185,9 +230,9 @@ export class Renderer<T> implements RendererInterface {
                         {x1: e.x2, x2: e.x2, y1: e.y1, y2: e.y2},
                     ];
                 });
-                ret.push(new Line(this._gl, ls, this.getColorObj(g[0].style)));
+                ret.push(new Line(this._gl, this._renderingProgram, ls, this.getColorObj(g[0].style)));
             } else {
-                ret.push(new Line(this._gl, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
+                ret.push(new Line(this._gl, this._renderingProgram, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
             }
         });
         return ret;
