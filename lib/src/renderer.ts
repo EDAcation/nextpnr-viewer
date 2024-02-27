@@ -16,15 +16,22 @@ type Elements = {
     pip: Record<string, GraphicElement[]>
 }
 
+interface _WebGLElements<LineType> {
+    'line': LineType[],
+    'rect': Rectangle[]
+}
+
+type WebGLElements = _WebGLElements<Line>;
+type RenderingElements = _WebGLElements<{line: Line, type: ElementType}>;
+
 export class Renderer<T> implements RendererInterface {
     private animationFrameId?: number;
 
-    private _lines: Array<{line: Line, type: ElementType}>;
     private _gl: WebGL2RenderingContext;
     private _renderingProgram: Program;
     private _elements: Elements;
 
-    private _rectangles: Array<Rectangle>;
+    private _renderingElems: RenderingElements;
 
     constructor(
         private canvas: HTMLCanvasElement,
@@ -47,41 +54,7 @@ export class Renderer<T> implements RendererInterface {
         this._visibleHeight = this.canvas.height;
 
         this._elements = this.createGraphicElements();
-        this._lines = this._updateLines();
-
-        // These rectangles are added as a test, feel free to remove them!
-        this._rectangles = [
-            new Rectangle(
-                this._gl,
-                this._renderingProgram,
-                [
-                    {x1: 10, x2: 30, y1: 10, y2: 30},
-                    {x1: 10, x2: 30, y1: 40, y2: 60},
-                    {x1: 10, x2: 30, y1: 70, y2: 90},
-                ],
-                this.colorStrToObj("#FF0000")
-            ),
-            new Rectangle(
-                this._gl,
-                this._renderingProgram,
-                [
-                    {x1: 40, x2: 60, y1: 10, y2: 30},
-                    {x1: 40, x2: 60, y1: 40, y2: 60},
-                    {x1: 40, x2: 60, y1: 70, y2: 90},
-                ],
-                this.colorStrToObj("#00FF00")
-            ),
-            new Rectangle(
-                this._gl,
-                this._renderingProgram,
-                [
-                    {x1: 70, x2: 90, y1: 10, y2: 30},
-                    {x1: 70, x2: 90, y1: 40, y2: 60},
-                    {x1: 70, x2: 90, y1: 70, y2: 90},
-                ],
-                this.colorStrToObj("#0000FF")
-            )
-        ];
+        this._renderingElems = this._updateWebGLElements();
     }
 
     public render(): void {
@@ -94,7 +67,7 @@ export class Renderer<T> implements RendererInterface {
             this._gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
             this._gl.clear(this._gl.COLOR_BUFFER_BIT);
 
-            this._lines.forEach(l => {
+            this._renderingElems['line'].forEach(l => {
                 if (this._viewMode.showWires && l.type === 'wire')
                     l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
                 if (this._viewMode.showGroups && (l.type === 'group' || l.type === 'pip'))
@@ -103,7 +76,7 @@ export class Renderer<T> implements RendererInterface {
                     l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
             });
 
-            this._rectangles.forEach(rect => {
+            this._renderingElems['rect'].forEach(rect => {
                 rect.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height);
             });
 
@@ -165,7 +138,7 @@ export class Renderer<T> implements RendererInterface {
             this._elements.pip[pip_decal.id] = ges;
         });
 
-        this._lines = this._updateLines();
+        this._renderingElems = this._updateWebGLElements();
         
         this.render();
     }
@@ -214,11 +187,15 @@ export class Renderer<T> implements RendererInterface {
         return elements;
     }
 
-    private toLines(ges: Array<GraphicElement>): Array<Line> {
+    private toWebGLElements(ges: Array<GraphicElement>): WebGLElements {
         const groups = ges.filter((v, i, self) => self.findIndex(e => e.style === v.style && e.type === e.type) === i)
                           .map(g => ges.filter(e => e.style === g.style && e.type === g.type));
 
-        const ret: Array<Line> = [];
+        const ret: WebGLElements = {
+            'line': [],
+            'rect': []
+        };
+
         groups.forEach(g => {
             if (g.length === 0 || g[0].style === GraphicElementStyle.Hidden) return;
             if (g[0].type === GraphicElementType.Box) {
@@ -230,9 +207,15 @@ export class Renderer<T> implements RendererInterface {
                         {x1: e.x2, x2: e.x2, y1: e.y1, y2: e.y2},
                     ];
                 });
-                ret.push(new Line(this._gl, this._renderingProgram, ls, this.getColorObj(g[0].style)));
+                ret.line.push(new Line(
+                    this._gl, this._renderingProgram,
+                    ls, this.getColorObj(g[0].style)
+                ));
             } else {
-                ret.push(new Line(this._gl, this._renderingProgram, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
+                ret.line.push(new Line(
+                    this._gl, this._renderingProgram,
+                    g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)
+                ));
             }
         });
         return ret;
@@ -261,17 +244,22 @@ export class Renderer<T> implements RendererInterface {
         }
     }
 
-    private _updateLines() {
-        let newLines: typeof this._lines = [];
+    private _updateWebGLElements(): RenderingElements {
+        let newElements: RenderingElements = {
+            'line': [],
+            'rect': []
+        };
 
         for (let typeKey in this._elements) {
             const type = <ElementType>typeKey;
 
             const elem = this._elements[type];
-            const lines = this.toLines(Object.values(elem).flat());
-            newLines = newLines.concat(lines.map(line => ({line, type})));
+            const webGLElems = this.toWebGLElements(Object.values(elem).flat());
+
+            newElements.line = newElements.line.concat(webGLElems.line.map(line => ({line, type})));
+            newElements.rect = newElements.rect.concat(webGLElems.rect)
         }
 
-        return newLines;
+        return newElements;
     }
 }

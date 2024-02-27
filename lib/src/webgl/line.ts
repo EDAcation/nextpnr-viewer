@@ -1,4 +1,5 @@
-import {Program} from './program';
+import {type Program} from './program';
+import { WebGLElement } from './webgl';
 
 /** Class for rendering line primitives
 
@@ -14,11 +15,9 @@ import {Program} from './program';
     For optimal performance try to batch as many lines in an object of this class as possible,
     because that allows the GPU to do as much of it as possible in parallel.
 */
-export class Line {
+export class Line extends WebGLElement {
     private _vao: WebGLVertexArrayObject; // Vertex array object
     private _vbo: WebGLBuffer;            // Vertex buffer object
-    private _gl: WebGL2RenderingContext;  // Rendering context
-    private _program: Program;            // Rendering program
 
     private _amount: number;
 
@@ -26,8 +25,7 @@ export class Line {
                 program: Program,
                 lines: Array<{x1: number, x2: number, y1: number, y2: number}>,
                 private _color: {r: number, g: number, b: number}) {
-        this._gl = gl;
-        this._program = program;
+        super(gl, program);
 
         // Create vertex array object
         const vao = gl.createVertexArray();
@@ -62,13 +60,13 @@ export class Line {
     }
 
     public draw(offsetX: number, offsetY: number, scale: number, canvasWidth: number, canvasHeight: number): void {
-        const gl = this._gl;
+        const gl = this.gl;
 
-        this._program.use();
-        this._program.setUniformVec2f('u_canvas_size', canvasWidth, canvasHeight);
-        this._program.setUniformVec2f('u_offset', offsetX, offsetY);
-        this._program.setUniformFloat('u_scale', scale);
-        this._program.setUniformVec4f('u_color', this._color.r, this._color.g, this._color.b, 1);
+        this.program.use();
+        this.program.setUniformVec2f('u_canvas_size', canvasWidth, canvasHeight);
+        this.program.setUniformVec2f('u_offset', offsetX, offsetY);
+        this.program.setUniformFloat('u_scale', scale);
+        this.program.setUniformVec4f('u_color', this._color.r, this._color.g, this._color.b, 1);
 
         gl.bindVertexArray(this._vao);
         gl.drawArrays(gl.LINES, 0, this._amount);
