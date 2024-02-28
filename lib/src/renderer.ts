@@ -7,7 +7,6 @@ import { Renderer as RendererInterface, ColorConfig } from './renderer.interface
 import { Line } from './webgl/line';
 import { Program } from './webgl/program';
 import { WebGLElement, ElementType } from './webgl/webgl';
-import { getElementGroup } from 'edacation';
 import { Rectangle } from './webgl/rectangle';
 
 type Elements = {
@@ -28,6 +27,7 @@ export class Renderer<T> implements RendererInterface {
         private canvas: HTMLCanvasElement,
         private architecture: Architecture<T>,
         private _colors: ColorConfig,
+        private _cellColors: Record<string, string> = {},
         private _scale: number = 15,
         private _offX: number = -10.25,
         private _offY: number = -52.1,
@@ -113,8 +113,8 @@ export class Renderer<T> implements RendererInterface {
             if (ge === undefined) {
                 return;
             }
-            const cellName = w.origType?.replace("$", "") || "";
-            const elemColor = getElementGroup(cellName)?.color || null;
+            const cellName = w.cellType?.replace("$", "") || "";
+            const elemColor = this._cellColors[cellName] ?? null;
             ge.forEach(ge => {
                 ge.style = GraphicElementStyle.Active;
                 ge.color = elemColor;

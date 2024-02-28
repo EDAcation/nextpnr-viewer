@@ -13,6 +13,7 @@ export type ViewerConfig = {
     height: number,
     createToggles: boolean,
     colors: ColorConfig,
+    cellColors: Record<string, string>,
     chip: Chip
 };
 
@@ -26,6 +27,7 @@ export const defaultConfig: ViewerConfig = {
         frame:      "#BD93F9",
         background: "#282A36"
     },
+    cellColors: {},
     chip: {
         'family': 'ecp5',
         'device': '25k'

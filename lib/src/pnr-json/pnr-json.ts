@@ -6,7 +6,7 @@ type RoutingPart = {
 
 type BEL = {
     nextpnrBel: string,
-    origType: string | undefined,
+    cellType: string | undefined,
 }
 
 type ElementNames = {
@@ -23,7 +23,7 @@ export class NextpnrJSON {
 
         const bels = Object.keys(cells).map(v => ({
             nextpnrBel: cells[v].attributes.NEXTPNR_BEL,
-            origType: cells[v].attributes.cellType
+            cellType: cells[v].attributes.cellType
         }));
 
         const routings = Object.keys(netnames)
