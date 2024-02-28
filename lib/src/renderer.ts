@@ -8,6 +8,7 @@ import { Line } from './webgl/line';
 import { Program } from './webgl/program';
 import { WebGLElement, ElementType } from './webgl/webgl';
 import { getElementGroup } from 'edacation';
+import { Rectangle } from './webgl/rectangle';
 
 type Elements = {
     [key in ElementType]: Record<string, GraphicElement[]>
@@ -117,6 +118,9 @@ export class Renderer<T> implements RendererInterface {
             ge.forEach(ge => {
                 ge.style = GraphicElementStyle.Active;
                 ge.color = elemColor;
+
+                // Only fill BELs that we can actually trace back to a cell
+                if (cellName) ge.type = GraphicElementType.FilledBox;
             });
         });
 
@@ -208,6 +212,11 @@ export class Renderer<T> implements RendererInterface {
                 ret.push(new Line(
                     this._gl, this._renderingProgram,
                     ls, this.getColorObj(g[0])
+                ));
+            } else if (g[0].type === GraphicElementType.FilledBox) {
+                ret.push(new Rectangle(
+                    this._gl, this._renderingProgram,
+                    g.map(e => ({x1: e.x1, x2: e.x2, y1: e.y1, y2: e.y2})), this.getColorObj(g[0])
                 ));
             } else {
                 ret.push(new Line(
