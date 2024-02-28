@@ -5,21 +5,21 @@ import { Style as GraphicElementStyle } from './gfx/styles';
 import { NextpnrJSON } from './pnr-json/pnr-json';
 import { Renderer as RendererInterface, ColorConfig } from './renderer.interface';
 import { Line } from './webgl/line';
+import { Program } from './webgl/program';
+import { WebGLElement, ElementType } from './webgl/webgl';
 
-type ElementType = 'wire'|'group'|'bel'|'pip';
 type Elements = {
-    wire: Record<string, GraphicElement[]>,
-    group: Record<string, GraphicElement[]>,
-    bel: Record<string, GraphicElement[]>,
-    pip: Record<string, GraphicElement[]>
+    [key in ElementType]: Record<string, GraphicElement[]>
 }
 
 export class Renderer<T> implements RendererInterface {
     private animationFrameId?: number;
 
-    private _lines: Array<{line: Line, type: ElementType}>;
     private _gl: WebGL2RenderingContext;
+    private _renderingProgram: Program;
     private _elements: Elements;
+
+    private _renderingElems: WebGLElement[];
 
     constructor(
         private canvas: HTMLCanvasElement,
@@ -36,12 +36,13 @@ export class Renderer<T> implements RendererInterface {
         if (!gl) throw 'couldnt get gl2 context';
 
         this._gl = gl;
+        this._renderingProgram = new Program(this._gl);
 
         this._visibleWidth = this.canvas.width;
         this._visibleHeight = this.canvas.height;
 
         this._elements = this.createGraphicElements();
-        this._lines = this._updateLines();
+        this._renderingElems = this._updateWebGLElements();
     }
 
     public render(): void {
@@ -54,14 +55,13 @@ export class Renderer<T> implements RendererInterface {
             this._gl.clearColor(bgColor.r, bgColor.g, bgColor.b, 1.0);
             this._gl.clear(this._gl.COLOR_BUFFER_BIT);
 
-            this._lines.forEach(l => {
-                if (this._viewMode.showWires && l.type === 'wire')
-                    l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
-                if (this._viewMode.showGroups && (l.type === 'group' || l.type === 'pip'))
-                    l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
-                if (this._viewMode.showBels && l.type === 'bel')
-                    l.line.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height)
-            });
+            for (const elem of this._renderingElems) {
+                if (elem.type === 'wire' && !this._viewMode.showWires) continue;
+                if ((elem.type === 'group' || elem.type === 'pip') && !this._viewMode.showGroups) continue;
+                if (elem.type === 'bel' && !this._viewMode.showBels) continue;
+
+                elem.draw(this._offX, this._offY, this._scale, this.canvas.width, this.canvas.height);
+            }
 
             this.animationFrameId = undefined;
         });
@@ -120,7 +120,7 @@ export class Renderer<T> implements RendererInterface {
             this._elements.pip[pip_decal.id] = ges;
         });
 
-        this._lines = this._updateLines();
+        this._renderingElems = this._updateWebGLElements();
         
         this.render();
     }
@@ -169,11 +169,11 @@ export class Renderer<T> implements RendererInterface {
         return elements;
     }
 
-    private toLines(ges: Array<GraphicElement>): Array<Line> {
+    private toWebGLElements(ges: Array<GraphicElement>): WebGLElement[] {
         const groups = ges.filter((v, i, self) => self.findIndex(e => e.style === v.style && e.type === e.type) === i)
                           .map(g => ges.filter(e => e.style === g.style && e.type === g.type));
 
-        const ret: Array<Line> = [];
+        const ret: WebGLElement[] = [];
         groups.forEach(g => {
             if (g.length === 0 || g[0].style === GraphicElementStyle.Hidden) return;
             if (g[0].type === GraphicElementType.Box) {
@@ -185,9 +185,15 @@ export class Renderer<T> implements RendererInterface {
                         {x1: e.x2, x2: e.x2, y1: e.y1, y2: e.y2},
                     ];
                 });
-                ret.push(new Line(this._gl, ls, this.getColorObj(g[0].style)));
+                ret.push(new Line(
+                    this._gl, this._renderingProgram,
+                    ls, this.getColorObj(g[0].style)
+                ));
             } else {
-                ret.push(new Line(this._gl, g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)));
+                ret.push(new Line(
+                    this._gl, this._renderingProgram,
+                    g.map(g => ({x1: g.x1, y1: g.y1, x2: g.x2, y2: g.y2})), this.getColorObj(g[0].style)
+                ));
             }
         });
         return ret;
@@ -216,17 +222,19 @@ export class Renderer<T> implements RendererInterface {
         }
     }
 
-    private _updateLines() {
-        let newLines: typeof this._lines = [];
+    private _updateWebGLElements(): WebGLElement[] {
+        let newElements: WebGLElement[] = [];
 
         for (let typeKey in this._elements) {
             const type = <ElementType>typeKey;
 
             const elem = this._elements[type];
-            const lines = this.toLines(Object.values(elem).flat());
-            newLines = newLines.concat(lines.map(line => ({line, type})));
+            const webGLElems = this.toWebGLElements(Object.values(elem).flat());
+            webGLElems.forEach(elem => elem.type = type);
+
+            newElements.push(...webGLElems);
         }
 
-        return newLines;
+        return newElements;
     }
 }
