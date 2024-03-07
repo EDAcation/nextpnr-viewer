@@ -213,6 +213,8 @@ export class ECP5Arch implements Architecture<ECP5DecalID> {
             return dst_wire_data.name === to.name;
         });
 
+        if (pip_data_indexed.length === 0) return null;
+
         return new DecalXY(
             new ECP5DecalID(
                 ECP5DecalType.TYPE_PIP,

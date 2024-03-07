@@ -45,7 +45,7 @@ export class NextPNRViewer implements ViewerInterface {
         this._canvas = canvas;
 
         getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
-            const renderer = new Renderer(canvas, arch, this._config.colors)
+            const renderer = new Renderer(canvas, arch, this._config.colors, this._config.cellColors)
             this._renderer.next(renderer);
 
             this._addEventListeners(canvas);

@@ -4,10 +4,15 @@ type RoutingPart = {
     strength: number,
 };
 
+type BEL = {
+    nextpnrBel: string,
+    cellType: string | undefined,
+}
+
 type ElementNames = {
     wire: string[],
     group: string[],
-    bel: string[],
+    bel: BEL[],
     pip: ReturnType<typeof NextpnrJSON.parsePip>[]
 };
 
@@ -16,7 +21,10 @@ export class NextpnrJSON {
         const cells = (json as any).modules.top.cells;
         const netnames = (json as any).modules.top.netnames;
 
-        const bel_names = Object.keys(cells).map(v => cells[v].attributes.NEXTPNR_BEL);
+        const bels = Object.keys(cells).map(v => ({
+            nextpnrBel: cells[v].attributes.NEXTPNR_BEL,
+            cellType: cells[v].attributes.cellType
+        }));
 
         const routings = Object.keys(netnames)
                                .map(v => netnames[v].attributes.ROUTING)
@@ -25,7 +33,7 @@ export class NextpnrJSON {
         return {
             wire: routings.map(r => r.wire).flat(),
             group: [],
-            bel: bel_names,
+            bel: bels,
             pip: routings.map(r => r.pip.map(this.parsePip)).flat()
         }
     }

@@ -10,5 +10,5 @@ export interface Architecture<DecalID> {
     getGroupDecals(): Array<DecalXY<DecalID>>;
     findPipDecalByLocFromTo(location: LocationPOD,
                             from: {location: LocationPOD, name: string},
-                            to: {location: LocationPOD, name: string}): DecalXY<DecalID>;
+                            to: {location: LocationPOD, name: string}): DecalXY<DecalID> | null;
 }

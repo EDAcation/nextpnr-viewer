@@ -1,4 +1,5 @@
 import viewer from 'nextpnr-viewer';
+import { getElementGroups } from 'edacation';
 
 window.onload = () => {
     const div: HTMLDivElement|null = document.querySelector('#viewer-container');
@@ -7,13 +8,22 @@ window.onload = () => {
     const file_upload: HTMLInputElement|null = document.querySelector('#json-file');
     if (file_upload === null) { console.error("Cannot find file upload input"); return; }
 
+    // Get example cell colors from EDAcation library
+    const cellColors = {};
+    for (const elemGroup of getElementGroups().values()) {
+        for (const elem of elemGroup.elements) {
+            cellColors[elem] = elemGroup.color;
+        }
+    }
+
     const nextpnrViewer = viewer(div, {
         width: 1920,
         height: 1080,
         chip: {
             family: 'ecp5',
             device: '85k'
-        }
+        },
+        cellColors: cellColors
     });
 
     file_upload.addEventListener('change', e => {
