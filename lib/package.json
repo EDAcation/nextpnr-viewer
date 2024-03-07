@@ -1,10 +1,11 @@
 {
   "name": "nextpnr-viewer",
   "description": "A HTML 5 Canvas based viewer for nextpnr place and route visualizations.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "license": "MIT",
   "contributors": [
-    "Bram Wesselink <wesselinkbram@gmail.com>"
+    "Bram Wesselink <wesselinkbram@gmail.com>",
+    "Mike Almeloo <git@mikealmel.ooo>"
   ],
   "repository": "github:EDAcation/nextpnr-viewer",
   "keywords": [
