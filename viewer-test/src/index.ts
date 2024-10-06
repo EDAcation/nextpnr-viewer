@@ -1,12 +1,18 @@
+import {getElementGroups} from 'edacation';
 import viewer from 'nextpnr-viewer';
-import { getElementGroups } from 'edacation';
 
 window.onload = () => {
-    const div: HTMLDivElement|null = document.querySelector('#viewer-container');
-    if (div === null) { console.error("Cannot find canvas"); return; }
+    const div: HTMLDivElement | null = document.querySelector('#viewer-container');
+    if (div === null) {
+        console.error('Cannot find canvas');
+        return;
+    }
 
-    const file_upload: HTMLInputElement|null = document.querySelector('#json-file');
-    if (file_upload === null) { console.error("Cannot find file upload input"); return; }
+    const file_upload: HTMLInputElement | null = document.querySelector('#json-file');
+    if (file_upload === null) {
+        console.error('Cannot find file upload input');
+        return;
+    }
 
     // Get example cell colors from EDAcation library
     const cellColors = {};
@@ -26,12 +32,11 @@ window.onload = () => {
         cellColors: cellColors
     });
 
-    file_upload.addEventListener('change', e => {
-        if (e.target !== file_upload || file_upload.files === null) { return; }
+    file_upload.addEventListener('change', (e) => {
+        if (e.target !== file_upload || file_upload.files === null) {
+            return;
+        }
 
-        file_upload
-           .files[0]
-           .text()
-           .then(t => nextpnrViewer.showJson(t));
+        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(t));
     });
 };

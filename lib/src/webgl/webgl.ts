@@ -2,10 +2,9 @@ import {type Program} from './program';
 
 export type ElementType = 'wire' | 'group' | 'bel' | 'pip';
 
-
 export abstract class WebGLElement {
-    private _gl: WebGL2RenderingContext;  // Rendering context
-    private _program: Program;            // Rendering program
+    private _gl: WebGL2RenderingContext; // Rendering context
+    private _program: Program; // Rendering program
 
     private _type: ElementType | null;
 

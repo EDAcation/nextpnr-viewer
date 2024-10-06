@@ -1,20 +1,22 @@
-import { Renderer, ColorConfig } from './renderer.interface';
+import {ColorConfig, Renderer} from './renderer.interface';
 
-type Chip = {
-    family: 'ecp5',
-    device: '25k' | '45k' | '85k'
-} | {
-    family: 'ice40',
-    device: never
-};
+type Chip =
+    | {
+          family: 'ecp5';
+          device: '25k' | '45k' | '85k';
+      }
+    | {
+          family: 'ice40';
+          device: never;
+      };
 
 export type ViewerConfig = {
-    width: number,
-    height: number,
-    createToggles: boolean,
-    colors: ColorConfig,
-    cellColors: Record<string, string>,
-    chip: Chip
+    width: number;
+    height: number;
+    createToggles: boolean;
+    colors: ColorConfig;
+    cellColors: Record<string, string>;
+    chip: Chip;
 };
 
 export const defaultConfig: ViewerConfig = {
@@ -22,15 +24,15 @@ export const defaultConfig: ViewerConfig = {
     height: 720,
     createToggles: true,
     colors: {
-        active:     "#F8F8F2",
-        inactive:   "#6272A4",
-        frame:      "#BD93F9",
-        background: "#282A36"
+        active: '#F8F8F2',
+        inactive: '#6272A4',
+        frame: '#BD93F9',
+        background: '#282A36'
     },
     cellColors: {},
     chip: {
-        'family': 'ecp5',
-        'device': '25k'
+        family: 'ecp5',
+        device: '25k'
     }
 };
 

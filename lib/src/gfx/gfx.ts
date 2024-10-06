@@ -1,5 +1,5 @@
-import { Style } from './styles';
-import { Type } from './types';
+import {Style} from './styles';
+import {Type} from './types';
 
 export class GraphicElement {
     constructor(
@@ -12,10 +12,20 @@ export class GraphicElement {
         public y2: number = 0,
         public z: number = 0,
 
-        public text: string = "",
+        public text: string = ''
     ) {}
 
     public clone(): GraphicElement {
-        return new GraphicElement(this.type, this.style, this.color, this.x1, this.x2, this.y1, this.y2, this.z, this.text);
+        return new GraphicElement(
+            this.type,
+            this.style,
+            this.color,
+            this.x1,
+            this.x2,
+            this.y1,
+            this.y2,
+            this.z,
+            this.text
+        );
     }
 }

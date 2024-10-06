@@ -51,7 +51,7 @@ void main() {
 
 enum ShaderType {
     Vertex,
-    Fragment,
+    Fragment
 }
 
 function shaderTypeToGlType(type: ShaderType): number {
@@ -63,21 +63,22 @@ function shaderTypeToGlType(type: ShaderType): number {
     }
 }
 
-function shaderTypeToString(type: ShaderType): "vertex" | "fragment" {
+function shaderTypeToString(type: ShaderType): 'vertex' | 'fragment' {
     switch (type) {
         case ShaderType.Vertex:
-            return "vertex";
+            return 'vertex';
         case ShaderType.Fragment:
-            return "fragment";
+            return 'fragment';
     }
 }
 
 /** Name describing the type of error */
-export type ErrorName = 'CREATE_SHADER_FAILED'
-                      | 'SHADER_COMPILATION_FAILED'
-                      | 'CREATE_PROGRAM_FAILED'
-                      | 'SHADER_LINK_FAILED'
-                      | 'SET_UNIFORM_FAILED';
+export type ErrorName =
+    | 'CREATE_SHADER_FAILED'
+    | 'SHADER_COMPILATION_FAILED'
+    | 'CREATE_PROGRAM_FAILED'
+    | 'SHADER_LINK_FAILED'
+    | 'SET_UNIFORM_FAILED';
 
 /** Common error class for all errors thrown by this modules Program class */
 export class WebGlProgramError extends Error {
@@ -105,9 +106,11 @@ export class Program {
     private context: WebGL2RenderingContext;
     private program: WebGLProgram;
 
-    constructor(glContext: WebGL2RenderingContext,
-                vertexSource: string = defaultVertexSource, 
-                fragmentSource: string = defaultFragmentSource) {
+    constructor(
+        glContext: WebGL2RenderingContext,
+        vertexSource: string = defaultVertexSource,
+        fragmentSource: string = defaultFragmentSource
+    ) {
         this.context = glContext;
 
         const vertexShader = this.compileShader(vertexSource, ShaderType.Vertex);
@@ -147,12 +150,9 @@ export class Program {
 
     private getUniformLocation(name: string): WebGLUniformLocation {
         const location = this.context.getUniformLocation(this.program, name);
-        
+
         if (location === null) {
-            throw new WebGlProgramError(
-                'SET_UNIFORM_FAILED',
-                `Failed to lookup location of uniform "${name}"`
-            );
+            throw new WebGlProgramError('SET_UNIFORM_FAILED', `Failed to lookup location of uniform "${name}"`);
         }
 
         return location;
@@ -211,10 +211,7 @@ export class Program {
         if (!this.context.getProgramParameter(program, this.context.LINK_STATUS)) {
             const info = this.context.getProgramInfoLog(program);
 
-            throw new WebGlProgramError(
-                'SHADER_LINK_FAILED',
-                `Failed to link program:\n${info}`
-            );
+            throw new WebGlProgramError('SHADER_LINK_FAILED', `Failed to link program:\n${info}`);
         }
 
         return program;

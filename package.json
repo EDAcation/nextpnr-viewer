@@ -12,8 +12,10 @@
     "@parcel/transformer-inline": "^2.7.0",
     "@parcel/transformer-typescript-types": "^2.7.0",
     "@parcel/validator-typescript": "^2.7.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^18.11.7",
     "parcel": "^2.7.0",
+    "prettier": "^3.3.3",
     "typescript": "^4.8.3"
   },
   "dependencies": {

@@ -9,8 +9,8 @@ export enum ECP5DecalType {
 export class ECP5DecalID {
     constructor(
         public type: ECP5DecalType,
-        public location: {x: number, y: number},
-        public z: number,
+        public location: {x: number; y: number},
+        public z: number
     ) {}
 
     public static instance(): ECP5DecalID {
