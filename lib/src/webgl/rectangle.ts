@@ -17,15 +17,17 @@ import {WebGLElement} from './webgl';
 */
 export class Rectangle extends WebGLElement {
     private _vao: WebGLVertexArrayObject; // Vertex array object
-    private _vbo: WebGLBuffer;            // Vertex buffer object
-    private _ebo: WebGLBuffer;            // Element buffer object
+    private _vbo: WebGLBuffer; // Vertex buffer object
+    private _ebo: WebGLBuffer; // Element buffer object
 
     private _amount: number;
 
-    constructor(gl: WebGL2RenderingContext,
-                program: Program,
-                rectangles: Array<{x1: number, x2: number, y1: number, y2: number}>,
-                private _color: {r: number, g: number, b: number}) {
+    constructor(
+        gl: WebGL2RenderingContext,
+        program: Program,
+        rectangles: Array<{x1: number; x2: number; y1: number; y2: number}>,
+        private _color: {r: number; g: number; b: number}
+    ) {
         super(gl, program);
 
         // Create vertex array object
@@ -45,10 +47,18 @@ export class Rectangle extends WebGLElement {
 
         // Setup the data and pass it to the GPU using gl.bufferData()
         gl.bindBuffer(gl.ARRAY_BUFFER, this._vbo);
-        const verts = new Float32Array(rectangles.flatMap(l => [l.x1, l.y1,    // Vertex 0: Bottom left
-                                                                l.x2, l.y1,    // Vertex 1: Bottom right
-                                                                l.x1, l.y2,    // Vertex 2: Top left 
-                                                                l.x2, l.y2])); // Vertex 3: Top right
+        const verts = new Float32Array(
+            rectangles.flatMap((l) => [
+                l.x1,
+                l.y1, // Vertex 0: Bottom left
+                l.x2,
+                l.y1, // Vertex 1: Bottom right
+                l.x1,
+                l.y2, // Vertex 2: Top left
+                l.x2,
+                l.y2
+            ])
+        ); // Vertex 3: Top right
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
 
         // Setup the indices and pass them to the element array buffer
@@ -64,10 +74,16 @@ export class Rectangle extends WebGLElement {
         // | /   1  |
         // |/       |
         // +--------+
-        const indices = new Uint32Array(rectangles.flatMap((_, index) => [
-            0 + (4 * index), 1 + (4 * index), 3 + (4 * index), // Triangle 1
-            3 + (4 * index), 2 + (4 * index), 0 + (4 * index), // Triangle 2
-        ]));
+        const indices = new Uint32Array(
+            rectangles.flatMap((_, index) => [
+                0 + 4 * index,
+                1 + 4 * index,
+                3 + 4 * index, // Triangle 1
+                3 + 4 * index,
+                2 + 4 * index,
+                0 + 4 * index // Triangle 2
+            ])
+        );
         this._amount = rectangles.length * 6; // 6 elements per rectangle
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 

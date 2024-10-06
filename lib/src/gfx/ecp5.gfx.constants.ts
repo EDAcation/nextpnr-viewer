@@ -1,7 +1,7 @@
 export const switchbox_x1 = 0.51;
-export const switchbox_x2 = 0.90;
+export const switchbox_x2 = 0.9;
 export const switchbox_y1 = 0.51;
-export const switchbox_y2 = 0.90;
+export const switchbox_y2 = 0.9;
 
 export const dll_cell_x1 = 0.2;
 export const dll_cell_x2 = 0.8;
@@ -11,7 +11,7 @@ export const dll_cell_y2 = 0.8;
 export const io_cell_v_x1 = 0.76;
 export const io_cell_v_x2 = 0.95;
 export const io_cell_v_y1 = 0.05;
-export const io_cell_gap = 0.10;
+export const io_cell_gap = 0.1;
 export const io_cell_h_x1 = 0.05;
 export const io_cell_h_y1 = 0.05;
 export const io_cell_h_y2 = 0.24;

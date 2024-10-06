@@ -1,29 +1,26 @@
 import {
-    LocationPOD,
-    BelWirePOD,
     BelInfoPOD,
     BelPortPOD,
-    PipInfoPOD,
-    PipLocatorPOD,
-    WireInfoPOD,
-    LocationTypePOD,
-    PIOInfoPOD,
-    PackagePinPOD,
-    PackageInfoPOD,
-    TileNamePOD,
-    TileInfoPOD,
-    GlobalInfoPOD,
+    BelWirePOD,
     CellPropDelayPOD,
     CellSetupHoldPOD,
     CellTimingPOD,
+    ChipInfoPOD,
+    GlobalInfoPOD,
+    LocationPOD,
+    LocationTypePOD,
+    PIOInfoPOD,
+    PackageInfoPOD,
+    PackagePinPOD,
     PipDelayPOD,
+    PipInfoPOD,
+    PipLocatorPOD,
     SpeedGradePOD,
-    ChipInfoPOD
+    TileInfoPOD,
+    TileNamePOD,
+    WireInfoPOD
 } from './ecp5.chipdb';
-
-import {
-    RelString, RelSlice, RelInt32Arr, RelStringArr
-} from './relslice';
+import {RelInt32Arr, RelSlice, RelString, RelStringArr} from './relslice';
 
 export class LocationPODImpl implements LocationPOD {
     private _x: number;
@@ -270,7 +267,9 @@ export class WireInfoPODImpl implements WireInfoPOD {
         if (this._pips_downhill == undefined) {
             const rsPip = new RelSlice<PipLocatorPOD>(PipLocatorPODImpl);
 
-            this._pips_downhill = rsPip.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 16));
+            this._pips_downhill = rsPip.fromDataView(
+                new DataView(this._dataview.buffer, this._dataview.byteOffset + 16)
+            );
         }
         return this._pips_downhill;
     }
@@ -326,7 +325,9 @@ export class PIOInfoPODImpl implements PIOInfoPOD {
     constructor(private _dataview: DataView) {
         this._abs_loc = new LocationPODImpl(new DataView(this._dataview.buffer, this._dataview.byteOffset + 0));
         this._bel_index = this._dataview.getInt32(4, true);
-        this._function_name = RelString.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 8));
+        this._function_name = RelString.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 8)
+        );
         this._bank = this._dataview.getInt16(12, true);
         this._dqsgroup = this._dataview.getInt16(14, true);
     }
@@ -566,10 +567,14 @@ export class CellTimingPODImpl implements CellTimingPOD {
         this._cell_type = this._dataview.getInt32(0, true);
 
         const rsPropDelay = new RelSlice<CellPropDelayPOD>(CellPropDelayPODImpl);
-        this._prop_delays = rsPropDelay.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 4));
+        this._prop_delays = rsPropDelay.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 4)
+        );
 
         const rsSetupHold = new RelSlice<CellSetupHoldPOD>(CellSetupHoldPODImpl);
-        this._setup_holds = rsSetupHold.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 12));
+        this._setup_holds = rsSetupHold.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 12)
+        );
     }
 
     public get cell_type(): number {
@@ -625,7 +630,9 @@ export class SpeedGradePODImpl implements SpeedGradePOD {
 
     constructor(private _dataview: DataView) {
         const rsCellTiming = new RelSlice<CellTimingPOD>(CellTimingPODImpl);
-        this._cell_timings = rsCellTiming.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 0));
+        this._cell_timings = rsCellTiming.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 0)
+        );
 
         const rsPipClass = new RelSlice<PipDelayPOD>(PipDelayPODImpl);
         this._pip_classes = rsPipClass.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 8));
@@ -663,15 +670,23 @@ export class ChipInfoPODImpl implements ChipInfoPOD {
         const rsLocType = new RelSlice<LocationTypePOD>(LocationTypePODImpl);
         this._locations = rsLocType.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 16));
 
-        this._location_type = RelInt32Arr.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 24));
+        this._location_type = RelInt32Arr.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 24)
+        );
 
         const rsGlobalInfo = new RelSlice<GlobalInfoPOD>(GlobalInfoPODImpl);
-        this._location_glbinfo = rsGlobalInfo.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 32));
+        this._location_glbinfo = rsGlobalInfo.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 32)
+        );
 
-        this._tiletype_names = RelStringArr.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 40));
+        this._tiletype_names = RelStringArr.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 40)
+        );
 
         const rsPackageInfo = new RelSlice<PackageInfoPOD>(PackageInfoPODImpl);
-        this._package_info = rsPackageInfo.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 48));
+        this._package_info = rsPackageInfo.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 48)
+        );
 
         const rsPIOInfo = new RelSlice<PIOInfoPOD>(PIOInfoPODImpl);
         this._pio_info = rsPIOInfo.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 56));
@@ -680,7 +695,9 @@ export class ChipInfoPODImpl implements ChipInfoPOD {
         this._tile_info = rsTileInfo.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 64));
 
         const rsSpeedGrade = new RelSlice<SpeedGradePOD>(SpeedGradePODImpl);
-        this._speed_grades = rsSpeedGrade.fromDataView(new DataView(this._dataview.buffer, this._dataview.byteOffset + 72));
+        this._speed_grades = rsSpeedGrade.fromDataView(
+            new DataView(this._dataview.buffer, this._dataview.byteOffset + 72)
+        );
     }
 
     public get width(): number {

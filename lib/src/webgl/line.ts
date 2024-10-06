@@ -1,5 +1,5 @@
 import {type Program} from './program';
-import { WebGLElement } from './webgl';
+import {WebGLElement} from './webgl';
 
 /** Class for rendering line primitives
 
@@ -17,14 +17,16 @@ import { WebGLElement } from './webgl';
 */
 export class Line extends WebGLElement {
     private _vao: WebGLVertexArrayObject; // Vertex array object
-    private _vbo: WebGLBuffer;            // Vertex buffer object
+    private _vbo: WebGLBuffer; // Vertex buffer object
 
     private _amount: number;
 
-    constructor(gl: WebGL2RenderingContext,
-                program: Program,
-                lines: Array<{x1: number, x2: number, y1: number, y2: number}>,
-                private _color: {r: number, g: number, b: number}) {
+    constructor(
+        gl: WebGL2RenderingContext,
+        program: Program,
+        lines: Array<{x1: number; x2: number; y1: number; y2: number}>,
+        private _color: {r: number; g: number; b: number}
+    ) {
         super(gl, program);
 
         // Create vertex array object
@@ -39,7 +41,7 @@ export class Line extends WebGLElement {
 
         // Setup the data and pass it to the GPU using gl.bufferData()
         gl.bindBuffer(gl.ARRAY_BUFFER, this._vbo);
-        const verts = new Float32Array(lines.flatMap(l => [l.x1, l.y1, l.x2, l.y2]));
+        const verts = new Float32Array(lines.flatMap((l) => [l.x1, l.y1, l.x2, l.y2]));
         this._amount = lines.length * 2; // 2 verts per line
         gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
 
