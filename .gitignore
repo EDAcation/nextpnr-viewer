@@ -3,3 +3,4 @@
 dist/
 node_modules/
 parcel-optimizer-array-buffer/lib/
+.direnv/
