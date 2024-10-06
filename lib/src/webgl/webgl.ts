@@ -27,7 +27,7 @@ export abstract class WebGLElement {
         return this._type;
     }
 
-    public set type(type: ElementType) {
+    public set type(type: ElementType | null) {
         this._type = type;
     }
 
