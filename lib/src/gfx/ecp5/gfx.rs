@@ -75,7 +75,7 @@ pub fn gfx_tile_bel(
     x: f64,
     y: f64,
     z: i32,
-    w: i32,
+    _w: i32,
     h: i32,
     bel_type: &gfx::ConstId,
     style: &gfx::Style,
@@ -1182,7 +1182,7 @@ fn set_source(
     el: &mut gfx::GraphicElement,
     x: f64,
     y: f64,
-    w: i32,
+    _w: i32,
     h: i32,
     src: &WireId,
     src_type: &gfx::ConstId,
@@ -1484,7 +1484,7 @@ fn set_destination(
     el: &mut gfx::GraphicElement,
     x: f64,
     y: f64,
-    w: i32,
+    _w: i32,
     h: i32,
     dst: &WireId,
     dst_type: &gfx::ConstId,
@@ -1806,15 +1806,15 @@ fn straight_line(
 fn lut_perm_pip(
     g: &mut Vec<gfx::GraphicElement>,
     el: &mut gfx::GraphicElement,
-    x: f64,
-    y: f64,
-    w: i32,
-    h: i32,
+    _x: f64,
+    _y: f64,
+    _w: i32,
+    _h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    _src_type: &gfx::ConstId,
     src_id: &tilewire::GfxTileWireId,
-    dst: &WireId,
-    dst_type: &gfx::ConstId,
+    _dst: &WireId,
+    _dst_type: &gfx::ConstId,
     dst_id: &tilewire::GfxTileWireId,
 ) {
     let gap = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO) / 24;
@@ -1955,7 +1955,7 @@ fn to_same_side_h1_hor(
     dst_type: &gfx::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
-    idx: i32,
+    _idx: i32,
 ) {
     set_source(el, x, y, w, h, src, src_type, src_id);
 

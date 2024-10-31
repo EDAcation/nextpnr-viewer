@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub const switchbox_x1: f64 = 0.51;
 pub const switchbox_x2: f64 = 0.9;
 pub const switchbox_y1: f64 = 0.51;

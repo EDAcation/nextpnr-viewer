@@ -20,6 +20,7 @@
  */
 
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub enum Type {
     None,
     Line,
@@ -32,6 +33,7 @@ pub enum Type {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub enum Style {
     Grid,
     Frame,    // Static "frame". Contrast between Inactive and Active

@@ -19,6 +19,7 @@ impl Sub for GfxTileWireId {
 
 #[derive(Clone, Copy, PartialEq, PartialOrd)]
 #[repr(u32)]
+#[allow(dead_code)]
 pub enum GfxTileWireId {
     TILE_WIRE_NONE = 0,
 

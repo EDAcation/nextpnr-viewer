@@ -1,7 +1,6 @@
-#![allow(non_camel_case_types)]
-
 #[derive(PartialEq)]
 #[repr(u32)]
+#[allow(dead_code, non_camel_case_types)]
 pub enum ConstId {
     A0 = 1,
     B0,
