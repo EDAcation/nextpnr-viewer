@@ -1,3 +1,4 @@
+import init, {do_something} from 'nextpnr-renderer';
 import {ReplaySubject, first, lastValueFrom} from 'rxjs';
 
 import {ECP5Arch} from './architecture/ecp5.arch';
@@ -45,21 +46,26 @@ export class NextPNRViewer implements ViewerInterface {
         this._element.appendChild(canvas);
         this._canvas = canvas;
 
-        getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
-            const renderer = new Renderer(canvas, arch, this._config.colors, this._config.cellColors);
-            this._renderer.next(renderer);
+        init().then(() => {
+            const i = do_something();
+            alert(i);
 
-            this._addEventListeners(canvas);
-            const toggleDefaults = {
-                showWires: true,
-                showGroups: true,
-                showBels: true
-            };
+            getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
+                const renderer = new Renderer(canvas, arch, this._config.colors, this._config.cellColors);
+                this._renderer.next(renderer);
 
-            if (this._config.createToggles) this._createToggles(toggleDefaults);
+                this._addEventListeners(canvas);
+                const toggleDefaults = {
+                    showWires: true,
+                    showGroups: true,
+                    showBels: true
+                };
 
-            this.resize(this._config.width, this._config.height);
-            renderer.changeViewMode(toggleDefaults);
+                if (this._config.createToggles) this._createToggles(toggleDefaults);
+
+                this.resize(this._config.width, this._config.height);
+                renderer.changeViewMode(toggleDefaults);
+            });
         });
     }
 

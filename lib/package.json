@@ -25,9 +25,10 @@
   ],
   "scripts": {
     "check": "tsc --noEmit",
-    "build": "parcel build"
+    "build": "wasm-pack build --target web && parcel build"
   },
   "dependencies": {
+    "nextpnr-renderer": "file:./pkg",
     "rxjs": "^7.8.0"
   }
 }
