@@ -1,4 +1,7 @@
-#[path = "gfx.rs"]
 mod gfx;
+mod tilewire;
 
-pub use gfx::gfx_tile_bel;
+pub mod consts;
+
+pub use gfx::{tile_bel, tile_pip, tile_wire, Location, WireId};
+pub use tilewire::GfxTileWireId;

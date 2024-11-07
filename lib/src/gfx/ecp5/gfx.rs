@@ -20,9 +20,9 @@
 */
 #![allow(non_upper_case_globals)]
 
+use super::consts;
+use super::tilewire;
 use crate::gfx;
-mod consts;
-mod tilewire;
 
 const slice_x1: f64 = 0.92;
 const slice_x2: f64 = 0.94;
@@ -61,17 +61,16 @@ const dll_cell_y2: f64 = 0.8;
 
 const lc_idx_shift: i32 = 2;
 
-struct WireId {
-    location: Location,
+pub struct WireId {
+    pub location: Location,
 }
 
-struct Location {
-    x: f64,
-    y: f64,
+pub struct Location {
+    pub x: f64,
+    pub y: f64,
 }
 
-pub fn gfx_tile_bel(
-    g: &mut Vec<gfx::GraphicElement>,
+pub fn tile_bel(
     x: f64,
     y: f64,
     z: i32,
@@ -79,8 +78,10 @@ pub fn gfx_tile_bel(
     h: i32,
     bel_type: &gfx::ConstId,
     style: &gfx::Style,
-) {
+) -> Vec<gfx::GraphicElement> {
+    let mut g = vec![];
     let mut el = gfx::GraphicElement::new(gfx::Type::Box, style.clone());
+
     if bel_type == &gfx::ConstId::TRELLIS_COMB {
         let lc = z >> lc_idx_shift;
 
@@ -239,10 +240,11 @@ pub fn gfx_tile_bel(
         el.y2 = y + 0.525;
         g.push(el);
     }
+
+    return g;
 }
 
-fn gfx_tile_wire(
-    g: &mut Vec<gfx::GraphicElement>,
+pub fn tile_wire(
     x: f64,
     y: f64,
     w: i32,
@@ -250,7 +252,8 @@ fn gfx_tile_wire(
     wire_type: &gfx::ConstId,
     tilewire: &tilewire::GfxTileWireId,
     style: &gfx::Style,
-) {
+) -> Vec<gfx::GraphicElement> {
+    let mut g: Vec<gfx::GraphicElement> = vec![];
     let mut el = gfx::GraphicElement::new(gfx::Type::Line, style.clone());
 
     if wire_type == &gfx::ConstId::WIRE_TYPE_SLICE
@@ -1176,6 +1179,8 @@ fn gfx_tile_wire(
         el.y2 = el.y1;
         g.push(el);
     }
+
+    return g;
 }
 
 fn set_source(
@@ -2015,8 +2020,7 @@ fn to_same_side_v1_ver(
     g.push(el2);
 }
 
-fn gfx_tile_pip(
-    g: &mut Vec<gfx::GraphicElement>,
+pub fn tile_pip(
     x: f64,
     y: f64,
     w: i32,
@@ -2028,13 +2032,14 @@ fn gfx_tile_pip(
     dst_type: &gfx::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
-) {
+) -> Vec<gfx::GraphicElement> {
+    let mut g: Vec<gfx::GraphicElement> = vec![];
     let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
 
     // To H00
     if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_H00 {
         to_same_side_h1_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2052,14 +2057,14 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_H00 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
     // To H01
     if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_H01 {
         to_same_side_h1_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2079,7 +2084,7 @@ fn gfx_tile_pip(
     // To H02
     if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
         to_same_side_h1_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2097,7 +2102,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
         to_same_side_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2115,7 +2120,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
         to_same_side_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2134,11 +2139,11 @@ fn gfx_tile_pip(
     if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
         if y == src.location.y {
             straight_line(
-                g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+                &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
             );
         } else {
             to_same_side_v1_ver(
-                g,
+                &mut g,
                 &mut el,
                 x,
                 y,
@@ -2157,19 +2162,19 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
     // To H06
     if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
         to_same_side_h1_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2187,7 +2192,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
         to_same_side_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2205,7 +2210,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
         to_same_side_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2224,11 +2229,11 @@ fn gfx_tile_pip(
     if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
         if y == src.location.y {
             straight_line(
-                g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+                &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
             );
         } else {
             to_same_side_v1_ver(
-                g,
+                &mut g,
                 &mut el,
                 x,
                 y,
@@ -2247,19 +2252,19 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
     // To V00
     if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_V00 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_V00 {
         to_same_side_v1_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2279,7 +2284,7 @@ fn gfx_tile_pip(
     // To V01
     if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_V01 {
         to_same_side_h1_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2300,7 +2305,7 @@ fn gfx_tile_pip(
     if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
         if x == src.location.x {
             to_same_side_h1_ver(
-                g,
+                &mut g,
                 &mut el,
                 x,
                 y,
@@ -2317,23 +2322,23 @@ fn gfx_tile_pip(
             );
         } else {
             straight_line(
-                g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+                &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
             );
         }
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
         to_same_side_h1_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2351,7 +2356,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
         to_same_side_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2369,7 +2374,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
         to_same_side_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2390,7 +2395,7 @@ fn gfx_tile_pip(
     if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
         if x == src.location.x {
             to_same_side_h1_ver(
-                g,
+                &mut g,
                 &mut el,
                 x,
                 y,
@@ -2407,18 +2412,18 @@ fn gfx_tile_pip(
             );
         } else {
             straight_line(
-                g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+                &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
             );
         }
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
         to_same_side_h1_hor(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2436,7 +2441,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
         to_same_side_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2454,7 +2459,7 @@ fn gfx_tile_pip(
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
         to_same_side_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2477,7 +2482,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
     {
         to_same_side_h1_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2499,7 +2504,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
         to_same_side_h1_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2521,7 +2526,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
     {
         to_same_side_h1_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2543,7 +2548,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
         to_same_side_h1_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2571,7 +2576,7 @@ fn gfx_tile_pip(
                 && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7))
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if (dst_type == &gfx::ConstId::WIRE_TYPE_H02
@@ -2585,7 +2590,7 @@ fn gfx_tile_pip(
                 && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7))
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
@@ -2597,7 +2602,7 @@ fn gfx_tile_pip(
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
     {
         to_same_side_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2621,7 +2626,7 @@ fn gfx_tile_pip(
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JCE0)
     {
         to_same_side_ver(
-            g,
+            &mut g,
             &mut el,
             x,
             y,
@@ -2660,7 +2665,7 @@ fn gfx_tile_pip(
                         - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)
             {
                 lut_perm_pip(
-                    g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+                    &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
                 );
             }
         }
@@ -2688,7 +2693,7 @@ fn gfx_tile_pip(
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if (dst_type == &gfx::ConstId::WIRE_TYPE_NONE
@@ -2713,7 +2718,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
@@ -2725,7 +2730,7 @@ fn gfx_tile_pip(
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_ECLKD)
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if (dst_type == &gfx::ConstId::WIRE_TYPE_NONE
@@ -2736,7 +2741,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_ECLKD)
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if src_type == &gfx::ConstId::WIRE_TYPE_NONE
@@ -2747,7 +2752,7 @@ fn gfx_tile_pip(
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if dst_type == &gfx::ConstId::WIRE_TYPE_NONE
@@ -2758,7 +2763,7 @@ fn gfx_tile_pip(
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
@@ -2770,14 +2775,16 @@ fn gfx_tile_pip(
                 && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI))
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
     if (dst_type == &gfx::ConstId::WIRE_TYPE_H01 || dst_type == &gfx::ConstId::WIRE_TYPE_V01)
         && src_type == &gfx::ConstId::WIRE_TYPE_G_HPBX
     {
         straight_line(
-            g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
+
+    return g;
 }
