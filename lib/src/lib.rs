@@ -8,14 +8,9 @@ use std::collections::HashMap;
 
 use architecture::Architecture;
 use chipdb::ecp5::get_chipdb;
+use utils::log;
 
 use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    pub fn log(msg: &str);
-}
 
 struct Elements {
     wire: HashMap<String, Vec<gfx::GraphicElement>>,
@@ -28,21 +23,21 @@ struct Elements {
 pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
     utils::set_panic_hook();
 
-    log(&format!("recv chipdata: {}", chipdata.len())[..]);
+    log(format!("recv chipdata: {}", chipdata.len()));
 
-    log("Conversion done, starting parse");
+    log("Conversion done, starting parse".to_string());
 
     let db = get_chipdb(chipdata);
     if let Err(e) = db.as_ref() {
-        log(&format!("{:?}", e)[..]);
+        log(format!("{:?}", e));
         return Err(JsError::new("f"));
     }
 
-    log("db parse done");
+    log("db parse done".to_string());
 
     let arch = architecture::ECP5Arch::new(db.unwrap());
 
-    log("parse done");
+    log("parse done".to_string());
 
     let mut elems = Elements {
         wire: HashMap::new(),
@@ -53,13 +48,13 @@ pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
 
     for decal in arch.get_wire_decals() {
         let g = arch.get_decal_graphics(decal.decal);
-        log(&format!("wire decals: {} - {:?}", decal.id, g)[..]);
+        // log(format!("wire decals: {} - {:?}", decal.id, g));
         elems.wire.insert(decal.id, g);
     }
 
     for decal in arch.get_bel_decals() {
         let g = arch.get_decal_graphics(decal.decal);
-        log(&format!("bel decals: {} - {:?}", decal.id, g)[..]);
+        // log(format!("bel decals: {} - {:?}", decal.id, g));
         elems.bel.insert(decal.id, g);
     }
 
@@ -68,6 +63,8 @@ pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
         // log(&format!("group decals: {} - {:?}", decal.id, g)[..]);
         elems.group.insert(decal.id, g);
     }
+
+    log("element create done".to_string());
 
     // for decal in arch.get_pip_decals() {
     //     let g = arch.get_decal_graphics(decal.decal);

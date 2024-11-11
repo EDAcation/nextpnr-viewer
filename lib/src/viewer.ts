@@ -26,6 +26,7 @@ async function getChipDb(db: '25k' | '45k' | '85k'): Promise<ECP5Arch> {
     let buf = new Uint8Array(chipdb);
 
     await init();
+    alert('press ok to start');
     try {
         const resp = do_something(buf);
         alert(resp);
