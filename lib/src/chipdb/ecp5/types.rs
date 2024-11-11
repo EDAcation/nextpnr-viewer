@@ -1,21 +1,5 @@
 use crate::gfx;
 
-#[repr(i8)]
-#[allow(non_camel_case_types)]
-pub enum TapDirection {
-    TAP_DIR_LEFT = 0,
-    TAP_DIR_RIGHT = 1,
-}
-
-#[repr(i8)]
-#[allow(non_camel_case_types)]
-pub enum GlobalQuadrant {
-    QUAD_UL = 0,
-    QUAD_UR = 1,
-    QUAD_LL = 2,
-    QUAD_LR = 3,
-}
-
 pub struct LocationPOD {
     pub x: i16,
     pub y: i16,
@@ -104,8 +88,8 @@ pub struct TileInfoPOD {
 
 pub struct GlobalInfoPOD {
     pub tap_col: i16,
-    pub tap_dir: TapDirection,
-    pub quad: GlobalQuadrant,
+    pub tap_dir: i8,
+    pub quad: i8,
     pub spine_row: i16,
     pub spine_col: i16,
 }

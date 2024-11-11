@@ -1,5 +1,9 @@
 #![allow(non_camel_case_types)]
-use std::ops::Sub;
+use std::{convert::TryFrom, ops::Sub};
+
+use anyhow::{Error, Result};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 impl Sub for &GfxTileWireId {
     type Output = i32;
@@ -17,7 +21,18 @@ impl Sub for GfxTileWireId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd)]
+impl TryFrom<u32> for GfxTileWireId {
+    type Error = Error;
+
+    fn try_from(val: u32) -> Result<Self> {
+        return match FromPrimitive::from_u32(val) {
+            Some(res) => Ok(res),
+            None => Err(Error::msg("Could not derive GfxTileWireId from value")),
+        };
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, PartialOrd, FromPrimitive)]
 #[repr(u32)]
 #[allow(dead_code)]
 pub enum GfxTileWireId {

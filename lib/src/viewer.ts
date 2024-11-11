@@ -23,6 +23,16 @@ async function getChipDb(db: '25k' | '45k' | '85k'): Promise<ECP5Arch> {
     }
 
     let chipdb = await fetch(input).then((resp) => resp.arrayBuffer());
+    let buf = new Uint8Array(chipdb);
+
+    await init();
+    try {
+        const resp = do_something(buf);
+        alert(resp);
+    } catch (e) {
+        // ignore
+    }
+
     let dataview = new DataView(chipdb);
     const impl = new ChipInfoPODImpl(new DataView(dataview.buffer, dataview.getInt32(0, true)));
 
@@ -47,9 +57,6 @@ export class NextPNRViewer implements ViewerInterface {
         this._canvas = canvas;
 
         init().then(() => {
-            const i = do_something();
-            alert(i);
-
             getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
                 const renderer = new Renderer(canvas, arch, this._config.colors, this._config.cellColors);
                 this._renderer.next(renderer);

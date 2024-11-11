@@ -319,7 +319,7 @@ impl Architecture<DecalID> for ECP5Arch {
                     DecalID::new(decal::ECP5DecalType::TYPE_GROUP, x as f64, y as f64, 1.0),
                     0.0,
                     0.0,
-                    "X${x}/Y${y}/UNKNOWN_GROUP".to_string(), // TODO: proper replace
+                    format!("X{x}/Y{y}/UNKNOWN_GROUP"),
                 ))
             }
         }
