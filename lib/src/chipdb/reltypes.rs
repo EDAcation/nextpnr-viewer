@@ -42,7 +42,7 @@ fn read_relarr<T>(
     };
 
     let res = seek_and_read(cur, offset - 8, |c| {
-        let mut res = vec![];
+        let mut res = Vec::with_capacity(len.try_into().unwrap());
         for _ in 0..len {
             res.push(func(c)?);
         }
