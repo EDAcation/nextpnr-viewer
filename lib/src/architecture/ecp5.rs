@@ -185,16 +185,14 @@ impl Architecture<DecalID> for ECP5Arch {
 
             let x = cursor_tile % self.chipdb.width;
             let y = cursor_tile / self.chipdb.width;
-            let Some(name) = self
+
+            let name = self
                 .chipdb
                 .location_type
                 .get(cursor_tile as usize)
                 .and_then(|&t| self.chipdb.locations.get(t as usize))
                 .and_then(|l| l.bel_data.get(cursor_index))
-                .map(|w| &w.name)
-            else {
-                return vec![];
-            };
+                .map(|w| &w.name);
 
             ret.push(Decal::new(
                 ECP5DecalID::new(
@@ -205,7 +203,7 @@ impl Architecture<DecalID> for ECP5Arch {
                 ),
                 0.0,
                 0.0,
-                format!("X{}/Y{}/{}", x, y, name),
+                format!("X{}/Y{}/{}", x, y, name.unwrap_or(&"Unnamed".to_string())),
             ));
             cursor_index += 1;
         }
@@ -238,16 +236,13 @@ impl Architecture<DecalID> for ECP5Arch {
             }
             let x = cursor_tile % self.chipdb.width;
             let y = cursor_tile / self.chipdb.width;
-            let Some(name) = self
+            let name = self
                 .chipdb
                 .location_type
                 .get(cursor_tile as usize)
                 .and_then(|&t| self.chipdb.locations.get(t as usize))
                 .and_then(|l| l.wire_data.get(cursor_index))
-                .map(|w| &w.name)
-            else {
-                return vec![];
-            };
+                .map(|w| &w.name);
 
             ret.push(Decal::new(
                 DecalID::new(
@@ -258,7 +253,7 @@ impl Architecture<DecalID> for ECP5Arch {
                 ),
                 0.0,
                 0.0,
-                format!("X{}/Y{}/{}", x, y, name),
+                format!("X{}/Y{}/{}", x, y, name.unwrap_or(&"Unnamed".to_string())),
             ));
             cursor_index += 1;
         }
