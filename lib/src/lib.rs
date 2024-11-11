@@ -46,21 +46,21 @@ pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
         pip: HashMap::new(),
     };
 
+    log("getting wire decals".to_string());
     for decal in arch.get_wire_decals() {
         let g = arch.get_decal_graphics(decal.decal);
-        // log(format!("wire decals: {} - {:?}", decal.id, g));
         elems.wire.insert(decal.id, g);
     }
 
+    log("getting bel decals".to_string());
     for decal in arch.get_bel_decals() {
         let g = arch.get_decal_graphics(decal.decal);
-        // log(format!("bel decals: {} - {:?}", decal.id, g));
         elems.bel.insert(decal.id, g);
     }
 
+    log("getting group decals".to_string());
     for decal in arch.get_group_decals() {
         let g = arch.get_decal_graphics(decal.decal);
-        // log(&format!("group decals: {} - {:?}", decal.id, g)[..]);
         elems.group.insert(decal.id, g);
     }
 
@@ -74,7 +74,7 @@ pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
 
     return Ok(format!(
         "wire: {}, bel: {}, group: {}, pip: {}",
-        elems.bel.len(),
+        elems.wire.len(),
         elems.bel.len(),
         elems.group.len(),
         elems.pip.len()
