@@ -12,20 +12,9 @@ use utils::log;
 
 use wasm_bindgen::prelude::*;
 
-struct Elements {
-    wire: HashMap<String, Vec<gfx::GraphicElement>>,
-    bel: HashMap<String, Vec<gfx::GraphicElement>>,
-    group: HashMap<String, Vec<gfx::GraphicElement>>,
-    pip: HashMap<String, Vec<gfx::GraphicElement>>,
-}
-
 #[wasm_bindgen]
 pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
     utils::set_panic_hook();
-
-    log(format!("recv chipdata: {}", chipdata.len()));
-
-    log("Conversion done, starting parse".to_string());
 
     let db = get_chipdb(chipdata);
     if let Err(e) = db.as_ref() {
@@ -33,50 +22,41 @@ pub fn do_something(chipdata: &[u8]) -> Result<String, JsError> {
         return Err(JsError::new("f"));
     }
 
-    log("db parse done".to_string());
-
     let arch = architecture::ECP5Arch::new(db.unwrap());
 
-    log("parse done".to_string());
-
-    let mut elems = Elements {
-        wire: HashMap::new(),
-        bel: HashMap::new(),
-        group: HashMap::new(),
-        pip: HashMap::new(),
-    };
-
-    log("getting wire decals".to_string());
-    for decal in arch.get_wire_decals() {
+    let wire_decals = arch.get_wire_decals();
+    let mut wires = HashMap::<String, Vec<gfx::GraphicElement>>::with_capacity(wire_decals.len());
+    for decal in wire_decals {
         let g = arch.get_decal_graphics(decal.decal);
-        elems.wire.insert(decal.id, g);
+        wires.insert(decal.id, g);
     }
 
-    log("getting bel decals".to_string());
-    for decal in arch.get_bel_decals() {
+    let bel_decals = arch.get_bel_decals();
+    let mut bels = HashMap::<String, Vec<gfx::GraphicElement>>::with_capacity(bel_decals.len());
+    for decal in bel_decals {
         let g = arch.get_decal_graphics(decal.decal);
-        elems.bel.insert(decal.id, g);
+        bels.insert(decal.id, g);
     }
 
-    log("getting group decals".to_string());
-    for decal in arch.get_group_decals() {
+    let group_decals = arch.get_group_decals();
+    let mut groups = HashMap::<String, Vec<gfx::GraphicElement>>::with_capacity(group_decals.len());
+    for decal in group_decals {
         let g = arch.get_decal_graphics(decal.decal);
-        elems.group.insert(decal.id, g);
+        groups.insert(decal.id, g);
     }
 
-    log("element create done".to_string());
-
-    // for decal in arch.get_pip_decals() {
+    // let pip_decals = arch.get_group_decals();
+    // let mut pips = HashMap::<String, Vec<gfx::GraphicElement>>::with_capacity(pip_decals.len());
+    // for decal in pip_decals {
     //     let g = arch.get_decal_graphics(decal.decal);
-    //     log(&format!("pip decals: {} - {:?}", decal.id, g)[..]);
-    //     elems.pip.insert(decal.id, g);
+    //     pips.insert(decal.id, g);
     // }
 
     return Ok(format!(
         "wire: {}, bel: {}, group: {}, pip: {}",
-        elems.wire.len(),
-        elems.bel.len(),
-        elems.group.len(),
-        elems.pip.len()
+        wires.len(),
+        bels.len(),
+        groups.len(),
+        0
     ));
 }

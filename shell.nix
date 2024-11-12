@@ -5,5 +5,6 @@ pkgs.mkShell {
     nodejs_20
     rustup
     wasm-pack
+    coz
   ];
 }
