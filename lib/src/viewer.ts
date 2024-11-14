@@ -1,4 +1,3 @@
-import init, {do_something} from 'nextpnr-renderer';
 import {ReplaySubject, first, lastValueFrom} from 'rxjs';
 
 import {ECP5Arch} from './architecture/ecp5.arch';
@@ -23,17 +22,6 @@ async function getChipDb(db: '25k' | '45k' | '85k'): Promise<ECP5Arch> {
     }
 
     let chipdb = await fetch(input).then((resp) => resp.arrayBuffer());
-    let buf = new Uint8Array(chipdb);
-
-    await init();
-    alert('press ok to start');
-    try {
-        const resp = do_something(buf);
-        alert(resp);
-    } catch (e) {
-        // ignore
-    }
-
     let dataview = new DataView(chipdb);
     const impl = new ChipInfoPODImpl(new DataView(dataview.buffer, dataview.getInt32(0, true)));
 
@@ -57,23 +45,21 @@ export class NextPNRViewer implements ViewerInterface {
         this._element.appendChild(canvas);
         this._canvas = canvas;
 
-        init().then(() => {
-            getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
-                const renderer = new Renderer(canvas, arch, this._config.colors, this._config.cellColors);
-                this._renderer.next(renderer);
+        getChipDb(this._config.chip.device).then((arch: ECP5Arch) => {
+            const renderer = new Renderer(canvas, arch, this._config.colors, this._config.cellColors);
+            this._renderer.next(renderer);
 
-                this._addEventListeners(canvas);
-                const toggleDefaults = {
-                    showWires: true,
-                    showGroups: true,
-                    showBels: true
-                };
+            this._addEventListeners(canvas);
+            const toggleDefaults = {
+                showWires: true,
+                showGroups: true,
+                showBels: true
+            };
 
-                if (this._config.createToggles) this._createToggles(toggleDefaults);
+            if (this._config.createToggles) this._createToggles(toggleDefaults);
 
-                this.resize(this._config.width, this._config.height);
-                renderer.changeViewMode(toggleDefaults);
-            });
+            this.resize(this._config.width, this._config.height);
+            renderer.changeViewMode(toggleDefaults);
         });
     }
 

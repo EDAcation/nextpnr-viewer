@@ -19,20 +19,21 @@
  * Source: https://github.com/YosysHQ/nextpnr/blob/9c2d96f86ed56b77c9c325041b67654f26308270/common/kernel/nextpnr_base_types.h
  */
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum Type {
     None,
     Line,
     Arrow,
     Box,
+    FilledBox,
     Circle,
     Label,
     LocalArrow, // Located entirely within the cell boundaries, coordinates in the range [0., 1.]
     LocalLine,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum Style {
     Grid,
@@ -55,10 +56,18 @@ pub enum Style {
     Hover,
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub struct Color {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct GraphicElement {
     pub r#type: Type,
     pub style: Style,
+    pub color: Option<Color>,
     pub x1: f64,
     pub y1: f64,
     pub x2: f64,
@@ -69,8 +78,9 @@ pub struct GraphicElement {
 impl GraphicElement {
     pub fn new(r#type: Type, style: Style) -> Self {
         GraphicElement {
-            r#type: r#type,
-            style: style,
+            r#type,
+            style,
+            color: None,
             x1: 0.0,
             y1: 0.0,
             x2: 0.0,
