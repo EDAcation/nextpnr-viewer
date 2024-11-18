@@ -39,7 +39,16 @@ impl ViewerECP5 {
     }
 
     #[wasm_bindgen]
-    pub fn zoom(&mut self, amt: f32, x: f32, y: f32) {
+    pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
         self.renderer.zoom(amt, x, y);
+
+        return Ok(());
+    }
+
+    #[wasm_bindgen]
+    pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
+        self.renderer.pan(x, y);
+
+        return Ok(());
     }
 }

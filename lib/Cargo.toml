@@ -8,10 +8,6 @@ edition = "2021"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
-# [[bin]]
-# name = "nextpnr_renderer"
-# path = "src/bin.rs"
-
 [features]
 default = ["console_error_panic_hook"]
 

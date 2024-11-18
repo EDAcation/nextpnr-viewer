@@ -16,11 +16,11 @@ type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
 pub struct Renderer<'a, T> {
     architecture: Box<dyn Architecture<T>>,
     program: RenderingProgram,
+    canvas: HtmlCanvasElement,
 
     graphic_elements: HashMap<ElementType, GraphicElementCollection>,
     webgl_elements: Vec<Box<dyn WebGlElement<'a> + 'a>>,
 
-    canvas_size: (f32, f32),
     offset: (f32, f32),
     scale: f32,
 }
@@ -136,20 +136,14 @@ impl<'a, T> Renderer<'a, T> {
         let gl = create_rendering_context(&canvas)?;
         let program = RenderingProgram::new(gl)?;
 
-        let mut graphic_elements = HashMap::new();
-        graphic_elements.insert(ElementType::Wire, HashMap::new());
-        graphic_elements.insert(ElementType::Bel, HashMap::new());
-        graphic_elements.insert(ElementType::Group, HashMap::new());
-        graphic_elements.insert(ElementType::Pip, HashMap::new());
-
         return Ok(Self {
             architecture: Box::new(architecture),
             program,
+            canvas,
 
-            graphic_elements,
+            graphic_elements: HashMap::new(),
             webgl_elements: vec![],
 
-            canvas_size: (canvas.width() as f32, canvas.height() as f32),
             scale: 15.0,
             offset: (-10.25, -25.1),
         });
@@ -157,8 +151,9 @@ impl<'a, T> Renderer<'a, T> {
 
     pub fn render(&self) -> Result<()> {
         let gl = self.program.get_gl();
+        let canvas = self.get_canvas();
 
-        gl.viewport(0, 0, self.canvas_size.0 as i32, self.canvas_size.1 as i32);
+        gl.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
         gl.clear_color(200.0, 200.0, 200.0, 1.0);
         gl.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
@@ -168,8 +163,8 @@ impl<'a, T> Renderer<'a, T> {
                 self.offset.0,
                 self.offset.1,
                 self.scale,
-                self.canvas_size.0,
-                self.canvas_size.1,
+                canvas.width() as f32,
+                canvas.height() as f32,
             )?;
         }
 
@@ -181,9 +176,9 @@ impl<'a, T> Renderer<'a, T> {
 
         let old_scale = self.scale;
         self.scale *= amt;
-        self.scale = f32::min(4000.0, f32::max(5.0, self.scale));
+        self.scale = f32::min(4000.0, f32::max(10.0, self.scale));
         amt = self.scale / old_scale;
-        if amt as u32 == 1 {
+        if amt == 1.0 {
             return Ok(());
         };
 
@@ -194,32 +189,50 @@ impl<'a, T> Renderer<'a, T> {
         return Ok(());
     }
 
+    pub fn pan(&mut self, x: f32, y: f32) -> Result<()> {
+        self.offset.0 -= x / self.scale;
+        self.offset.1 -= y / self.scale;
+
+        self.render()?;
+        return Ok(());
+    }
+
+    pub fn get_canvas(&self) -> &HtmlCanvasElement {
+        return &self.canvas;
+    }
+
     pub fn create_graphic_elements(&mut self) {
+        // Wires
         let wire_decals = self.architecture.get_wire_decals();
+        let wire_map = self
+            .graphic_elements
+            .entry(ElementType::Wire)
+            .or_insert_with(|| HashMap::new());
         for decal in wire_decals {
             let g = self.architecture.get_decal_graphics(decal.decal);
-            self.graphic_elements
-                .get_mut(&ElementType::Wire)
-                .unwrap()
-                .insert(decal.id, g);
+            wire_map.insert(decal.id, g);
         }
 
+        // BELs
         let bel_decals = self.architecture.get_bel_decals();
+        let bel_map = self
+            .graphic_elements
+            .entry(ElementType::Bel)
+            .or_insert_with(|| HashMap::new());
         for decal in bel_decals {
             let g = self.architecture.get_decal_graphics(decal.decal);
-            self.graphic_elements
-                .get_mut(&ElementType::Bel)
-                .unwrap()
-                .insert(decal.id, g);
+            bel_map.insert(decal.id, g);
         }
 
+        // Groups
         let group_decals = self.architecture.get_group_decals();
+        let group_map = self
+            .graphic_elements
+            .entry(ElementType::Group)
+            .or_insert_with(|| HashMap::new());
         for decal in group_decals {
             let g = self.architecture.get_decal_graphics(decal.decal);
-            self.graphic_elements
-                .get_mut(&ElementType::Group)
-                .unwrap()
-                .insert(decal.id, g);
+            group_map.insert(decal.id, g);
         }
     }
 

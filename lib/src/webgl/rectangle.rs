@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use web_sys::{js_sys, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlVertexArrayObject};
+use web_sys::{js_sys, WebGl2RenderingContext, WebGlBuffer, WebGlVertexArrayObject};
 
 use crate::gfx::Color;
 
