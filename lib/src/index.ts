@@ -94,6 +94,17 @@ function fromCssColor(colorStr: string): Color {
     return {r: parseInt(rstr, 16), g: parseInt(gstr, 16), b: parseInt(bstr, 16)};
 }
 
+let animFrameId: number | null = null;
+function doInAnimFrame(f: () => void) {
+    if (animFrameId != null) window.cancelAnimationFrame(animFrameId);
+
+    animFrameId = window.requestAnimationFrame(() => {
+        f();
+
+        animFrameId = null;
+    })
+}
+
 type Viewer = ViewerECP5;
 const VIEWERS = <const> {
     'ecp5': ViewerECP5
@@ -160,11 +171,11 @@ export class NextPNRViewer {
         canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (e.deltaY === 0) return;
-            viewer.zoom(
+            doInAnimFrame(() => viewer.zoom(
                 e.deltaY > 0 ? 0.05 : -0.05,
                 e.clientX - canvas.offsetLeft,
                 e.clientY - canvas.offsetTop
-            );
+            ));
         });
 
         // Pan
@@ -175,7 +186,7 @@ export class NextPNRViewer {
         canvas.addEventListener('mouseup', (_) => {
             down = false;
         });
-        canvas.addEventListener('mousemove', (e) => {
+        canvas.addEventListener('mousemove', (e) => doInAnimFrame(() => {
             if (down) {
                 if (!firstEvent) {
                     viewer.pan(e.clientX - oldx, e.clientY - oldy);
@@ -185,6 +196,6 @@ export class NextPNRViewer {
                 oldx = e.clientX;
                 oldy = e.clientY;
             }
-        });
+        }));
     }
 }
