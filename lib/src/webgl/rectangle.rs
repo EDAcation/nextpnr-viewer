@@ -180,9 +180,9 @@ impl WebGlElement<'_> for Rectangle {
         program.set_uniform_float(&"u_scale".to_string(), scale)?;
         program.set_uniform_vec_4f(
             &"u_color".to_string(),
-            self.color.r as f32,
-            self.color.g as f32,
-            self.color.b as f32,
+            self.color.float_r(),
+            self.color.float_g(),
+            self.color.float_b(),
             1.0,
         )?;
 

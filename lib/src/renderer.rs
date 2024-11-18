@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::f32::consts::E;
 
 use anyhow::{bail, Result};
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 
@@ -13,6 +14,14 @@ use crate::webgl::{
 
 type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
 
+#[derive(Serialize, Deserialize)]
+pub struct ColorConfig {
+    active: Color,
+    inactive: Color,
+    frame: Color,
+    background: Color,
+}
+
 pub struct Renderer<'a, T> {
     architecture: Box<dyn Architecture<T>>,
     program: RenderingProgram,
@@ -20,6 +29,7 @@ pub struct Renderer<'a, T> {
 
     graphic_elements: HashMap<ElementType, GraphicElementCollection>,
     webgl_elements: Vec<Box<dyn WebGlElement<'a> + 'a>>,
+    colors: ColorConfig,
 
     offset: (f32, f32),
     scale: f32,
@@ -36,102 +46,11 @@ fn create_rendering_context(canvas: &HtmlCanvasElement) -> Result<WebGl2Renderin
     return Ok(context);
 }
 
-fn to_webgl_elements<'a>(
-    program: &RenderingProgram,
-    ges: &Vec<GraphicElement>,
-    r#type: &ElementType,
-) -> Result<Vec<Box<dyn WebGlElement<'a>>>> {
-    // Create 'groups' of elements with the same style, type and color so we can batch them
-    // when rendering.
-    let mut groups: HashMap<(Style, Type, Option<Color>), Vec<&GraphicElement>> = HashMap::new();
-    for elem in ges {
-        let key = (elem.style, elem.r#type, elem.color);
-        groups
-            .entry(key)
-            .and_modify(|v| v.push(elem))
-            .or_insert(vec![elem]);
-    }
-
-    let mut res: Vec<Box<dyn WebGlElement>> = vec![];
-    for (key, group) in groups.into_iter() {
-        if group.len() == 0 || key.0 == Style::Hidden {
-            continue;
-        }
-
-        if key.1 == Type::Box {
-            let ls = group
-                .into_iter()
-                .flat_map(|e| {
-                    [
-                        LineCoords {
-                            x1: e.x1 as f32,
-                            x2: e.x2 as f32,
-                            y1: e.y1 as f32,
-                            y2: e.y1 as f32,
-                        },
-                        LineCoords {
-                            x1: e.x1 as f32,
-                            x2: e.x2 as f32,
-                            y1: e.y2 as f32,
-                            y2: e.y2 as f32,
-                        },
-                        LineCoords {
-                            x1: e.x1 as f32,
-                            x2: e.x1 as f32,
-                            y1: e.y1 as f32,
-                            y2: e.y2 as f32,
-                        },
-                        LineCoords {
-                            x1: e.x2 as f32,
-                            x2: e.x2 as f32,
-                            y1: e.y1 as f32,
-                            y2: e.y2 as f32,
-                        },
-                    ]
-                })
-                .collect();
-
-            let mut line = Line::new(program, ls, Color { r: 100, g: 0, b: 0 })?;
-            line.set_type(r#type.to_owned());
-            res.push(Box::new(line));
-        } else if key.1 == Type::FilledBox {
-            let ls = group
-                .into_iter()
-                .map(|e| RectangleCoords {
-                    x1: e.x1 as f32,
-                    x2: e.x2 as f32,
-                    y1: e.y1 as f32,
-                    y2: e.y2 as f32,
-                })
-                .collect();
-
-            let mut rect = Rectangle::new(program, ls, Color { r: 100, g: 0, b: 0 })?;
-            rect.set_type(r#type.to_owned());
-            res.push(Box::new(rect));
-        } else {
-            let ls = group
-                .into_iter()
-                .map(|e| LineCoords {
-                    x1: e.x1 as f32,
-                    y1: e.y1 as f32,
-                    x2: e.x2 as f32,
-                    y2: e.y2 as f32,
-                })
-                .collect();
-
-            let mut line = Line::new(program, ls, Color { r: 100, g: 0, b: 0 })?;
-            line.set_type(r#type.to_owned());
-            res.push(Box::new(line));
-        }
-    }
-
-    return Ok(res);
-}
-
 impl<'a, T> Renderer<'a, T> {
     pub fn new(
         canvas: HtmlCanvasElement,
         architecture: impl Architecture<T> + 'static,
+        colors: ColorConfig,
     ) -> Result<Self> {
         let gl = create_rendering_context(&canvas)?;
         let program = RenderingProgram::new(gl)?;
@@ -143,6 +62,7 @@ impl<'a, T> Renderer<'a, T> {
 
             graphic_elements: HashMap::new(),
             webgl_elements: vec![],
+            colors,
 
             scale: 15.0,
             offset: (-10.25, -25.1),
@@ -154,7 +74,14 @@ impl<'a, T> Renderer<'a, T> {
         let canvas = self.get_canvas();
 
         gl.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
-        gl.clear_color(200.0, 200.0, 200.0, 1.0);
+
+        let bg_color = self.colors.background;
+        gl.clear_color(
+            bg_color.float_r(),
+            bg_color.float_g(),
+            bg_color.float_b(),
+            1.0,
+        );
         gl.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
         for elem in &self.webgl_elements {
@@ -243,10 +170,115 @@ impl<'a, T> Renderer<'a, T> {
             let elems: Vec<GraphicElement> =
                 g_elems.values().map(|e| e.clone()).flatten().collect();
 
-            let new_elems = to_webgl_elements(&self.program, &elems, r#type)?;
-            self.webgl_elements.extend(new_elems);
+            self.webgl_elements
+                .extend(self.to_webgl_elements(&elems, r#type)?);
         }
 
         return Ok(());
+    }
+
+    fn get_elem_color(&self, style: &Style, orig_color: &Option<Color>) -> Option<Color> {
+        match style {
+            Style::Active => Some(orig_color.unwrap_or(self.colors.active)),
+            Style::Inactive => Some(self.colors.inactive),
+            Style::Frame => Some(self.colors.frame),
+            _ => None, // Hidden or some other style, cannot determine color
+        }
+    }
+
+    fn to_webgl_elements(
+        &self,
+        ges: &Vec<GraphicElement>,
+        r#type: &ElementType,
+    ) -> Result<Vec<Box<dyn WebGlElement<'a>>>> {
+        // Create 'groups' of elements with the same style, type and color so we can batch them
+        // when rendering.
+        let mut groups: HashMap<(Style, Type, Option<Color>), Vec<&GraphicElement>> =
+            HashMap::new();
+        for elem in ges {
+            let key = (elem.style, elem.r#type, elem.color);
+            groups
+                .entry(key)
+                .and_modify(|v| v.push(elem))
+                .or_insert(vec![elem]);
+        }
+
+        let mut res: Vec<Box<dyn WebGlElement>> = vec![];
+        for (key, group) in groups.into_iter() {
+            if group.len() == 0 || key.0 == Style::Hidden {
+                continue;
+            }
+            let Some(color) = self.get_elem_color(&key.0, &key.2) else {
+                continue; // Invalid color
+            };
+
+            if key.1 == Type::Box {
+                let ls: Vec<_> = group
+                    .into_iter()
+                    .flat_map(|e| {
+                        [
+                            LineCoords {
+                                x1: e.x1 as f32,
+                                x2: e.x2 as f32,
+                                y1: e.y1 as f32,
+                                y2: e.y1 as f32,
+                            },
+                            LineCoords {
+                                x1: e.x1 as f32,
+                                x2: e.x2 as f32,
+                                y1: e.y2 as f32,
+                                y2: e.y2 as f32,
+                            },
+                            LineCoords {
+                                x1: e.x1 as f32,
+                                x2: e.x1 as f32,
+                                y1: e.y1 as f32,
+                                y2: e.y2 as f32,
+                            },
+                            LineCoords {
+                                x1: e.x2 as f32,
+                                x2: e.x2 as f32,
+                                y1: e.y1 as f32,
+                                y2: e.y2 as f32,
+                            },
+                        ]
+                    })
+                    .collect();
+
+                let mut line = Line::new(&self.program, ls, color)?;
+                line.set_type(r#type.to_owned());
+                res.push(Box::new(line));
+            } else if key.1 == Type::FilledBox {
+                let ls = group
+                    .into_iter()
+                    .map(|e| RectangleCoords {
+                        x1: e.x1 as f32,
+                        x2: e.x2 as f32,
+                        y1: e.y1 as f32,
+                        y2: e.y2 as f32,
+                    })
+                    .collect();
+
+                let mut rect = Rectangle::new(&self.program, ls, color)?;
+                rect.set_type(r#type.to_owned());
+                res.push(Box::new(rect));
+            } else {
+                let ls = group
+                    .into_iter()
+                    .map(|e| LineCoords {
+                        x1: e.x1 as f32,
+                        y1: e.y1 as f32,
+                        x2: e.x2 as f32,
+                        y2: e.y2 as f32,
+                    })
+                    .collect();
+
+                let mut line = Line::new(&self.program, ls, color)?;
+                line.set_type(r#type.to_owned());
+                res.push(Box::new(line));
+            }
+        }
+
+        return Ok(res);
     }
 }

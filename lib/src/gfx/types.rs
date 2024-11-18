@@ -19,6 +19,8 @@
  * Source: https://github.com/YosysHQ/nextpnr/blob/9c2d96f86ed56b77c9c325041b67654f26308270/common/kernel/nextpnr_base_types.h
  */
 
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum Type {
@@ -56,11 +58,25 @@ pub enum Style {
     Hover,
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Color {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+}
+
+impl Color {
+    pub fn float_r(&self) -> f32 {
+        return f32::max(0.0, f32::min(255.0, self.r as f32)) / 255.0;
+    }
+
+    pub fn float_g(&self) -> f32 {
+        return f32::max(0.0, f32::min(255.0, self.g as f32)) / 255.0;
+    }
+
+    pub fn float_b(&self) -> f32 {
+        return f32::max(0.0, f32::min(255.0, self.b as f32)) / 255.0;
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

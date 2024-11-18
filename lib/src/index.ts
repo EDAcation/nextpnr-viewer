@@ -1,4 +1,4 @@
-import wasmInit, {ViewerECP5} from 'nextpnr-renderer';
+import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig} from 'nextpnr-renderer';
 
 // **** Auxiliary types ****
 export const SUPPORTED_DEVICES = <const> {
@@ -76,6 +76,24 @@ async function getChipDb(url: URL): Promise<Uint8Array> {
     return new Uint8Array(chipdb);
 }
 
+let colCanvas: CanvasRenderingContext2D | null;
+function fromCssColor(colorStr: string): Color {
+    if (!colCanvas) {
+        colCanvas = document.createElement('canvas').getContext('2d');
+    }
+    if (!colCanvas) throw new Error('Could not create canvas to convert color');
+    
+
+    colCanvas.fillStyle = colorStr;
+    const col = colCanvas.fillStyle.replace('#', '');
+
+    const rstr = col.slice(0,2);
+    const gstr = col.slice(2,4);
+    const bstr = col.slice(4,6);
+
+    return {r: parseInt(rstr, 16), g: parseInt(gstr, 16), b: parseInt(bstr, 16)};
+}
+
 type Viewer = ViewerECP5;
 const VIEWERS = <const> {
     'ecp5': ViewerECP5
@@ -91,7 +109,10 @@ function getViewer<Family extends SupportedFamily>(family: Family): typeof VIEWE
 
 let initialized = false;
 async function init() {
-    if (!initialized) await wasmInit();
+    if (!initialized) {
+        await wasmInit();
+        initialized = true;
+    }
 }
 
 // **** External API ****
@@ -110,8 +131,14 @@ export class NextPNRViewer {
         // Separate functions so we can throw an error prematurely instead of in the promise
         const url = getChipDbUrl(this.config.chip);
         const viewer = getViewer(this.config.chip.family);
+        const colors: RendererColorConfig = {
+            active: fromCssColor(this.config.colors.active),
+            inactive: fromCssColor(this.config.colors.inactive),
+            frame: fromCssColor(this.config.colors.frame),
+            background: fromCssColor(this.config.colors.background)
+        };
 
-        this.viewer = init().then(() => getChipDb(url).then((db) => new viewer(canvas, db)));
+        this.viewer = init().then(() => getChipDb(url).then((db) => new viewer(canvas, db, colors)));
         this.viewer.then(() => this._addEventListeners(canvas));
     };
 
