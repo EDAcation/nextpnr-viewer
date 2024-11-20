@@ -2,6 +2,7 @@ mod architecture;
 mod chipdb;
 mod decal;
 mod gfx;
+mod pnrjson;
 mod renderer;
 mod utils;
 mod viewer;

@@ -2,6 +2,7 @@ use crate::{
     architecture::ECP5Arch,
     chipdb::ecp5::get_chipdb,
     decal::ECP5DecalID,
+    pnrjson::INextpnrJSON,
     renderer::{ColorConfig, Renderer},
 };
 
@@ -68,6 +69,13 @@ impl ViewerECP5 {
         self.renderer.create_graphic_elements();
         self.renderer.update_webgl_elements();
         self.renderer.render();
+
+        return Ok(());
+    }
+
+    #[wasm_bindgen]
+    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
+        self.renderer.show_json(obj);
 
         return Ok(());
     }

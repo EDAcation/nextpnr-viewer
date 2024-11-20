@@ -8,6 +8,7 @@ use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 
 use crate::architecture::Architecture;
 use crate::gfx::{Color, GraphicElement, Style, Type};
+use crate::pnrjson::{INextpnrJSON, NextpnrJson};
 use crate::webgl::{
     ElementType, Line, LineCoords, Rectangle, RectangleCoords, RenderingProgram, WebGlElement,
 };
@@ -98,6 +99,59 @@ impl<'a, T> Renderer<'a, T> {
         return Ok(());
     }
 
+    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<()> {
+        let json = NextpnrJson::from_jsobj(obj)?;
+        let elems = json.get_elements();
+
+        let wire_map = self
+            .graphic_elements
+            .entry(ElementType::Wire)
+            .or_insert_with(|| HashMap::new());
+        for wire in elems.wires {
+            let Some(ge) = wire_map.get_mut(&wire) else {
+                continue;
+            };
+            for g in ge {
+                g.style = Style::Active;
+            }
+        }
+
+        let bel_map = self.get_graphic_elems(ElementType::Bel);
+        for bel in elems.bels {
+            let Some(ge) = bel_map.get_mut(bel.nextpnr_bel) else {
+                continue;
+            };
+
+            ge.iter_mut().for_each(|g| g.style = Style::Active);
+        }
+
+        // TODO: make neater, we get a borrow error when using self.get_graphic_elems
+        let pip_map = self
+            .graphic_elements
+            .entry(ElementType::Pip)
+            .or_insert_with(|| HashMap::new());
+        pip_map.clear();
+        for pip in elems.pips {
+            let Some(decal) =
+                self.architecture
+                    .find_pip_decal_by_loc_from_to(&pip.location, &pip.from, &pip.to)
+            else {
+                continue;
+            };
+
+            let mut ges = self.architecture.get_decal_graphics(&decal.decal);
+            ges.iter_mut().for_each(|g| g.style = Style::Active);
+
+            pip_map.insert(decal.id, ges);
+        }
+
+        self.update_webgl_elements()?;
+
+        self.render()?;
+
+        return Ok(());
+    }
+
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<()> {
         let mut amt = E.powf(-amt);
 
@@ -124,8 +178,17 @@ impl<'a, T> Renderer<'a, T> {
         return Ok(());
     }
 
-    pub fn get_canvas(&self) -> &HtmlCanvasElement {
+    fn get_canvas(&self) -> &HtmlCanvasElement {
         return &self.canvas;
+    }
+
+    fn get_graphic_elems(
+        &mut self,
+        r#type: ElementType,
+    ) -> &mut HashMap<String, Vec<GraphicElement>> {
+        self.graphic_elements
+            .entry(r#type)
+            .or_insert_with(|| HashMap::new())
     }
 
     pub fn create_graphic_elements(&mut self) {
@@ -136,7 +199,7 @@ impl<'a, T> Renderer<'a, T> {
             .entry(ElementType::Wire)
             .or_insert_with(|| HashMap::new());
         for decal in wire_decals {
-            let g = self.architecture.get_decal_graphics(decal.decal);
+            let g = self.architecture.get_decal_graphics(&decal.decal);
             wire_map.insert(decal.id, g);
         }
 
@@ -147,7 +210,7 @@ impl<'a, T> Renderer<'a, T> {
             .entry(ElementType::Bel)
             .or_insert_with(|| HashMap::new());
         for decal in bel_decals {
-            let g = self.architecture.get_decal_graphics(decal.decal);
+            let g = self.architecture.get_decal_graphics(&decal.decal);
             bel_map.insert(decal.id, g);
         }
 
@@ -158,7 +221,7 @@ impl<'a, T> Renderer<'a, T> {
             .entry(ElementType::Group)
             .or_insert_with(|| HashMap::new());
         for decal in group_decals {
-            let g = self.architecture.get_decal_graphics(decal.decal);
+            let g = self.architecture.get_decal_graphics(&decal.decal);
             group_map.insert(decal.id, g);
         }
     }

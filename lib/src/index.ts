@@ -1,4 +1,6 @@
-import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig} from 'nextpnr-renderer';
+import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig, NextpnrJson} from 'nextpnr-renderer';
+
+export {NextpnrJson};
 
 // **** Auxiliary types ****
 export const SUPPORTED_DEVICES = <const> {
@@ -157,6 +159,14 @@ export class NextPNRViewer {
         const viewer = await this.viewer;
 
         viewer.render();
+    }
+
+    async showJson(json: NextpnrJson) {
+        json = (typeof json === 'string') ? JSON.parse(json) : json;
+
+        const viewer = await this.viewer;
+
+        viewer.show_json(json);
     }
 
     private async _addEventListeners(canvas: HTMLCanvasElement) {

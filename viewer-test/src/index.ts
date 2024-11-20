@@ -34,17 +34,17 @@ window.onload = () => {
         height: 1080,
         chip: {
             family: 'ecp5',
-            device: '85k'
+            device: '25k'
         },
         cellColors: cellColors
     });
     nextpnrViewer.render();
 
-    // file_upload.addEventListener('change', (e) => {
-    //     if (e.target !== file_upload || file_upload.files === null) {
-    //         return;
-    //     }
+    file_upload.addEventListener('change', (e) => {
+        if (e.target !== file_upload || file_upload.files === null) {
+            return;
+        }
 
-    //     file_upload.files[0].text().then((t) => nextpnrViewer.showJson(t));
-    // });
+        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(t));
+    });
 };
