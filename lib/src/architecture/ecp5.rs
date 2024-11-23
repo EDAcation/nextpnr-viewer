@@ -400,7 +400,17 @@ impl Architecture<DecalID> for ECP5Arch {
             ),
             0.0,
             0.0,
-            "${JSON.stringify([location, from, to])}".to_string(), // TODO: proper fmt
+            format!(
+                "X{}/Y{};X{}/Y{}/{}->X{}/Y{}/{}",
+                location.x,
+                location.y,
+                from.location.x,
+                from.location.y,
+                from.name,
+                to.location.x,
+                to.location.y,
+                to.name
+            ),
         ));
     }
 }
