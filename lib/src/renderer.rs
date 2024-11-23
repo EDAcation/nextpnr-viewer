@@ -14,6 +14,9 @@ use crate::webgl::{
 };
 
 type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
+type GraphicElements = HashMap<ElementType, GraphicElementCollection>;
+
+type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ColorConfig {
@@ -28,8 +31,10 @@ pub struct Renderer<'a, T> {
     program: RenderingProgram,
     canvas: HtmlCanvasElement,
 
-    graphic_elements: HashMap<ElementType, GraphicElementCollection>,
-    webgl_elements: Vec<Box<dyn WebGlElement<'a> + 'a>>,
+    graphic_elements: GraphicElements,
+    graphic_elements_dirty: bool,
+    webgl_elements: WebGlElements<'a>,
+    webgl_elements_dirty: bool,
     colors: ColorConfig,
 
     offset: (f32, f32),
@@ -62,7 +67,9 @@ impl<'a, T> Renderer<'a, T> {
             canvas,
 
             graphic_elements: HashMap::new(),
+            graphic_elements_dirty: true,
             webgl_elements: vec![],
+            webgl_elements_dirty: true,
             colors,
 
             scale: 15.0,
@@ -70,7 +77,11 @@ impl<'a, T> Renderer<'a, T> {
         });
     }
 
-    pub fn render(&self) -> Result<()> {
+    pub fn render(&mut self) -> Result<()> {
+        if self.webgl_elements_dirty {
+            self.update_webgl_elements()?;
+        }
+
         let gl = self.program.get_gl();
         let canvas = self.get_canvas();
 
@@ -116,7 +127,10 @@ impl<'a, T> Renderer<'a, T> {
             }
         }
 
-        let bel_map = self.get_graphic_elems(ElementType::Bel);
+        let bel_map = self
+            .graphic_elements
+            .entry(ElementType::Bel)
+            .or_insert_with(|| HashMap::new());
         for bel in elems.bels {
             let Some(ge) = bel_map.get_mut(bel.nextpnr_bel) else {
                 continue;
@@ -145,14 +159,17 @@ impl<'a, T> Renderer<'a, T> {
             pip_map.insert(decal.id, ges);
         }
 
-        self.update_webgl_elements()?;
+        self.webgl_elements_dirty = true;
 
         self.render()?;
-
         return Ok(());
     }
 
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<()> {
+        if self.graphic_elements_dirty {
+            bail!("Graphic elements must be generated before zooming");
+        }
+
         let mut amt = E.powf(-amt);
 
         let old_scale = self.scale;
@@ -171,6 +188,10 @@ impl<'a, T> Renderer<'a, T> {
     }
 
     pub fn pan(&mut self, x: f32, y: f32) -> Result<()> {
+        if self.graphic_elements_dirty {
+            bail!("Graphic elements must be generated before panning");
+        }
+
         self.offset.0 -= x / self.scale;
         self.offset.1 -= y / self.scale;
 
@@ -182,16 +203,7 @@ impl<'a, T> Renderer<'a, T> {
         return &self.canvas;
     }
 
-    fn get_graphic_elems(
-        &mut self,
-        r#type: ElementType,
-    ) -> &mut HashMap<String, Vec<GraphicElement>> {
-        self.graphic_elements
-            .entry(r#type)
-            .or_insert_with(|| HashMap::new())
-    }
-
-    pub fn create_graphic_elements(&mut self) {
+    fn update_graphic_elements(&mut self) {
         // Wires
         let wire_decals = self.architecture.get_wire_decals();
         let wire_map = self
@@ -224,11 +236,17 @@ impl<'a, T> Renderer<'a, T> {
             let g = self.architecture.get_decal_graphics(&decal.decal);
             group_map.insert(decal.id, g);
         }
+
+        self.graphic_elements_dirty = false;
     }
 
     pub fn update_webgl_elements(&mut self) -> Result<()> {
-        self.webgl_elements.clear();
+        // Make sure graphic elements are updated first
+        if self.graphic_elements_dirty {
+            self.update_graphic_elements();
+        }
 
+        self.webgl_elements.clear();
         for (r#type, g_elems) in self.graphic_elements.iter() {
             let elems: Vec<GraphicElement> =
                 g_elems.values().map(|e| e.clone()).flatten().collect();
@@ -236,6 +254,8 @@ impl<'a, T> Renderer<'a, T> {
             self.webgl_elements
                 .extend(self.to_webgl_elements(&elems, r#type)?);
         }
+
+        self.webgl_elements_dirty = false;
 
         return Ok(());
     }

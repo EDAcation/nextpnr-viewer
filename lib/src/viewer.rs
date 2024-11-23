@@ -66,8 +66,6 @@ impl ViewerECP5 {
 
     #[wasm_bindgen]
     pub fn render(&mut self) -> Result<(), JsError> {
-        self.renderer.create_graphic_elements();
-        self.renderer.update_webgl_elements();
         self.renderer.render();
 
         return Ok(());
