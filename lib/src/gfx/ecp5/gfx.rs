@@ -89,7 +89,7 @@ pub fn tile_bel(
         el.x2 = el.x1 + slice_comb_w;
         el.y1 = y
             + slice_y1
-            + (lc as f64 / 2.0) * slice_pitch
+            + (lc / 2) as f64 * slice_pitch
             + (if lc % 2 != 0 {
                 slice_comb_dy2
             } else {
@@ -113,11 +113,10 @@ pub fn tile_bel(
             el.x2 = el.x1 + wire_distance;
             el.y1 = y + slice_y2
                 - wire_distance
-                    * ((tilewire::GfxTileWireId::TILE_WIRE_CLK3_SLICE
-                        - tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2)
-                        as f64
-                        + 5.0
-                        + (3.0 - (lc as f64 / 2.0)) * 26.0)
+                    * (tilewire::GfxTileWireId::TILE_WIRE_CLK3_SLICE
+                        - tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2
+                        + 5
+                        + (3 - (lc / 2)) * 26) as f64
                 + 3.0 * slice_pitch
                 - 0.0007;
             el.y2 = el.y1 + wire_distance * 5.0;
@@ -127,14 +126,12 @@ pub fn tile_bel(
         // LUT permutation switchbox
         el.x1 = x + slice_x1 - wire_length_lut;
         el.x2 = x + slice_x1 - wire_length;
-        let start_wire = tilewire::GfxTileWireId::TILE_WIRE_D7 as usize as f64
-            + 24.0 * (lc as f64 / 2.0)
-            + 4.0 * (lc % 2) as f64;
+        let start_wire =
+            tilewire::GfxTileWireId::TILE_WIRE_D7 as i32 + 24 * (lc / 2) + 4 * (lc % 2);
         el.y2 = y + slice_y2
             - wire_distance
-                * (start_wire - (tilewire::GfxTileWireId::TILE_WIRE_FCO as usize as f64)
-                    + 1.0
-                    + (lc as f64 / 2.0) * 2.0)
+                * (start_wire - tilewire::GfxTileWireId::TILE_WIRE_FCO as i32 + 1 + (lc / 2) * 2)
+                    as f64
             + 3.0 * slice_pitch
             + 0.25 * wire_distance;
         el.y1 = el.y2 - 3.5 * wire_distance;
@@ -145,7 +142,7 @@ pub fn tile_bel(
         el.x2 = el.x1 + slice_ff_w;
         el.y1 = y
             + slice_y1
-            + (lc as f64 / 2.0) * slice_pitch
+            + (lc / 2) as f64 * slice_pitch
             + (if lc % 2 != 0 {
                 slice_comb_dy2
             } else {
@@ -782,11 +779,11 @@ pub fn tile_wire(
                             * wire_distance;
                     el.y1 = y + slice_y2
                         - wire_distance
-                            * ((tilewire::GfxTileWireId::TILE_WIRE_CLK3_SLICE
+                            * (tilewire::GfxTileWireId::TILE_WIRE_CLK3_SLICE
                                 - tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2
-                                - 1) as f64
-                                + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64
-                                    / 2.0)
+                                - 1
+                                + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0) / 2)
+                                as f64
                         + i as f64 * slice_pitch;
                     el.y2 = el.y1;
                     g.push(el);

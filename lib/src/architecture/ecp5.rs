@@ -308,8 +308,8 @@ impl Architecture<DecalID> for ECP5Arch {
     fn get_group_decals(&self) -> Vec<Decal> {
         let mut ret: Vec<Decal> = vec![];
 
-        for y in 1..self.chipdb.height {
-            for x in 1..self.chipdb.width {
+        for y in 1..(self.chipdb.height - 1) {
+            for x in 1..(self.chipdb.width - 1) {
                 ret.push(Decal::new(
                     DecalID::new(decal::ECP5DecalType::TYPE_GROUP, x as f64, y as f64, 1.0),
                     0.0,
