@@ -259,13 +259,13 @@ pub fn tile_wire(
         if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE
         {
-            let gap = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) / 24;
-            let item = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) % 24;
+            let gap = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) / 24;
+            let item = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) % 24;
             el.x1 = x + slice_x1 - wire_length;
             el.x2 = x + slice_x1;
             el.y1 = y + slice_y2
                 - wire_distance
-                    * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE + 1 + gap * 2)
+                    * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE + 1 + gap * 2)
                         as f64
                 + 3.0 * slice_pitch;
             el.y2 = el.y1;
@@ -292,7 +292,7 @@ pub fn tile_wire(
             if item
                 == (tilewire::GfxTileWireId::TILE_WIRE_FCID_SLICE
                     - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)
-                && *tilewire != tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE
+                && tilewire != &tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE
             {
                 el.x2 = el.x1;
                 el.y2 = el.y1 - wire_distance * 3.0;
@@ -302,12 +302,12 @@ pub fn tile_wire(
         if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_WAD0A_SLICE
         {
-            let gap = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2) / 12;
+            let gap = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2) / 12;
             el.x1 = x + slice_x2 + wire_length;
             el.x2 = x + slice_x2;
             el.y1 = y + slice_y2
                 - wire_distance
-                    * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2 + 1 + gap * 14)
+                    * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2 + 1 + gap * 14)
                         as f64
                 + 3.0 * slice_pitch;
             el.y2 = el.y1;
@@ -321,7 +321,7 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
                         + 20.0 * (x as i32 % 3) as f64);
         }
         el.x2 = el.x1;
@@ -329,7 +329,7 @@ pub fn tile_wire(
         el.y2 = y + consts::switchbox_y1
             - wire_distance
                 * (20.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
                     + 20.0 * (x as i32 % 3) as f64);
         if x as i32 != 0 && x as i32 != w - 1 {
             g.push(el);
@@ -343,7 +343,7 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
                         + 20.0 * (x as i32 % 3) as f64);
         }
         el.y1 = el.y2;
@@ -364,7 +364,7 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
                         + 20.0 * (x as i32 % 3) as f64);
         }
         if x as i32 == 1 {
@@ -374,13 +374,13 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
                         + 20.0 * (x as i32 % 3) as f64);
         }
         el.y2 = y + consts::switchbox_y1
             - wire_distance
                 * (20.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701) as f64
                     + 20.0 * (x as i32 % 3) as f64);
         el.y1 = el.y2;
         if x as i32 != 0 {
@@ -400,7 +400,7 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
                         + 20.0 * (y as i32 % 3) as f64);
         }
         el.y2 = el.y1;
@@ -408,7 +408,7 @@ pub fn tile_wire(
         el.x2 = x + consts::switchbox_x1
             - wire_distance
                 * (20.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
                     + 20.0 * (y as i32 % 3) as f64);
         if y as i32 != 0 && y as i32 != h - 1 {
             g.push(el);
@@ -422,7 +422,7 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
                         + 20.0 * (y as i32 % 3) as f64);
         }
         el.x1 = el.x2;
@@ -443,7 +443,7 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
                         + 20.0 * (y as i32 % 3) as f64);
         }
         if y as i32 == 1 {
@@ -453,13 +453,13 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (20.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
                         + 20.0 * (y as i32 % 3) as f64);
         }
         el.x2 = x + consts::switchbox_x1
             - wire_distance
                 * (20.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701) as f64
                     + 20.0 * (y as i32 % 3) as f64);
         el.x1 = el.x2;
         if y as i32 != 0 {
@@ -479,7 +479,7 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
                         + 10.0 * (x as i32 % 9) as f64);
         }
         el.x2 = el.x1;
@@ -487,7 +487,7 @@ pub fn tile_wire(
         el.y2 = y + consts::switchbox_y1
             - wire_distance
                 * (96.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
                     + 10.0 * (x as i32 % 9) as f64);
         if x as i32 != 0 && x as i32 != w - 1 {
             g.push(el);
@@ -501,7 +501,7 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
                         + 10.0 * (x as i32 % 9) as f64);
         }
         el.y1 = el.y2;
@@ -522,7 +522,7 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
                         + 10.0 * (x as i32 % 9) as f64);
         }
         if x as i32 == 1 || x as i32 == 2 || x as i32 == 3 {
@@ -532,13 +532,13 @@ pub fn tile_wire(
                 + consts::switchbox_x1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
                         + 10.0 * (x as i32 % 9) as f64);
         }
         el.y2 = y + consts::switchbox_y1
             - wire_distance
                 * (96.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303) as f64
                     + 10.0 * (x as i32 % 9) as f64);
         el.y1 = el.y2;
         if x as i32 != 0 {
@@ -558,7 +558,7 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
                         + 10.0 * (y as i32 % 9) as f64);
         }
         el.y2 = el.y1;
@@ -566,7 +566,7 @@ pub fn tile_wire(
         el.x2 = x + consts::switchbox_x1
             - wire_distance
                 * (96.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
                     + 10.0 * (y as i32 % 9) as f64);
         if y as i32 != 0 && y as i32 != h - 1 {
             g.push(el);
@@ -580,7 +580,7 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
                         + 10.0 * (y as i32 % 9) as f64);
         }
         el.x1 = el.x2;
@@ -601,7 +601,7 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
                         + 10.0 * (y as i32 % 9) as f64);
         }
         if y as i32 == 1 || y as i32 == 2 || y as i32 == 3 {
@@ -611,13 +611,13 @@ pub fn tile_wire(
                 + consts::switchbox_y1
                 + wire_distance
                     * (96.0
-                        + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
+                        + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
                         + 10.0 * (y as i32 % 9) as f64);
         }
         el.x2 = x + consts::switchbox_x1
             - wire_distance
                 * (96.0
-                    + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
+                    + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303) as f64
                     + 10.0 * (y as i32 % 9) as f64);
         el.x1 = el.x2;
         if y as i32 != 0 {
@@ -636,7 +636,7 @@ pub fn tile_wire(
             el.x1 = x
                 + consts::switchbox_x1
                 + wire_distance
-                    * (10 + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V01N0001)) as f64;
+                    * (10 + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V01N0001)) as f64;
             el.x2 = el.x1;
             if y as i32 == h - 2 {
                 el.y1 = y + 1.1;
@@ -669,15 +669,15 @@ pub fn tile_wire(
             el.y1 = y
                 + consts::switchbox_y1
                 + wire_distance
-                    * (10 + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H01E0001)) as f64;
+                    * (10 + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H01E0001)) as f64;
             el.y2 = el.y1;
             g.push(el);
         }
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_V00 {
-        let group = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V00T0000) / 2;
+        let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V00T0000) / 2;
         el.x1 = x + consts::switchbox_x2
             - wire_distance
-                * (8 - ((*tilewire - tilewire::GfxTileWireId::TILE_WIRE_V00T0000) % 2) * 4) as f64;
+                * (8 - ((tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V00T0000) % 2) * 4) as f64;
         el.x2 = el.x1;
         if group != 0 {
             el.y1 = y + consts::switchbox_y1;
@@ -688,11 +688,11 @@ pub fn tile_wire(
         }
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_H00 {
-        let group = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H00L0000) / 2;
+        let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H00L0000) / 2;
         el.y1 = y
             + consts::switchbox_y1
             + wire_distance
-                * (8 - ((*tilewire - tilewire::GfxTileWireId::TILE_WIRE_H00L0000) % 2) * 4) as f64;
+                * (8 - ((tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H00L0000) % 2) * 4) as f64;
         el.y2 = el.y1;
 
         if group != 0 {
@@ -737,31 +737,31 @@ pub fn tile_wire(
             el.x2 = x
                 + slice_x2
                 + 15.0 * wire_distance
-                + (8.0 - (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64)
+                + (8.0 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64)
                     * wire_distance;
             el.y1 = y + slice_y2
-                - wire_distance * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0 - 5) as f64
+                - wire_distance * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0 - 5) as f64
                 + 3.0 * slice_pitch;
             el.y2 = el.y1;
             g.push(el);
             el.x1 = el.x2;
             el.y2 = y + slice_y2
                 - wire_distance
-                    * (3.0 + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64);
+                    * (3.0 + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64);
             g.push(el);
             for i in 0..4 {
                 el.x1 = x + slice_x2 + 15.0 * wire_distance + wire_distance;
                 el.x2 = x
                     + slice_x2
                     + 15.0 * wire_distance
-                    + (8.0 - (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64)
+                    + (8.0 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64)
                         * wire_distance;
                 el.y1 = y + slice_y2
                     - wire_distance
                         * (tilewire::GfxTileWireId::TILE_WIRE_CLK3_SLICE
                             - tilewire::GfxTileWireId::TILE_WIRE_DUMMY_D2
                             + 1
-                            + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0))
+                            + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0))
                             as f64
                     + i as f64 * slice_pitch;
                 el.y2 = el.y1;
@@ -775,7 +775,7 @@ pub fn tile_wire(
                     el.x2 = x
                         + slice_x2
                         + 15.0 * wire_distance
-                        + (8.0 - (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64)
+                        + (8.0 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLK0) as f64)
                             * wire_distance;
                     el.y1 = y + slice_y2
                         - wire_distance
@@ -801,12 +801,12 @@ pub fn tile_wire(
                 el.y1 = y + 1.0
                     - (slice_y2
                         - wire_distance
-                            * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JDIA + 1) as f64
+                            * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JDIA + 1) as f64
                         + 3.0 * slice_pitch);
             } else {
                 el.y1 = y + slice_y2
                     - wire_distance
-                        * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JDIA + 1) as f64
+                        * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JDIA + 1) as f64
                     + 3.0 * slice_pitch;
             }
             el.y2 = el.y1;
@@ -817,15 +817,15 @@ pub fn tile_wire(
             el.x1 = x + consts::switchbox_x2;
             el.x2 = x + consts::switchbox_x2 + wire_length;
             el.y1 = y + slice_y2
-                - wire_distance * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JCE0 + 1) as f64
+                - wire_distance * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCE0 + 1) as f64
                 + 3.0 * slice_pitch;
             el.y2 = el.y1;
             g.push(el);
         } else if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_FCI
         {
-            let gap = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_FCO) / 24;
-            let purpose = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_FCO) % 24;
+            let gap = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_FCO) / 24;
+            let purpose = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_FCO) % 24;
             el.x1 = x + consts::switchbox_x2;
             if purpose
                 >= (tilewire::GfxTileWireId::TILE_WIRE_D7 - tilewire::GfxTileWireId::TILE_WIRE_FCO)
@@ -840,15 +840,15 @@ pub fn tile_wire(
             }
             el.y1 = y + slice_y2
                 - wire_distance
-                    * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_FCO + 1 + gap * 2) as f64
+                    * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_FCO + 1 + gap * 2) as f64
                 + 3.0 * slice_pitch;
             el.y2 = el.y1;
             g.push(el);
         } else if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_MUXCLK3
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_MUXLSR0
         {
-            let gap = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_MUXCLK3) / 2;
-            let part = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_MUXCLK3) % 2;
+            let gap = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_MUXCLK3) / 2;
+            let part = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_MUXCLK3) % 2;
             el.x1 = x + slice_x2 + 3.0 * wire_distance;
             el.x2 = x + slice_x2 + 15.0 * wire_distance;
             el.y1 = y + slice_y2
@@ -864,8 +864,8 @@ pub fn tile_wire(
         } else if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_WD3
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_WD0
         {
-            let part = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_WD3) % 4;
-            let group = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_WD3) / 2;
+            let part = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_WD3) % 4;
+            let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_WD3) / 2;
             el.x1 = x + slice_x2 + wire_length;
             el.x2 = x + slice_x2 + wire_length + wire_distance * (4 - part) as f64;
             el.y1 = y + slice_y2
@@ -896,7 +896,7 @@ pub fn tile_wire(
         } else if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_WAD3
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_WAD0
         {
-            let part = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_WAD3) % 4;
+            let part = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_WAD3) % 4;
             el.x1 = x + slice_x2 + wire_length;
             el.x2 = x + slice_x2 + wire_length + wire_distance * (8 - part) as f64;
             el.y1 = y + slice_y2
@@ -945,14 +945,14 @@ pub fn tile_wire(
         el.y1 = y
             + 0.1
             + wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_G_HPBX0000 + 1) as f64;
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_G_HPBX0000 + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
 
         el.x1 = x
             + consts::switchbox_x1
             + wire_distance
-                * (200 + (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_G_HPBX0000)) as f64;
+                * (200 + (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_G_HPBX0000)) as f64;
         el.x2 = el.x1;
         el.y2 = y + consts::switchbox_y1;
         g.push(el);
@@ -960,7 +960,7 @@ pub fn tile_wire(
         el.x1 = x
             + 0.1
             + wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_G_VPTX0000 + 1) as f64;
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_G_VPTX0000 + 1) as f64;
         el.x2 = el.x1;
         el.y1 = y;
         el.y2 = y + 1.0;
@@ -971,7 +971,7 @@ pub fn tile_wire(
         el.y1 = y
             + wire_distance
             + wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_L_HPBX0000 + 1) as f64;
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_L_HPBX0000 + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_R_HPBX {
@@ -980,13 +980,13 @@ pub fn tile_wire(
         el.y1 = y
             + wire_distance
             + wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_R_HPBX0000 + 1) as f64;
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_R_HPBX0000 + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_PIO {
         let top_bottom = y as i32 == 0 || y as i32 == (h - 1);
-        let gap = 3 - (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) / 7;
-        let num = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) % 7;
+        let gap = 3 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) / 7;
+        let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) % 7;
         if top_bottom {
             el.x1 = x
                 + io_cell_h_x1
@@ -1013,7 +1013,7 @@ pub fn tile_wire(
         }
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_DDRDLL {
-        let num = *tilewire - tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DDRDLL;
+        let num = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DDRDLL;
         el.x1 = x + io_cell_h_x1 + 0.2 + wire_distance * (num + 1) as f64;
         el.x2 = el.x1;
         if y as i32 == h - 1 {
@@ -1025,15 +1025,15 @@ pub fn tile_wire(
         }
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_CCLK {
-        let num = *tilewire - tilewire::GfxTileWireId::TILE_WIRE_JPADDI_CCLK;
+        let num = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JPADDI_CCLK;
         el.x1 = x + slice_x1 + wire_distance * (num + 1) as f64;
         el.x2 = el.x1;
         el.y1 = y + slice_y2 - 1.0 * slice_pitch;
         el.y2 = el.y1 - wire_length_long;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC {
-        let gap = 7 - (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) / 42;
-        let num = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) % 42;
+        let gap = 7 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) / 42;
+        let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) % 42;
         if x as i32 == 0 {
             el.x1 = x + 1.0 - io_cell_v_x1;
             el.x2 = el.x1 + wire_length_long;
@@ -1045,8 +1045,8 @@ pub fn tile_wire(
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC {
-        let gap = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) / 20;
-        let num = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) % 20;
+        let gap = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) / 20;
+        let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) % 20;
         el.x1 =
             x + io_cell_h_x1 + (5 - gap) as f64 * io_cell_gap + wire_distance * (num + 1) as f64;
         el.x2 = el.x1;
@@ -1059,7 +1059,7 @@ pub fn tile_wire(
         }
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_DQS {
-        let num = *tilewire - tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DQS;
+        let num = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DQS;
         if x as i32 == 0 {
             el.x1 = x + 1.0 - io_cell_v_x1;
             el.x2 = el.x1 + wire_length_long;
@@ -1074,7 +1074,7 @@ pub fn tile_wire(
         el.x1 = x + slice_x1 - wire_length;
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
-            - wire_distance * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JADA0_EBR + 1) as f64
+            - wire_distance * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JADA0_EBR + 1) as f64
             + 3.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
@@ -1083,13 +1083,13 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance_small
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JCLK0_MULT18 + 1) as f64
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_MULT18 + 1) as f64
             + 3.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_ALU54 {
-        let num = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) % 225;
-        let group = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) / 225;
+        let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) % 225;
+        let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) / 225;
         if group == 0 {
             el.x1 = x + slice_x1 - wire_length;
             el.x2 = x + slice_x1;
@@ -1104,14 +1104,14 @@ pub fn tile_wire(
         el.x1 = x + slice_x1 - wire_length;
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
-            - wire_distance * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLKI_PLL + 1) as f64;
+            - wire_distance * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PLL + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_GSR {
         el.x1 = x + slice_x1 - wire_length;
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
-            - wire_distance * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JCLK_GSR + 1) as f64;
+            - wire_distance * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK_GSR + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_JTAG {
@@ -1119,7 +1119,7 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JJCE1_JTAG + 1) as f64
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JJCE1_JTAG + 1) as f64
             + 1.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
@@ -1128,7 +1128,7 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_OSC + 1) as f64
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_OSC + 1) as f64
             + 2.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
@@ -1137,7 +1137,7 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_SED + 1) as f64
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_SED + 1) as f64
             + 3.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
@@ -1146,7 +1146,7 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_JSTARTPULSE_DTR + 1) as f64;
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JSTARTPULSE_DTR + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_EXTREF {
@@ -1154,7 +1154,7 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_REFCLKP_EXTREF + 1) as f64
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_REFCLKP_EXTREF + 1) as f64
             + 1.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
@@ -1163,13 +1163,13 @@ pub fn tile_wire(
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2
             - wire_distance
-                * (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CH0_RX_REFCLK_DCU + 1) as f64
+                * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CH0_RX_REFCLK_DCU + 1) as f64
             + 0.0 * slice_pitch;
         el.y2 = el.y1;
         g.push(el);
     } else if wire_type == &gfx::ConstId::WIRE_TYPE_PCSCLKDIV {
-        let num = (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) % 7;
-        let group = 1 - (*tilewire - tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) / 7;
+        let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) % 7;
+        let group = 1 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) / 7;
         el.x1 = x + slice_x1 - wire_length;
         el.x2 = x + slice_x1;
         el.y1 = y + slice_y2 - wire_distance * (num + 1) as f64 + group as f64 * slice_pitch;
