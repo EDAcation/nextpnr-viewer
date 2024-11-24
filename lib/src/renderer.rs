@@ -37,6 +37,7 @@ pub struct Renderer<'a, T> {
     webgl_elements_dirty: bool,
     colors: ColorConfig,
 
+    is_rendering: bool,
     offset: (f32, f32),
     scale: f32,
 }
@@ -70,6 +71,7 @@ impl<'a, T> Renderer<'a, T> {
             graphic_elements_dirty: true,
             webgl_elements: vec![],
             webgl_elements_dirty: true,
+            is_rendering: false,
             colors,
 
             scale: 15.0,
@@ -78,6 +80,8 @@ impl<'a, T> Renderer<'a, T> {
     }
 
     pub fn render(&mut self) -> Result<()> {
+        self.is_rendering = true;
+
         if self.webgl_elements_dirty {
             self.update_webgl_elements()?;
         }
@@ -111,6 +115,10 @@ impl<'a, T> Renderer<'a, T> {
     }
 
     pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<()> {
+        if self.graphic_elements_dirty {
+            self.update_graphic_elements();
+        }
+
         let json = NextpnrJson::from_jsobj(obj)?;
         let elems = json.get_elements();
 
@@ -139,7 +147,6 @@ impl<'a, T> Renderer<'a, T> {
             ge.iter_mut().for_each(|g| g.style = Style::Active);
         }
 
-        // TODO: make neater, we get a borrow error when using self.get_graphic_elems
         let pip_map = self
             .graphic_elements
             .entry(ElementType::Pip)
@@ -161,7 +168,9 @@ impl<'a, T> Renderer<'a, T> {
 
         self.webgl_elements_dirty = true;
 
-        self.render()?;
+        if self.is_rendering {
+            self.render()?
+        };
         return Ok(());
     }
 
@@ -188,14 +197,12 @@ impl<'a, T> Renderer<'a, T> {
     }
 
     pub fn pan(&mut self, x: f32, y: f32) -> Result<()> {
-        if self.graphic_elements_dirty {
-            bail!("Graphic elements must be generated before panning");
-        }
-
         self.offset.0 -= x / self.scale;
         self.offset.1 -= y / self.scale;
 
-        self.render()?;
+        if self.is_rendering {
+            self.render()?
+        };
         return Ok(());
     }
 
