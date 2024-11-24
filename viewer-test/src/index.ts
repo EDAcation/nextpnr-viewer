@@ -2,8 +2,8 @@ import {getElementGroups} from 'edacation';
 import {NextPNRViewer} from 'nextpnr-viewer';
 
 window.onload = () => {
-    const canvas: HTMLCanvasElement | null = document.querySelector('#viewer');
-    if (canvas === null) {
+    const container: HTMLDivElement | null = document.querySelector('#viewer');
+    if (container === null) {
         console.error('Cannot find canvas');
         return;
     }
@@ -22,14 +22,7 @@ window.onload = () => {
         }
     }
 
-    canvas.style.width = `${1920}px`;
-    canvas.style.height = `${1080}px`;
-    canvas.style.display = 'flex';
-    canvas.style.flexDirection = 'column';
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-
-    const nextpnrViewer = new NextPNRViewer(canvas, {
+    const nextpnrViewer = new NextPNRViewer(container, {
         width: 1920,
         height: 1080,
         chip: {

@@ -138,7 +138,10 @@ export class NextPNRViewer {
     private config: ViewerConfig;
     private viewer: Promise<Viewer>;
 
-    constructor(canvas: HTMLCanvasElement, config?: Partial<ViewerConfig>) {
+    private container: HTMLDivElement;
+    private canvas: HTMLCanvasElement;
+
+    constructor(container: HTMLDivElement, config?: Partial<ViewerConfig>) {
         this.config = {...defaultConfig, ...config};
 
         // Separate functions so we can throw an error prematurely instead of in the promise
@@ -151,8 +154,11 @@ export class NextPNRViewer {
             background: fromCssColor(this.config.colors.background)
         };
 
-        this.viewer = init().then(() => getChipDb(url).then((db) => new viewer(canvas, db, colors)));
-        this.viewer.then(() => this._addEventListeners(canvas));
+        this.container = container;
+        this.canvas = this._createCanvas(container);
+
+        this.viewer = init().then(() => getChipDb(url).then((db) => new viewer(this.canvas, db, colors)));
+        this.viewer.then(() => this._addEventListeners(this.canvas));
     };
 
     async render() {
@@ -167,6 +173,28 @@ export class NextPNRViewer {
         const viewer = await this.viewer;
 
         viewer.show_json(json);
+    }
+
+    async resize(width: number, height: number) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+
+        await this.render();
+    }
+
+    private _createCanvas(container: HTMLDivElement): HTMLCanvasElement {
+        const elem = document.createElement('canvas');
+        elem.style.width = '100%';
+        elem.style.height = '100%';
+        elem.style.aspectRatio = '16 / 9';
+
+        elem.width = this.config.width;
+        elem.height = this.config.height;
+    
+        container.innerHTML = '';
+        container.appendChild(elem);
+    
+        return elem;
     }
 
     private async _addEventListeners(canvas: HTMLCanvasElement) {
