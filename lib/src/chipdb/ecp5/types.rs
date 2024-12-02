@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::gfx;
 
 pub struct LocationPOD {

@@ -13,6 +13,7 @@ pub fn set_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
+#[allow(dead_code)]
 pub fn log(msg: String) {
     js::log(&msg[..])
 }
