@@ -1,4 +1,4 @@
-import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig, NextpnrJson} from 'nextpnr-renderer';
+import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig, NextpnrJson, CellColorConfig} from 'nextpnr-renderer';
 
 export {NextpnrJson};
 
@@ -153,11 +153,16 @@ export class NextPNRViewer {
             frame: fromCssColor(this.config.colors.frame),
             background: fromCssColor(this.config.colors.background)
         };
+        const cellColors: CellColorConfig = Object.fromEntries(
+            Object.entries(this.config.cellColors).map(
+                ([cell, colorStr]) => [cell, fromCssColor(colorStr)]
+            )
+        );
 
         this.container = container;
         this.canvas = this._createCanvas(container);
 
-        this.viewer = init().then(() => getChipDb(url).then((db) => new viewer(this.canvas, db, colors)));
+        this.viewer = init().then(() => getChipDb(url).then((db) => new viewer(this.canvas, db, colors, cellColors)));
         this.viewer.then(() => this._addEventListeners(this.canvas));
     };
 

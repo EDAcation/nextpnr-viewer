@@ -3,7 +3,7 @@ use crate::{
     chipdb::ecp5::get_chipdb,
     decal::ECP5DecalID,
     pnrjson::INextpnrJSON,
-    renderer::{ColorConfig, Renderer},
+    renderer::{CellColorConfig, ColorConfig, Renderer},
 };
 
 use wasm_bindgen::prelude::*;
@@ -23,12 +23,17 @@ interface ColorConfig {
     frame: Color,
     background: Color,
 }
+
+type CellColorConfig = Record<string, Color>;
 "#;
 
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(typescript_type = "ColorConfig")]
     pub type IColorConfig;
+
+    #[wasm_bindgen(typescript_type = "CellColorConfig")]
+    pub type ICellColorConfig;
 }
 
 #[wasm_bindgen]
@@ -43,11 +48,17 @@ impl ViewerECP5 {
         canvas: HtmlCanvasElement,
         chipdata: &[u8],
         colors: IColorConfig,
+        cell_colors: ICellColorConfig,
     ) -> Result<Self, JsError> {
         let colors_conf: ColorConfig = match serde_wasm_bindgen::from_value(colors.obj) {
             Ok(colors_conf) => colors_conf,
             Err(e) => return Err(JsError::from(e)),
         };
+        let cell_colors_conf: CellColorConfig =
+            match serde_wasm_bindgen::from_value(cell_colors.obj) {
+                Ok(cell_colors_conf) => cell_colors_conf,
+                Err(e) => return Err(JsError::from(e)),
+            };
 
         let db = match get_chipdb(chipdata) {
             Ok(db) => db,
@@ -56,7 +67,7 @@ impl ViewerECP5 {
 
         let arch = ECP5Arch::new(db);
 
-        let renderer = match Renderer::new(canvas, arch, colors_conf) {
+        let renderer = match Renderer::new(canvas, arch, colors_conf, cell_colors_conf) {
             Ok(r) => r,
             Err(e) => return Err(JsError::from(&*e)),
         };

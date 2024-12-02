@@ -101,15 +101,15 @@ impl Rectangle {
         // | /   1  |
         // |/       |
         // +--------+
-        let indices_data: Vec<f32> = (0..rects.len())
+        let indices_data: Vec<u32> = (0..rects.len())
             .flat_map(|index| {
                 [
-                    (0 + 4 * index) as f32,
-                    (1 + 4 * index) as f32,
-                    (3 + 4 * index) as f32, // Triangle 1
-                    (3 + 4 * index) as f32,
-                    (2 + 4 * index) as f32,
-                    (0 + 4 * index) as f32, // Triangle 2
+                    (0 + 4 * index) as u32,
+                    (1 + 4 * index) as u32,
+                    (3 + 4 * index) as u32, // Triangle 1
+                    (3 + 4 * index) as u32,
+                    (2 + 4 * index) as u32,
+                    (0 + 4 * index) as u32, // Triangle 2
                 ]
             })
             .collect();
@@ -119,7 +119,7 @@ impl Rectangle {
         // Unsafe because Float32Array::view creates a raw view into our wasm memory buffer.
         // Do NOT do any memory allocations before 'verts' is dropped.
         unsafe {
-            let indices = js_sys::Float32Array::view(&indices_data[..]);
+            let indices = js_sys::Uint32Array::view(&indices_data[..]);
             gl.buffer_data_with_array_buffer_view(
                 WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER,
                 &indices,

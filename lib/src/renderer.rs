@@ -26,6 +26,8 @@ pub struct ColorConfig {
     background: Color,
 }
 
+pub type CellColorConfig = HashMap<String, Color>;
+
 pub struct Renderer<'a, T> {
     architecture: Box<dyn Architecture<T>>,
     program: RenderingProgram,
@@ -35,7 +37,9 @@ pub struct Renderer<'a, T> {
     graphic_elements_dirty: bool,
     webgl_elements: WebGlElements<'a>,
     webgl_elements_dirty: bool,
+
     colors: ColorConfig,
+    cell_colors: CellColorConfig,
 
     is_rendering: bool,
     offset: (f32, f32),
@@ -58,6 +62,7 @@ impl<'a, T> Renderer<'a, T> {
         canvas: HtmlCanvasElement,
         architecture: impl Architecture<T> + 'static,
         colors: ColorConfig,
+        cell_colors: CellColorConfig,
     ) -> Result<Self> {
         let gl = create_rendering_context(&canvas)?;
         let program = RenderingProgram::new(gl)?;
@@ -72,7 +77,9 @@ impl<'a, T> Renderer<'a, T> {
             webgl_elements: vec![],
             webgl_elements_dirty: true,
             is_rendering: false,
+
             colors,
+            cell_colors,
 
             scale: 15.0,
             offset: (-10.25, -25.1),
@@ -144,7 +151,21 @@ impl<'a, T> Renderer<'a, T> {
                 continue;
             };
 
-            ge.iter_mut().for_each(|g| g.style = Style::Active);
+            let cell_type = bel
+                .cell_type
+                .clone()
+                .map_or(String::new(), |t| t.replace('$', ""));
+            let color = self.cell_colors.get(&cell_type).copied();
+
+            ge.iter_mut().for_each(|g| {
+                g.style = Style::Active;
+                g.color = color;
+
+                // Fill box if it can be traced back to a cell type
+                if !cell_type.is_empty() {
+                    g.r#type = Type::FilledBox;
+                }
+            });
         }
 
         let pip_map = self
