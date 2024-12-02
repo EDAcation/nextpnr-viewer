@@ -18,9 +18,12 @@
     "type": "git",
     "url": "https://github.com/EDAcation/nextpnr-viewer.git"
   },
+  "scripts": {
+    "serve": "rollup -c"
+  },
   "version": "1.0.0",
   "dependencies": {
-    "nextpnr-viewer": "^0.6.1",
-    "edacation": "^0.3.0"
+    "edacation": "^0.3.0",
+    "nextpnr-viewer": "../lib"
   }
 }

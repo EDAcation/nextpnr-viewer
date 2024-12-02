@@ -1,4 +1,4 @@
-import {getElementGroups} from 'edacation';
+import {getElementGroups} from 'edacation/dist/project/groups';
 import {NextPNRViewer} from 'nextpnr-viewer';
 
 window.onload = () => {
@@ -38,6 +38,6 @@ window.onload = () => {
             return;
         }
 
-        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(t));
+        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(JSON.parse(t)));
     });
 };
