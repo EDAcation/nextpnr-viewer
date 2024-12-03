@@ -1,5 +1,42 @@
-export enum GfxTileWireId {
-    TILE_WIRE_NONE,
+#![allow(non_camel_case_types)]
+use std::{convert::TryFrom, ops::Sub};
+
+use anyhow::{Error, Result};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
+impl Sub for &GfxTileWireId {
+    type Output = i32;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        (*self as Self::Output) - (*rhs as Self::Output)
+    }
+}
+
+impl Sub for GfxTileWireId {
+    type Output = i32;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        (self as Self::Output) - (rhs as Self::Output)
+    }
+}
+
+impl TryFrom<u32> for GfxTileWireId {
+    type Error = Error;
+
+    fn try_from(val: u32) -> Result<Self> {
+        return match FromPrimitive::from_u32(val) {
+            Some(res) => Ok(res),
+            None => Err(Error::msg("Could not derive GfxTileWireId from value")),
+        };
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, PartialOrd, FromPrimitive)]
+#[repr(u32)]
+#[allow(dead_code)]
+pub enum GfxTileWireId {
+    TILE_WIRE_NONE = 0,
 
     TILE_WIRE_FCO_SLICE,
     TILE_WIRE_D7_SLICE,
@@ -3665,5 +3702,5 @@ export enum GfxTileWireId {
     TILE_WIRE_RXREFCLK1,
     TILE_WIRE_SYNCECLK0,
     TILE_WIRE_SYNCECLK1,
-    TILE_WIRE_Z_DLLDEL
+    TILE_WIRE_Z_DLLDEL,
 }

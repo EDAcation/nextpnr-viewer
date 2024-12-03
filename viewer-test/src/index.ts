@@ -1,9 +1,9 @@
-import {getElementGroups} from 'edacation';
-import viewer from 'nextpnr-viewer';
+import {getElementGroups} from 'edacation/dist/project/groups';
+import {NextPNRViewer} from 'nextpnr-viewer';
 
 window.onload = () => {
-    const div: HTMLDivElement | null = document.querySelector('#viewer-container');
-    if (div === null) {
+    const container: HTMLDivElement | null = document.querySelector('#viewer');
+    if (container === null) {
         console.error('Cannot find canvas');
         return;
     }
@@ -22,21 +22,22 @@ window.onload = () => {
         }
     }
 
-    const nextpnrViewer = viewer(div, {
+    const nextpnrViewer = new NextPNRViewer(container, {
         width: 1920,
         height: 1080,
         chip: {
             family: 'ecp5',
-            device: '85k'
+            device: '25k'
         },
         cellColors: cellColors
     });
+    nextpnrViewer.render();
 
     file_upload.addEventListener('change', (e) => {
         if (e.target !== file_upload || file_upload.files === null) {
             return;
         }
 
-        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(t));
+        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(JSON.parse(t)));
     });
 };

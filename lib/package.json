@@ -16,18 +16,20 @@
     "visualization"
   ],
   "source": "src/index.ts",
-  "main": "dist/main.js",
-  "module": "dist/module.js",
-  "types": "dist/types.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "package.json"
   ],
   "scripts": {
     "check": "tsc --noEmit",
-    "build": "parcel build"
+    "build-wasm": "wasm-pack build --release --target web",
+    "build": "npm run-script build-wasm && rollup -c",
+    "prepublish": "npm run build"
   },
   "dependencies": {
-    "rxjs": "^7.8.0"
+    "nextpnr-renderer": "file:./pkg"
   }
 }

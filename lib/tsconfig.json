@@ -1,9 +1,10 @@
 {
-  "include": ["src/**/*"],
-  "exclude": ["node_module"],
   "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./dist",
     "target": "es2021",
-    "outDir": "./lib",
     "strict": true,
     "moduleResolution": "node",
     "module": "es2022"

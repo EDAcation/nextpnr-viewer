@@ -1,4 +1,25 @@
-export enum ConstIncs {
+#![allow(dead_code, non_camel_case_types)]
+
+use std::convert::TryFrom;
+
+use anyhow::{Error, Result};
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
+impl TryFrom<u32> for ConstId {
+    type Error = Error;
+
+    fn try_from(val: u32) -> Result<Self> {
+        return match FromPrimitive::from_u32(val) {
+            Some(res) => Ok(res),
+            None => Err(Error::msg("Could not derive ConstId from value")),
+        };
+    }
+}
+
+#[derive(PartialEq, FromPrimitive)]
+#[repr(u32)]
+pub enum ConstId {
     A0 = 1,
     B0,
     C0,
@@ -1843,5 +1864,5 @@ export enum ConstIncs {
     WD,
     OFX,
     F,
-    CCU2_INJECT1
+    CCU2_INJECT1,
 }
