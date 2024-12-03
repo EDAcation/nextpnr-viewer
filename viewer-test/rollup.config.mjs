@@ -3,12 +3,13 @@ import typescript from '@rollup/plugin-typescript';
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets';
 import commonjs from '@rollup/plugin-commonjs';
 import serve from 'rollup-plugin-serve';
+import { rollupPluginHTML as html } from '@web/rollup-plugin-html';
 
 export default {
-  input: 'src/index.ts',
+  input: 'index.html',
   output: {
     dir: 'dist',
-    format: 'cjs'
+    format: 'es'
   },
   plugins: [
     nodeResolve(),
@@ -17,8 +18,9 @@ export default {
     }),
     importMetaAssets(),
     commonjs(),
+    html(),
     serve({
-      contentBase: ['.', 'dist'],
+      contentBase: ['dist'],
     }),
   ],
 };

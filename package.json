@@ -12,6 +12,7 @@
     "@rollup/plugin-typescript": "^12.1.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^18.11.7",
+    "@web/rollup-plugin-html": "^2.3.0",
     "@web/rollup-plugin-import-meta-assets": "^2.2.1",
     "prettier": "^3.3.3",
     "rollup": "^4.28.0",
