@@ -1,4 +1,4 @@
-import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig, NextpnrJson, CellColorConfig} from 'nextpnr-renderer';
+import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig, NextpnrJson, CellColorConfig} from '../pkg';
 
 export {NextpnrJson};
 

@@ -29,10 +29,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "build-wasm": "wasm-pack build --release --target web",
-    "build": "npm run-script build-wasm && rollup -c",
+    "build": "npm run-script build-wasm && npm exec rollup -- -c",
     "prepare": "npm run build"
-  },
-  "dependencies": {
-    "nextpnr-renderer": "file:./pkg"
   }
 }
