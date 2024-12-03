@@ -7,7 +7,10 @@
     "Bram Wesselink <wesselinkbram@gmail.com>",
     "Mike Almeloo <git@mikealmel.ooo>"
   ],
-  "repository": "github:EDAcation/nextpnr-viewer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EDAcation/nextpnr-viewer.git"
+  },
   "keywords": [
     "nextpnr",
     "viewer",
@@ -27,7 +30,7 @@
     "check": "tsc --noEmit",
     "build-wasm": "wasm-pack build --release --target web",
     "build": "npm run-script build-wasm && rollup -c",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   },
   "dependencies": {
     "nextpnr-renderer": "file:./pkg"
