@@ -167,9 +167,8 @@ export class NextPNRViewer {
     };
 
     async render() {
-        const viewer = await this.viewer;
-
-        viewer.render();
+        // Explicit call to start rendering, so set force to true
+        await this.doRender(true);
     }
 
     async showJson(json: NextpnrJson) {
@@ -181,10 +180,26 @@ export class NextPNRViewer {
     }
 
     async resize(width: number, height: number) {
-        this.canvas.width = width;
-        this.canvas.height = height;
+        this.container.style.width = `${width}px`;
+        this.container.style.height = `${height}px`;
+        this.container.style.display = 'flex';
+        this.container.style.flexDirection = 'column';
 
-        await this.render();
+        this.canvas.style.flexGrow = '1';
+
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
+
+        // First render can be delayed, so set force to false
+        await this.doRender(false);
+    }
+
+    private async doRender(force: boolean) {
+        // The first render is relatively expensive, so it is a good idea to delay it until we really need it.
+        // Setting force to true will immediately trigger this first render, while setting it to false essentially
+        // makes this method a no-op until the first render has occurred.
+        const viewer = await this.viewer;
+        viewer.render(force);
     }
 
     private _createCanvas(container: HTMLDivElement): HTMLCanvasElement {

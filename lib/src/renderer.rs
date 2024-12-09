@@ -92,12 +92,14 @@ impl<'a, T> Renderer<'a, T> {
         });
     }
 
-    pub fn render(&mut self) -> Result<()> {
+    pub fn render(&mut self, force_first_render: bool) -> Result<()> {
+        if !self.is_rendering && !force_first_render {
+            // First actual render must be forced
+            return Ok(());
+        }
         self.is_rendering = true;
 
-        if self.webgl_elements_dirty {
-            self.update_webgl_elements()?;
-        }
+        self.ensure_webgl_elements()?;
 
         let gl = self.program.get_gl();
         let canvas = self.get_canvas();
@@ -135,9 +137,7 @@ impl<'a, T> Renderer<'a, T> {
     }
 
     pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<()> {
-        if self.graphic_elements_dirty {
-            self.update_graphic_elements();
-        }
+        self.ensure_graphic_elements();
 
         let json = NextpnrJson::from_jsobj(obj)?;
         let elems = json.get_elements();
@@ -202,17 +202,11 @@ impl<'a, T> Renderer<'a, T> {
 
         self.webgl_elements_dirty = true;
 
-        if self.is_rendering {
-            self.render()?
-        };
+        self.render(false)?;
         return Ok(());
     }
 
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<()> {
-        if self.graphic_elements_dirty {
-            bail!("Graphic elements must be generated before zooming");
-        }
-
         let mut amt = E.powf(-amt);
 
         let old_scale = self.scale;
@@ -226,7 +220,7 @@ impl<'a, T> Renderer<'a, T> {
         self.offset.0 -= x / (self.scale * amt) - x / self.scale;
         self.offset.1 -= y / (self.scale * amt) - y / self.scale;
 
-        self.render()?;
+        self.render(false)?;
         return Ok(());
     }
 
@@ -234,9 +228,7 @@ impl<'a, T> Renderer<'a, T> {
         self.offset.0 -= x / self.scale;
         self.offset.1 -= y / self.scale;
 
-        if self.is_rendering {
-            self.render()?
-        };
+        self.render(false)?;
         return Ok(());
     }
 
@@ -244,7 +236,11 @@ impl<'a, T> Renderer<'a, T> {
         return &self.canvas;
     }
 
-    fn update_graphic_elements(&mut self) {
+    fn ensure_graphic_elements(&mut self) {
+        if !self.graphic_elements_dirty {
+            return;
+        }
+
         // Wires
         let wire_decals = self.architecture.get_wire_decals();
         let wire_map = self
@@ -281,10 +277,12 @@ impl<'a, T> Renderer<'a, T> {
         self.graphic_elements_dirty = false;
     }
 
-    pub fn update_webgl_elements(&mut self) -> Result<()> {
+    pub fn ensure_webgl_elements(&mut self) -> Result<()> {
         // Make sure graphic elements are updated first
-        if self.graphic_elements_dirty {
-            self.update_graphic_elements();
+        self.ensure_graphic_elements();
+
+        if !self.webgl_elements_dirty {
+            return Ok(());
         }
 
         let g_elems = self

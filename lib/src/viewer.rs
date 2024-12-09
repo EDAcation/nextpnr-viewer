@@ -76,8 +76,8 @@ impl ViewerECP5 {
     }
 
     #[wasm_bindgen]
-    pub fn render(&mut self) -> Result<(), JsError> {
-        self.renderer.render();
+    pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
+        self.renderer.render(force_first.unwrap_or(true));
 
         return Ok(());
     }
