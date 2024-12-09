@@ -16,7 +16,10 @@ use crate::webgl::{
 type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
 type GraphicElements = HashMap<ElementType, GraphicElementCollection>;
 
-type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
+struct WebGlElements<'a> {
+    lines: Vec<Box<dyn WebGlElement<'a> + 'a>>,
+    rects: Vec<Box<dyn WebGlElement<'a> + 'a>>,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ColorConfig {
@@ -74,7 +77,10 @@ impl<'a, T> Renderer<'a, T> {
 
             graphic_elements: HashMap::new(),
             graphic_elements_dirty: true,
-            webgl_elements: vec![],
+            webgl_elements: WebGlElements {
+                lines: vec![],
+                rects: vec![],
+            },
             webgl_elements_dirty: true,
             is_rendering: false,
 
@@ -107,15 +113,22 @@ impl<'a, T> Renderer<'a, T> {
         );
         gl.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
-        for elem in &self.webgl_elements {
-            elem.draw(
+        // Draw rectangles before lines so that traces appear on top
+        let draw = |e: &Box<dyn WebGlElement<'a>>| -> Result<()> {
+            e.draw(
                 &self.program,
                 self.offset.0,
                 self.offset.1,
                 self.scale,
                 canvas.width() as f32,
                 canvas.height() as f32,
-            )?;
+            )
+        };
+        for elem in &self.webgl_elements.rects {
+            draw(elem)?
+        }
+        for elem in &self.webgl_elements.lines {
+            draw(elem)?
         }
 
         return Ok(());
@@ -274,15 +287,12 @@ impl<'a, T> Renderer<'a, T> {
             self.update_graphic_elements();
         }
 
-        self.webgl_elements.clear();
-        for (r#type, g_elems) in self.graphic_elements.iter() {
-            let elems: Vec<GraphicElement> =
-                g_elems.values().map(|e| e.clone()).flatten().collect();
+        let g_elems = self
+            .graphic_elements
+            .values()
+            .flat_map(|h| h.values().flat_map(|g| g.clone()));
 
-            self.webgl_elements
-                .extend(self.to_webgl_elements(&elems, r#type)?);
-        }
-
+        self.webgl_elements = self.to_webgl_elements(g_elems)?;
         self.webgl_elements_dirty = false;
 
         return Ok(());
@@ -299,13 +309,11 @@ impl<'a, T> Renderer<'a, T> {
 
     fn to_webgl_elements(
         &self,
-        ges: &Vec<GraphicElement>,
-        r#type: &ElementType,
-    ) -> Result<Vec<Box<dyn WebGlElement<'a>>>> {
+        ges: impl Iterator<Item = GraphicElement>,
+    ) -> Result<WebGlElements<'a>> {
         // Create 'groups' of elements with the same style, type and color so we can batch them
         // when rendering.
-        let mut groups: HashMap<(Style, Type, Option<Color>), Vec<&GraphicElement>> =
-            HashMap::new();
+        let mut groups: HashMap<(Style, Type, Option<Color>), Vec<GraphicElement>> = HashMap::new();
         for elem in ges {
             let key = (elem.style, elem.r#type, elem.color);
             groups
@@ -314,7 +322,10 @@ impl<'a, T> Renderer<'a, T> {
                 .or_insert(vec![elem]);
         }
 
-        let mut res: Vec<Box<dyn WebGlElement>> = vec![];
+        let mut res = WebGlElements {
+            lines: vec![],
+            rects: vec![],
+        };
         for (key, group) in groups.into_iter() {
             if group.len() == 0 || key.0 == Style::Hidden {
                 continue;
@@ -356,9 +367,8 @@ impl<'a, T> Renderer<'a, T> {
                     })
                     .collect();
 
-                let mut line = Line::new(&self.program, ls, color)?;
-                line.set_type(r#type.to_owned());
-                res.push(Box::new(line));
+                let line = Line::new(&self.program, ls, color)?;
+                res.lines.push(Box::new(line));
             } else if key.1 == Type::FilledBox {
                 let ls = group
                     .into_iter()
@@ -370,9 +380,8 @@ impl<'a, T> Renderer<'a, T> {
                     })
                     .collect();
 
-                let mut rect = Rectangle::new(&self.program, ls, color)?;
-                rect.set_type(r#type.to_owned());
-                res.push(Box::new(rect));
+                let rect = Rectangle::new(&self.program, ls, color)?;
+                res.rects.push(Box::new(rect));
             } else {
                 let ls = group
                     .into_iter()
@@ -384,9 +393,8 @@ impl<'a, T> Renderer<'a, T> {
                     })
                     .collect();
 
-                let mut line = Line::new(&self.program, ls, color)?;
-                line.set_type(r#type.to_owned());
-                res.push(Box::new(line));
+                let line = Line::new(&self.program, ls, color)?;
+                res.lines.push(Box::new(line));
             }
         }
 
