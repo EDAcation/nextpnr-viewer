@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::f32::consts::E;
 
 use anyhow::{bail, Result};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
@@ -16,10 +17,7 @@ use crate::webgl::{
 type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
 type GraphicElements = HashMap<ElementType, GraphicElementCollection>;
 
-struct WebGlElements<'a> {
-    lines: Vec<Box<dyn WebGlElement<'a> + 'a>>,
-    rects: Vec<Box<dyn WebGlElement<'a> + 'a>>,
-}
+type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ColorConfig {
@@ -77,10 +75,7 @@ impl<'a, T> Renderer<'a, T> {
 
             graphic_elements: HashMap::new(),
             graphic_elements_dirty: true,
-            webgl_elements: WebGlElements {
-                lines: vec![],
-                rects: vec![],
-            },
+            webgl_elements: vec![],
             webgl_elements_dirty: true,
             is_rendering: false,
 
@@ -126,10 +121,7 @@ impl<'a, T> Renderer<'a, T> {
                 canvas.height() as f32,
             )
         };
-        for elem in &self.webgl_elements.rects {
-            draw(elem)?
-        }
-        for elem in &self.webgl_elements.lines {
+        for elem in &self.webgl_elements {
             draw(elem)?
         }
 
@@ -309,21 +301,17 @@ impl<'a, T> Renderer<'a, T> {
         &self,
         ges: impl Iterator<Item = GraphicElement>,
     ) -> Result<WebGlElements<'a>> {
+        type Key = (Style, Type, Option<Color>);
+
         // Create 'groups' of elements with the same style, type and color so we can batch them
         // when rendering.
-        let mut groups: HashMap<(Style, Type, Option<Color>), Vec<GraphicElement>> = HashMap::new();
+        let mut groups: HashMap<Key, Vec<GraphicElement>> = HashMap::new();
         for elem in ges {
             let key = (elem.style, elem.r#type, elem.color);
-            groups
-                .entry(key)
-                .and_modify(|v| v.push(elem))
-                .or_insert(vec![elem]);
+            groups.entry(key).or_insert_with(Vec::new).push(elem);
         }
 
-        let mut res = WebGlElements {
-            lines: vec![],
-            rects: vec![],
-        };
+        let mut elems: HashMap<Key, WebGlElements> = HashMap::new();
         for (key, group) in groups.into_iter() {
             if group.len() == 0 || key.0 == Style::Hidden {
                 continue;
@@ -332,6 +320,7 @@ impl<'a, T> Renderer<'a, T> {
                 continue; // Invalid color
             };
 
+            let new_elem: Box<dyn WebGlElement<'a> + 'a>;
             if key.1 == Type::Box {
                 let ls: Vec<_> = group
                     .into_iter()
@@ -365,8 +354,7 @@ impl<'a, T> Renderer<'a, T> {
                     })
                     .collect();
 
-                let line = Line::new(&self.program, ls, color)?;
-                res.lines.push(Box::new(line));
+                new_elem = Box::new(Line::new(&self.program, ls, color)?);
             } else if key.1 == Type::FilledBox {
                 let ls = group
                     .into_iter()
@@ -378,8 +366,7 @@ impl<'a, T> Renderer<'a, T> {
                     })
                     .collect();
 
-                let rect = Rectangle::new(&self.program, ls, color)?;
-                res.rects.push(Box::new(rect));
+                new_elem = Box::new(Rectangle::new(&self.program, ls, color)?);
             } else {
                 let ls = group
                     .into_iter()
@@ -391,11 +378,29 @@ impl<'a, T> Renderer<'a, T> {
                     })
                     .collect();
 
-                let line = Line::new(&self.program, ls, color)?;
-                res.lines.push(Box::new(line));
+                new_elem = Box::new(Line::new(&self.program, ls, color)?);
             }
+
+            elems.entry(key).or_insert_with(Vec::new).push(new_elem);
         }
 
+        let res: WebGlElements = elems
+            .into_iter()
+            .sorted_by_key(|(key, _)| {
+                (
+                    // Draw order: Box-* -> Box-Active -> Line-* -> Line-Active
+                    match key.1 {
+                        Type::FilledBox => 0,
+                        _ => 1,
+                    },
+                    match key.0 {
+                        Style::Active => 1,
+                        _ => 0,
+                    },
+                )
+            })
+            .flat_map(|(_, vec)| vec)
+            .collect();
         return Ok(res);
     }
 }
