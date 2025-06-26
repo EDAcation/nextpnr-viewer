@@ -38,3 +38,5 @@ pub const wire_distance_small: f64 = 0.00085;
 pub const wire_length_lut: f64 = 0.01;
 pub const wire_length: f64 = 0.005;
 pub const wire_length_long: f64 = 0.015;
+
+pub const lc_idx_shift: i32 = 2;
