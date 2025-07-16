@@ -1,4 +1,4 @@
-#![allow(dead_code, non_camel_case_types)]
+#![allow(dead_code, non_camel_case_types, clippy::upper_case_acronyms)]
 
 use std::convert::TryFrom;
 
@@ -10,10 +10,10 @@ impl TryFrom<u32> for ConstId {
     type Error = Error;
 
     fn try_from(val: u32) -> Result<Self> {
-        return match FromPrimitive::from_u32(val) {
+        match FromPrimitive::from_u32(val) {
             Some(res) => Ok(res),
             None => Err(Error::msg("Could not derive ConstId from value")),
-        };
+        }
     }
 }
 

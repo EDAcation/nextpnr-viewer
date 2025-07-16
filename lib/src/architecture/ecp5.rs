@@ -102,7 +102,7 @@ impl Architecture<DecalID> for ECP5Arch {
             };
 
             // Get pip
-            let Some(pip) = loc_info_decal(&decal).and_then(|l| l.pip_data.get(decal.z as usize))
+            let Some(pip) = loc_info_decal(decal).and_then(|l| l.pip_data.get(decal.z as usize))
             else {
                 return vec![];
             };
@@ -155,7 +155,7 @@ impl Architecture<DecalID> for ECP5Arch {
             );
         }
 
-        return vec![];
+        vec![]
     }
 
     fn get_bel_decals(&self) -> Vec<Decal> {
@@ -207,7 +207,7 @@ impl Architecture<DecalID> for ECP5Arch {
             ));
             cursor_index += 1;
         }
-        return ret;
+        ret
     }
 
     fn get_wire_decals(&self) -> Vec<Decal> {
@@ -257,7 +257,7 @@ impl Architecture<DecalID> for ECP5Arch {
             ));
             cursor_index += 1;
         }
-        return ret;
+        ret
     }
 
     fn get_pip_decals(&self) -> Vec<Decal> {
@@ -302,7 +302,7 @@ impl Architecture<DecalID> for ECP5Arch {
 
             cursor_index += 1;
         }
-        return ret;
+        ret
     }
 
     fn get_group_decals(&self) -> Vec<Decal> {
@@ -319,7 +319,7 @@ impl Architecture<DecalID> for ECP5Arch {
             }
         }
 
-        return ret;
+        ret
     }
 
     fn find_pip_decal_by_loc_from_to(
@@ -334,7 +334,7 @@ impl Architecture<DecalID> for ECP5Arch {
         let index: usize = self
             .chipdb
             .locations
-            .get(loc_type.clone() as usize)
+            .get(*loc_type as usize)
             .map(|l| {
                 l.pip_data
                     .iter()
@@ -365,7 +365,7 @@ impl Architecture<DecalID> for ECP5Arch {
                             return false;
                         };
 
-                        return src_wire_data.name == from.name;
+                        src_wire_data.name == from.name
                     })
                     .filter(|(_, pd)| {
                         // To name
@@ -384,14 +384,14 @@ impl Architecture<DecalID> for ECP5Arch {
                             return false;
                         };
 
-                        return dst_wire_data.name == to.name;
+                        dst_wire_data.name == to.name
                     })
                     .map(|(i, _pd)| i) // Convert back into index
                     .collect()
             })
-            .and_then(|v: Vec<usize>| v.get(0).cloned())?;
+            .and_then(|v: Vec<usize>| v.first().cloned())?;
 
-        return Some(Decal::new(
+        Some(Decal::new(
             DecalID::new(
                 decal::ECP5DecalType::TYPE_PIP,
                 location.x as f64,
@@ -411,6 +411,6 @@ impl Architecture<DecalID> for ECP5Arch {
                 to.location.y,
                 to.name
             ),
-        ));
+        ))
     }
 }

@@ -3,10 +3,7 @@ use web_sys::{js_sys, WebGl2RenderingContext, WebGlBuffer, WebGlVertexArrayObjec
 
 use crate::gfx::Color;
 
-use super::{
-    types::{ElementType, WebGlElement},
-    RenderingProgram,
-};
+use super::{types::WebGlElement, RenderingProgram};
 
 /** Struct for rendering rectangle primitives
 
@@ -30,8 +27,6 @@ pub struct RectangleCoords {
 }
 
 pub struct Rectangle {
-    r#type: Option<ElementType>,
-
     color: Color,
 
     vao: WebGlVertexArrayObject,
@@ -104,12 +99,12 @@ impl Rectangle {
         let indices_data: Vec<u32> = (0..rects.len())
             .flat_map(|index| {
                 [
-                    (0 + 4 * index) as u32,
+                    4 * index as u32,
                     (1 + 4 * index) as u32,
                     (3 + 4 * index) as u32, // Triangle 1
                     (3 + 4 * index) as u32,
                     (2 + 4 * index) as u32,
-                    (0 + 4 * index) as u32, // Triangle 2
+                    4 * index as u32, // Triangle 2
                 ]
             })
             .collect();
@@ -144,25 +139,16 @@ impl Rectangle {
         gl.bind_buffer(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, None);
         gl.bind_vertex_array(None);
 
-        return Ok(Rectangle {
-            r#type: None,
+        Ok(Rectangle {
             color,
             vao,
             ebo,
             amount: amount.try_into().unwrap(),
-        });
+        })
     }
 }
 
 impl WebGlElement<'_> for Rectangle {
-    fn set_type(&mut self, r#type: ElementType) {
-        self.r#type = Some(r#type);
-    }
-
-    fn get_type(&self) -> Option<&ElementType> {
-        return self.r#type.as_ref();
-    }
-
     fn draw(
         &self,
         program: &RenderingProgram,
@@ -198,6 +184,6 @@ impl WebGlElement<'_> for Rectangle {
             0.0,
         );
 
-        return Ok(());
+        Ok(())
     }
 }

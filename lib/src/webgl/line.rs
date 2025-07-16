@@ -3,10 +3,7 @@ use web_sys::{js_sys, WebGl2RenderingContext, WebGlVertexArrayObject};
 
 use crate::gfx::Color;
 
-use super::{
-    types::{ElementType, WebGlElement},
-    RenderingProgram,
-};
+use super::{types::WebGlElement, RenderingProgram};
 
 /** Struct for rendering line primitives
 
@@ -30,8 +27,6 @@ pub struct LineCoords {
 }
 
 pub struct Line {
-    r#type: Option<ElementType>,
-
     color: Color,
 
     vao: WebGlVertexArrayObject,
@@ -88,24 +83,15 @@ impl Line {
         gl.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, None);
         gl.bind_vertex_array(None);
 
-        return Ok(Self {
-            r#type: None,
+        Ok(Self {
             color,
             amount: amount.try_into().unwrap(),
             vao,
-        });
+        })
     }
 }
 
 impl WebGlElement<'_> for Line {
-    fn set_type(&mut self, r#type: ElementType) {
-        self.r#type = Some(r#type);
-    }
-
-    fn get_type(&self) -> Option<&ElementType> {
-        return self.r#type.as_ref();
-    }
-
     fn draw(
         &self,
         program: &RenderingProgram,
@@ -132,6 +118,6 @@ impl WebGlElement<'_> for Line {
         gl.bind_vertex_array(Some(&self.vao));
         gl.draw_arrays(WebGl2RenderingContext::LINES, 0, self.amount);
 
-        return Ok(());
+        Ok(())
     }
 }

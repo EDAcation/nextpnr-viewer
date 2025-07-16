@@ -21,7 +21,7 @@ pub fn get_chipdb(chipdata: &[u8]) -> Result<ChipInfoPOD> {
     let offset = cur.read_u32::<LittleEndian>()?;
     cur.set_position(offset as u64);
 
-    return ChipInfoPOD::new(&mut cur);
+    ChipInfoPOD::new(&mut cur)
 }
 
 impl POD for LocationPOD {
