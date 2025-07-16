@@ -20,6 +20,7 @@ pub struct NextpnrBel<'a> {
     pub cell_type: &'a Option<String>,
 }
 
+#[allow(dead_code)]
 pub struct NextpnrElements<'a> {
     pub wires: Vec<String>,
     pub groups: Vec<String>,
@@ -33,6 +34,7 @@ pub struct RoutingPart {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct PipFromTo {
     pub location: WireLocation,
     pub from: Wire,

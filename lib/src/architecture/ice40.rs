@@ -120,14 +120,14 @@ impl Architecture<DecalID> for ICE40Arch {
                 gfx::Style::Inactive
             };
 
-            for i in 0..p.len() {
+            for segment in p {
                 tile_wire(
                     &mut g,
-                    p[i].x.into(),
-                    p[i].y.into(),
+                    segment.x.into(),
+                    segment.y.into(),
                     self.chipdb.width,
                     self.chipdb.height,
-                    &GfxTileWireId::try_from(p[i].index as u32).unwrap(),
+                    &GfxTileWireId::try_from(segment.index as u32).unwrap(),
                     &style,
                 );
             }

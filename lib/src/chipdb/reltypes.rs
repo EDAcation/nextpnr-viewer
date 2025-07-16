@@ -5,6 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 pub type ByteArray<'a> = &'a [u8];
 
+#[allow(clippy::upper_case_acronyms)]
 pub trait POD {
     fn new(cur: &mut Cursor<ByteArray>) -> Result<Self>
     where

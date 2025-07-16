@@ -67,19 +67,20 @@ pub struct Color {
 
 impl Color {
     pub fn float_r(&self) -> f32 {
-        f32::max(0.0, f32::min(255.0, self.r as f32)) / 255.0
+        (self.r as f32).clamp(0.0, 255.0) / 255.0
     }
 
     pub fn float_g(&self) -> f32 {
-        f32::max(0.0, f32::min(255.0, self.g as f32)) / 255.0
+        (self.g as f32).clamp(0.0, 255.0) / 255.0
     }
 
     pub fn float_b(&self) -> f32 {
-        f32::max(0.0, f32::min(255.0, self.b as f32)) / 255.0
+        (self.b as f32).clamp(0.0, 255.0) / 255.0
     }
 }
 
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub struct GraphicElement {
     pub r#type: Type,
     pub style: Style,

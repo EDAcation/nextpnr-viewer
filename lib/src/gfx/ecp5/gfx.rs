@@ -18,7 +18,7 @@
 *
 * Source: https://github.com/YosysHQ/nextpnr/blob/9c2d96f86ed56b77c9c325041b67654f26308270/ecp5/gfx.cc
 */
-#![allow(non_upper_case_globals)]
+#![allow(non_upper_case_globals, clippy::too_many_arguments)]
 
 use super::consts;
 use super::tilewire;
@@ -2715,17 +2715,20 @@ pub fn tile_pip(
         );
     }
 
-    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE && src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
-            && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI
-            && dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
+        && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI
+        && dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE
+        && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE
+    {
         // LUT permutation pseudo-pip
         let src_purpose = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO) % 24;
         let dst_purpose = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) % 24;
         if src_purpose
             >= (tilewire::GfxTileWireId::TILE_WIRE_D7 - tilewire::GfxTileWireId::TILE_WIRE_FCO)
             && src_purpose
-                <= (tilewire::GfxTileWireId::TILE_WIRE_A6
-                    - tilewire::GfxTileWireId::TILE_WIRE_FCO)
+                <= (tilewire::GfxTileWireId::TILE_WIRE_A6 - tilewire::GfxTileWireId::TILE_WIRE_FCO)
             && dst_purpose
                 >= (tilewire::GfxTileWireId::TILE_WIRE_D7_SLICE
                     - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)

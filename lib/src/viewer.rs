@@ -77,28 +77,28 @@ impl ViewerECP5 {
 
     #[wasm_bindgen]
     pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        self.renderer.render(force_first.unwrap_or(true));
+        let _ = self.renderer.render(force_first.unwrap_or(true));
 
         Ok(())
     }
 
     #[wasm_bindgen]
     pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
-        self.renderer.show_json(obj, Chip::ECP5);
+        let _ = self.renderer.show_json(obj, Chip::ECP5);
 
         Ok(())
     }
 
     #[wasm_bindgen]
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
-        self.renderer.zoom(amt, x, y);
+        let _ = self.renderer.zoom(amt, x, y);
 
         Ok(())
     }
 
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
-        self.renderer.pan(x, y);
+        let _ = self.renderer.pan(x, y);
 
         Ok(())
     }
@@ -145,28 +145,28 @@ impl ViewerICE40 {
 
     #[wasm_bindgen]
     pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        self.renderer.render(force_first.unwrap_or(true));
+        let _ = self.renderer.render(force_first.unwrap_or(true));
 
         Ok(())
     }
 
     #[wasm_bindgen]
     pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
-        self.renderer.show_json(obj, Chip::ICE40);
+        let _ = self.renderer.show_json(obj, Chip::ICE40);
 
         Ok(())
     }
 
     #[wasm_bindgen]
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
-        self.renderer.zoom(amt, x, y);
+        let _ = self.renderer.zoom(amt, x, y);
 
         Ok(())
     }
 
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
-        self.renderer.pan(x, y);
+        let _ = self.renderer.pan(x, y);
 
         Ok(())
     }

@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use super::consts;
 use super::tilewire;
 use crate::gfx;

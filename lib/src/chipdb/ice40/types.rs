@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub struct BelWirePOD {
     pub port: i32,
     pub r#type: i32,

@@ -111,6 +111,7 @@ impl<'a, T> Renderer<'a, T> {
         gl.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
 
         // Draw rectangles before lines so that traces appear on top
+        #[allow(clippy::borrowed_box)]
         let draw = |e: &Box<dyn WebGlElement<'a>>| -> Result<()> {
             e.draw(
                 &self.program,
@@ -134,10 +135,7 @@ impl<'a, T> Renderer<'a, T> {
         let json = NextpnrJson::from_jsobj(obj)?;
         let elems = json.get_elements(&chip);
 
-        let wire_map = self
-            .graphic_elements
-            .entry(ElementType::Wire)
-            .or_default();
+        let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
         for wire in elems.wires {
             let Some(ge) = wire_map.get_mut(&wire) else {
                 continue;
@@ -147,10 +145,7 @@ impl<'a, T> Renderer<'a, T> {
             }
         }
 
-        let bel_map = self
-            .graphic_elements
-            .entry(ElementType::Bel)
-            .or_default();
+        let bel_map = self.graphic_elements.entry(ElementType::Bel).or_default();
         for bel in elems.bels {
             let Some(ge) = bel_map.get_mut(bel.nextpnr_bel) else {
                 continue;
@@ -173,10 +168,7 @@ impl<'a, T> Renderer<'a, T> {
             });
         }
 
-        let pip_map = self
-            .graphic_elements
-            .entry(ElementType::Pip)
-            .or_default();
+        let pip_map = self.graphic_elements.entry(ElementType::Pip).or_default();
         pip_map.clear();
         for pip in elems.pips {
             let Some(decal) =
@@ -203,7 +195,7 @@ impl<'a, T> Renderer<'a, T> {
 
         let old_scale = self.scale;
         self.scale *= amt;
-        self.scale = f32::min(4000.0, f32::max(10.0, self.scale));
+        self.scale = self.scale.clamp(10.0, 4000.0);
         amt = self.scale / old_scale;
         if amt == 1.0 {
             return Ok(());
@@ -235,10 +227,7 @@ impl<'a, T> Renderer<'a, T> {
 
         // Wires
         let wire_decals = self.architecture.get_wire_decals();
-        let wire_map = self
-            .graphic_elements
-            .entry(ElementType::Wire)
-            .or_default();
+        let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
         for decal in wire_decals {
             let g = self.architecture.get_decal_graphics(&decal.decal);
             wire_map.insert(decal.id, g);
@@ -246,10 +235,7 @@ impl<'a, T> Renderer<'a, T> {
 
         // BELs
         let bel_decals = self.architecture.get_bel_decals();
-        let bel_map = self
-            .graphic_elements
-            .entry(ElementType::Bel)
-            .or_default();
+        let bel_map = self.graphic_elements.entry(ElementType::Bel).or_default();
         for decal in bel_decals {
             let g = self.architecture.get_decal_graphics(&decal.decal);
             bel_map.insert(decal.id, g);
@@ -257,10 +243,7 @@ impl<'a, T> Renderer<'a, T> {
 
         // Groups
         let group_decals = self.architecture.get_group_decals();
-        let group_map = self
-            .graphic_elements
-            .entry(ElementType::Group)
-            .or_default();
+        let group_map = self.graphic_elements.entry(ElementType::Group).or_default();
         for decal in group_decals {
             let g = self.architecture.get_decal_graphics(&decal.decal);
             group_map.insert(decal.id, g);

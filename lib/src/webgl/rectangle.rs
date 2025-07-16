@@ -3,10 +3,7 @@ use web_sys::{js_sys, WebGl2RenderingContext, WebGlBuffer, WebGlVertexArrayObjec
 
 use crate::gfx::Color;
 
-use super::{
-    types::{ElementType, WebGlElement},
-    RenderingProgram,
-};
+use super::{types::WebGlElement, RenderingProgram};
 
 /** Struct for rendering rectangle primitives
 
@@ -30,8 +27,6 @@ pub struct RectangleCoords {
 }
 
 pub struct Rectangle {
-    r#type: Option<ElementType>,
-
     color: Color,
 
     vao: WebGlVertexArrayObject,
@@ -145,7 +140,6 @@ impl Rectangle {
         gl.bind_vertex_array(None);
 
         Ok(Rectangle {
-            r#type: None,
             color,
             vao,
             ebo,
@@ -155,14 +149,6 @@ impl Rectangle {
 }
 
 impl WebGlElement<'_> for Rectangle {
-    fn set_type(&mut self, r#type: ElementType) {
-        self.r#type = Some(r#type);
-    }
-
-    fn get_type(&self) -> Option<&ElementType> {
-        return self.r#type.as_ref();
-    }
-
     fn draw(
         &self,
         program: &RenderingProgram,

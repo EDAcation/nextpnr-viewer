@@ -11,10 +11,6 @@ pub enum ElementType {
 }
 
 pub trait WebGlElement<'a> {
-    fn set_type(&mut self, r#type: ElementType);
-
-    fn get_type(&self) -> Option<&ElementType>;
-
     fn draw(
         &self,
         program: &RenderingProgram,

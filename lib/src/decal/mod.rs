@@ -1,6 +1,7 @@
 mod ecp5;
 mod ice40;
 
+#[allow(dead_code)]
 pub struct DecalXY<DecalID> {
     pub decal: DecalID,
     pub x: f64,

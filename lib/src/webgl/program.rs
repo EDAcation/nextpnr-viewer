@@ -175,6 +175,7 @@ impl RenderingProgram {
     }
 
     /** Sets a Vec3f uniform by name */
+    #[allow(dead_code)]
     pub fn set_uniform_vec_3f(&self, name: &String, a: f32, b: f32, c: f32) -> Result<()> {
         let location = self.get_uniform_location(name)?;
         self.context.uniform3f(Some(&location), a, b, c);
