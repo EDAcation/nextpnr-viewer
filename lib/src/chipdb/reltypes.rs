@@ -26,7 +26,7 @@ fn seek_and_read<T>(
     // Seek back to original position
     cur.set_position(old_pos);
 
-    return res;
+    res
 }
 
 fn read_relarr<T>(
@@ -46,9 +46,9 @@ fn read_relarr<T>(
         for _ in 0..len {
             res.push(func(c)?);
         }
-        return Ok::<Vec<T>>(res);
+        Ok::<Vec<T>>(res)
     })?;
-    return Ok(res);
+    Ok(res)
 }
 
 pub fn read_relstring(cur: &mut Cursor<ByteArray>) -> Result<String> {
@@ -59,7 +59,7 @@ pub fn read_relstring(cur: &mut Cursor<ByteArray>) -> Result<String> {
         return Ok(String::new());
     }
 
-    return seek_and_read(cur, offset - 4, |c| {
+    seek_and_read(cur, offset - 4, |c| {
         let mut res = String::new();
         while let StdResult::Ok(chr) = c.read_u8() {
             if chr == 0 {
@@ -69,29 +69,29 @@ pub fn read_relstring(cur: &mut Cursor<ByteArray>) -> Result<String> {
             res.push(chr as char);
         }
 
-        return Ok::<String>(res);
-    });
+        Ok::<String>(res)
+    })
 }
 
 pub fn read_relptr<T: POD>(cur: &mut Cursor<ByteArray>) -> Result<T> {
     // 4-byte header
     let offset = cur.read_i32::<LittleEndian>()?;
 
-    return seek_and_read(cur, offset - 4, |c| T::new(c));
+    seek_and_read(cur, offset - 4, |c| T::new(c))
 }
 
 pub fn read_relslice<T: POD>(cur: &mut Cursor<ByteArray>) -> Result<Vec<T>> {
-    return read_relarr(cur, |c| T::new(c));
+    read_relarr(cur, |c| T::new(c))
 }
 
 pub fn read_relstringarr(cur: &mut Cursor<ByteArray>) -> Result<Vec<String>> {
-    return read_relarr(cur, |c: &mut Cursor<ByteArray>| read_relstring(c));
+    read_relarr(cur, |c: &mut Cursor<ByteArray>| read_relstring(c))
 }
 
 pub fn read_reli32arr(cur: &mut Cursor<ByteArray>) -> Result<Vec<i32>> {
-    return read_relarr(cur, |c| Ok(c.read_i32::<LittleEndian>()?));
+    read_relarr(cur, |c| Ok(c.read_i32::<LittleEndian>()?))
 }
 
 pub fn read_relu32arr(cur: &mut Cursor<ByteArray>) -> Result<Vec<u32>> {
-    return read_relarr(cur, |c| Ok(c.read_u32::<LittleEndian>()?));
+    read_relarr(cur, |c| Ok(c.read_u32::<LittleEndian>()?))
 }

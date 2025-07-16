@@ -59,17 +59,17 @@ enum ShaderType {
 
 impl ShaderType {
     fn to_gl_type(&self) -> u32 {
-        return match self {
+        match self {
             ShaderType::Vertex => WebGl2RenderingContext::VERTEX_SHADER,
             ShaderType::Fragment => WebGl2RenderingContext::FRAGMENT_SHADER,
-        };
+        }
     }
 
     fn to_string(&self) -> &str {
-        return match self {
+        match self {
             ShaderType::Vertex => "vertex",
             ShaderType::Fragment => "fragment",
-        };
+        }
     }
 }
 
@@ -104,7 +104,7 @@ fn compile_shader(
         );
     }
 
-    return Ok(shader);
+    Ok(shader)
 }
 
 fn link_shaders(
@@ -134,7 +134,7 @@ fn link_shaders(
         bail!("SHADER_LINK_FAILED: Failed to link program:\n{}", info);
     }
 
-    return Ok(program);
+    Ok(program)
 }
 
 pub struct RenderingProgram {
@@ -148,11 +148,11 @@ impl RenderingProgram {
         let fragment_shader = compile_shader(&context, DEFAULT_FRAGMENT_SRC, ShaderType::Fragment)?;
         let program = link_shaders(&context, vertex_shader, fragment_shader)?;
 
-        return Ok(RenderingProgram { context, program });
+        Ok(RenderingProgram { context, program })
     }
 
     pub fn get_gl(&self) -> &WebGl2RenderingContext {
-        return &self.context;
+        &self.context
     }
 
     /** Marks the program for use on the context that was passed in the constructor */
@@ -164,28 +164,28 @@ impl RenderingProgram {
     pub fn set_uniform_float(&self, name: &String, a: f32) -> Result<()> {
         let location = self.get_uniform_location(name)?;
         self.context.uniform1f(Some(&location), a);
-        return Ok(());
+        Ok(())
     }
 
     /** Sets a Vec2f uniform by name */
     pub fn set_uniform_vec_2f(&self, name: &String, a: f32, b: f32) -> Result<()> {
         let location = self.get_uniform_location(name)?;
         self.context.uniform2f(Some(&location), a, b);
-        return Ok(());
+        Ok(())
     }
 
     /** Sets a Vec3f uniform by name */
     pub fn set_uniform_vec_3f(&self, name: &String, a: f32, b: f32, c: f32) -> Result<()> {
         let location = self.get_uniform_location(name)?;
         self.context.uniform3f(Some(&location), a, b, c);
-        return Ok(());
+        Ok(())
     }
 
     /** Sets a Vec4f uniform by name */
     pub fn set_uniform_vec_4f(&self, name: &String, a: f32, b: f32, c: f32, d: f32) -> Result<()> {
         let location = self.get_uniform_location(name)?;
         self.context.uniform4f(Some(&location), a, b, c, d);
-        return Ok(());
+        Ok(())
     }
 
     fn get_uniform_location(&self, name: &String) -> Result<WebGlUniformLocation> {
@@ -196,6 +196,6 @@ impl RenderingProgram {
             );
         };
 
-        return Ok(location);
+        Ok(location)
     }
 }

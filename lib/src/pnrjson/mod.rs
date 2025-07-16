@@ -42,18 +42,18 @@ pub struct PipFromTo {
 
 fn parse_wire(s: String, delimiter: &str) -> Option<Wire> {
     let parts: Vec<_> = s.splitn(3, delimiter).collect();
-    return Some(Wire {
+    Some(Wire {
         location: WireLocation {
-            x: parts.get(0)?.parse().ok()?,
+            x: parts.first()?.parse().ok()?,
             y: parts.get(1)?.parse().ok()?,
         },
         name: parts.get(2)?.to_string(),
-    });
+    })
 }
 
 fn parse_pip_from_to(s: String, chip: &Chip) -> Option<PipFromTo> {
     let parts: Vec<_> = s.splitn(3, '/').collect();
-    let x = match parts.get(0)? {
+    let x = match parts.first()? {
         &"" => return None,
         x_str => x_str[1..].parse().ok()?,
     };
@@ -68,15 +68,15 @@ fn parse_pip_from_to(s: String, chip: &Chip) -> Option<PipFromTo> {
     };
 
     let pip_parts: Vec<_> = parts.get(2)?.splitn(2, pip_delim).collect();
-    let pip_from = parse_wire(pip_parts.get(0)?.to_string(), wire_delim)?;
+    let pip_from = parse_wire(pip_parts.first()?.to_string(), wire_delim)?;
     let pip_to = parse_wire(pip_parts.get(1)?.to_string(), wire_delim)?;
 
-    return Some(PipFromTo {
+    Some(PipFromTo {
         location: WireLocation { x, y },
         from: pip_from,
         to: pip_to,
         name: s,
-    });
+    })
 }
 
 impl Netname {
@@ -86,8 +86,8 @@ impl Netname {
             .chunks(3)
             .filter_map(|c| {
                 Some(RoutingPart {
-                    wire_id: c.get(0)?.to_string(),
-                    pip: parse_pip_from_to(c.get(1)?.to_string(), &chip)?,
+                    wire_id: c.first()?.to_string(),
+                    pip: parse_pip_from_to(c.get(1)?.to_string(), chip)?,
                 })
             })
             .collect();
@@ -98,13 +98,13 @@ impl NextpnrJson {
     pub fn from_jsobj(val: INextpnrJSON) -> Result<Self> {
         match serde_wasm_bindgen::from_value(val.into()) {
             Ok(r) => anyhow::Ok(r),
-            Err(e) => return Err(Error::msg(e.to_string())),
+            Err(e) => Err(Error::msg(e.to_string())),
         }
     }
 
     pub fn get_elements(&self, chip: &Chip) -> NextpnrElements<'_> {
         let bels = self.get_bels();
-        let all_routings = self.get_all_routings(&chip);
+        let all_routings = self.get_all_routings(chip);
 
         return NextpnrElements {
             wires: all_routings.iter().map(|r| r.wire_id.clone()).collect(),
@@ -119,8 +119,7 @@ impl NextpnrJson {
             .top
             .netnames
             .values()
-            .map(|nn| nn.get_routing(&chip))
-            .flatten()
+            .flat_map(|nn| nn.get_routing(chip))
             .collect()
     }
 

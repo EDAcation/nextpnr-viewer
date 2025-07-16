@@ -25,10 +25,10 @@ impl TryFrom<u32> for GfxTileWireId {
     type Error = Error;
 
     fn try_from(val: u32) -> Result<Self> {
-        return match FromPrimitive::from_u32(val) {
+        match FromPrimitive::from_u32(val) {
             Some(res) => Ok(res),
             None => Err(Error::msg("Could not derive GfxTileWireId from value")),
-        };
+        }
     }
 }
 

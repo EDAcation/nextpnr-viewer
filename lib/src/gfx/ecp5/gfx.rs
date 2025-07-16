@@ -43,7 +43,7 @@ pub fn tile_bel(
     style: &gfx::Style,
 ) -> Vec<gfx::GraphicElement> {
     let mut g = vec![];
-    let mut el = gfx::GraphicElement::new(gfx::Type::Box, style.clone());
+    let mut el = gfx::GraphicElement::new(gfx::Type::Box, *style);
 
     if bel_type == &gfx::ecp5::ConstId::TRELLIS_COMB {
         let lc = z >> consts::lc_idx_shift;
@@ -131,8 +131,8 @@ pub fn tile_bel(
             }
         } else {
             if x as i32 == 0 {
-                el.x1 = x as f64 + 1.0 - consts::io_cell_v_x1;
-                el.x2 = x as f64 + 1.0 - consts::io_cell_v_x2;
+                el.x1 = x + 1.0 - consts::io_cell_v_x1;
+                el.x2 = x + 1.0 - consts::io_cell_v_x2;
             } else {
                 el.x1 = x + consts::io_cell_v_x1;
                 el.x2 = x + consts::io_cell_v_x2;
@@ -201,7 +201,7 @@ pub fn tile_bel(
         g.push(el);
     }
 
-    return g;
+    g
 }
 
 pub fn tile_wire(
@@ -214,7 +214,7 @@ pub fn tile_wire(
     style: &gfx::Style,
 ) -> Vec<gfx::GraphicElement> {
     let mut g: Vec<gfx::GraphicElement> = vec![];
-    let mut el = gfx::GraphicElement::new(gfx::Type::Line, style.clone());
+    let mut el = gfx::GraphicElement::new(gfx::Type::Line, *style);
 
     if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE
         && tilewire != &tilewire::GfxTileWireId::TILE_WIRE_NONE
@@ -1167,7 +1167,7 @@ pub fn tile_wire(
         g.push(el);
     }
 
-    return g;
+    g
 }
 
 fn set_source(
@@ -1878,7 +1878,7 @@ fn to_same_side_hor(
         + sign as f64 * consts::wire_distance * idx as f64;
     g.push(*el);
 
-    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     set_destination(&mut el2, x, y, w, h, dst, dst_type, dst_id);
 
@@ -1916,7 +1916,7 @@ fn to_same_side_ver(
     el.y2 = el.y1;
     g.push(*el);
 
-    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     set_destination(&mut el2, x, y, w, h, dst, dst_type, dst_id);
 
@@ -1951,7 +1951,7 @@ fn to_same_side_h1_ver(
     el.y2 = el.y1;
     g.push(*el);
 
-    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     set_destination(&mut el2, x, y, w, h, dst, dst_type, dst_id);
 
@@ -1982,7 +1982,7 @@ fn to_same_side_h1_hor(
 ) {
     set_source(el, x, y, w, h, src, src_type, src_id);
 
-    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     set_destination(&mut el2, x, y, w, h, dst, dst_type, dst_id);
     if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
@@ -2025,7 +2025,7 @@ fn to_same_side_v1_ver(
         - consts::wire_distance * idx as f64;
     g.push(*el);
 
-    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     set_destination(&mut el2, x, y, w, h, dst, dst_type, dst_id);
 
@@ -2052,7 +2052,7 @@ pub fn tile_pip(
     style: &gfx::Style,
 ) -> Vec<gfx::GraphicElement> {
     let mut g: Vec<gfx::GraphicElement> = vec![];
-    let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     // To H00
     if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
@@ -2693,11 +2693,9 @@ pub fn tile_pip(
         );
     }
     if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
-        && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
-            && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JCE0)
+        && dst_id == &tilewire::GfxTileWireId::TILE_WIRE_JCE0
         && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
-        && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
-            && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JCE0)
+        && src_id == &tilewire::GfxTileWireId::TILE_WIRE_JCE0
     {
         to_same_side_ver(
             &mut g,
@@ -2717,33 +2715,27 @@ pub fn tile_pip(
         );
     }
 
-    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE
-        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
-    {
-        if src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE && src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI
-            && dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE
-            && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE
+            && dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI_SLICE {
+        // LUT permutation pseudo-pip
+        let src_purpose = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO) % 24;
+        let dst_purpose = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) % 24;
+        if src_purpose
+            >= (tilewire::GfxTileWireId::TILE_WIRE_D7 - tilewire::GfxTileWireId::TILE_WIRE_FCO)
+            && src_purpose
+                <= (tilewire::GfxTileWireId::TILE_WIRE_A6
+                    - tilewire::GfxTileWireId::TILE_WIRE_FCO)
+            && dst_purpose
+                >= (tilewire::GfxTileWireId::TILE_WIRE_D7_SLICE
+                    - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)
+            && dst_purpose
+                <= (tilewire::GfxTileWireId::TILE_WIRE_A6_SLICE
+                    - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)
         {
-            // LUT permutation pseudo-pip
-            let src_purpose = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO) % 24;
-            let dst_purpose = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE) % 24;
-            if src_purpose
-                >= (tilewire::GfxTileWireId::TILE_WIRE_D7 - tilewire::GfxTileWireId::TILE_WIRE_FCO)
-                && src_purpose
-                    <= (tilewire::GfxTileWireId::TILE_WIRE_A6
-                        - tilewire::GfxTileWireId::TILE_WIRE_FCO)
-                && dst_purpose
-                    >= (tilewire::GfxTileWireId::TILE_WIRE_D7_SLICE
-                        - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)
-                && dst_purpose
-                    <= (tilewire::GfxTileWireId::TILE_WIRE_A6_SLICE
-                        - tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE)
-            {
-                lut_perm_pip(
-                    &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
-                );
-            }
+            lut_perm_pip(
+                &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
+            );
         }
     }
 
@@ -2863,5 +2855,5 @@ pub fn tile_pip(
         );
     }
 
-    return g;
+    g
 }

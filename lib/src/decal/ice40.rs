@@ -61,10 +61,10 @@ impl TryFrom<i8> for ICE40GroupType {
     type Error = Error;
 
     fn try_from(val: i8) -> Result<Self> {
-        return match FromPrimitive::from_i8(val) {
+        match FromPrimitive::from_i8(val) {
             Some(res) => Ok(res),
             None => Err(Error::msg("Could not derive ConstId from value")),
-        };
+        }
     }
 }
 
@@ -109,7 +109,7 @@ impl ICE40GroupId {
     }
 
     pub fn name(&self) -> String {
-        return match self.r#type {
+        match self.r#type {
             ICE40GroupType::TYPE_FRAME => "tile".to_string(),
             ICE40GroupType::TYPE_MAIN_SW => "main_sw".to_string(),
             ICE40GroupType::TYPE_LOCAL_SW => "local_sw".to_string(),
@@ -122,7 +122,7 @@ impl ICE40GroupId {
             ICE40GroupType::TYPE_LC6_SW => "lc6_sw".to_string(),
             ICE40GroupType::TYPE_LC7_SW => "lc7_sw".to_string(),
             _ => "UNKNOWN_GROUP".to_string(),
-        };
+        }
     }
 }
 
@@ -130,10 +130,10 @@ impl TryFrom<u32> for ICE40TileType {
     type Error = Error;
 
     fn try_from(val: u32) -> Result<Self> {
-        return match FromPrimitive::from_u32(val) {
+        match FromPrimitive::from_u32(val) {
             Some(res) => Ok(res),
             None => Err(Error::msg("Could not derive ConstId from value")),
-        };
+        }
     }
 }
 

@@ -11,7 +11,7 @@ pub fn tile_wire(
     src_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
 ) {
-    let mut el = gfx::GraphicElement::new(gfx::Type::Line, style.clone());
+    let mut el = gfx::GraphicElement::new(gfx::Type::Line, *style);
 
     // Horizontal Span-4 Wires
 
@@ -978,7 +978,7 @@ pub fn get_wire_xy_main(tilewire: &tilewire::GfxTileWireId) -> Option<(f64, f64)
         return Some((x, y));
     }
 
-    return None;
+    None
 }
 
 pub fn get_wire_xy_local(tilewire: &tilewire::GfxTileWireId) -> Option<(f64, f64)> {
@@ -1005,7 +1005,7 @@ pub fn get_wire_xy_local(tilewire: &tilewire::GfxTileWireId) -> Option<(f64, f64
         return Some((x, y));
     }
 
-    return None;
+    None
 }
 
 pub fn pip(
@@ -1026,7 +1026,7 @@ pub fn pip(
     let mut ty = 0.5 * (y1 + y2);
     let mut edge_pip = false;
 
-    let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+    let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
     if (x1 - swx1).abs() < 0.001 && (x2 - swx1).abs() < 0.001 {
         tx = swx1 + 0.25 * (y1 - y2).abs();
@@ -1123,7 +1123,7 @@ pub fn tile_pip(
         let lut_idx = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0_LUT) / 4;
         let in_idx = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0_LUT) % 4;
 
-        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
         el.x1 = x + consts::logic_cell_x1;
         el.x2 = x + consts::logic_cell_x2;
@@ -1147,7 +1147,7 @@ pub fn tile_pip(
         let in_idx = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0) % 4;
         let out_idx = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0_LUT) % 4;
 
-        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
         el.x1 = x + consts::lut_swbox_x1;
         el.x2 = x + consts::lut_swbox_x2;
@@ -1171,7 +1171,7 @@ pub fn tile_pip(
     {
         let lut_idx = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0) / 4;
 
-        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
         el.x1 = x + (consts::local_swbox_x2 + consts::lut_swbox_x1) / 2.0;
         el.x2 = el.x1;
         el.y1 = y + (consts::logic_cell_y1 + consts::logic_cell_y2) / 2.0 + 0.0075 - (0.005 * 3.0)
@@ -1196,7 +1196,7 @@ pub fn tile_pip(
     {
         let lut_idx = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0) / 4;
 
-        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
         el.x1 = x + (consts::local_swbox_x2 + consts::lut_swbox_x1) / 2.0 + 0.005;
         el.x2 = el.x1;
@@ -1217,13 +1217,12 @@ pub fn tile_pip(
     if src_id == &tilewire::GfxTileWireId::TILE_WIRE_CARRY_IN
         && dst_id == &tilewire::GfxTileWireId::TILE_WIRE_CARRY_IN_MUX
     {
-        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
+        let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, *style);
 
         el.x1 = x + consts::logic_cell_x1 + 0.005 * 3.0;
         el.x2 = el.x1;
         el.y1 = y + 0.01;
         el.y2 = y + 0.02;
         g.push(el);
-        return;
     }
 }

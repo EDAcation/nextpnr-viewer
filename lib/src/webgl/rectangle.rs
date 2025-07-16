@@ -104,12 +104,12 @@ impl Rectangle {
         let indices_data: Vec<u32> = (0..rects.len())
             .flat_map(|index| {
                 [
-                    (0 + 4 * index) as u32,
+                    4 * index as u32,
                     (1 + 4 * index) as u32,
                     (3 + 4 * index) as u32, // Triangle 1
                     (3 + 4 * index) as u32,
                     (2 + 4 * index) as u32,
-                    (0 + 4 * index) as u32, // Triangle 2
+                    4 * index as u32, // Triangle 2
                 ]
             })
             .collect();
@@ -144,13 +144,13 @@ impl Rectangle {
         gl.bind_buffer(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, None);
         gl.bind_vertex_array(None);
 
-        return Ok(Rectangle {
+        Ok(Rectangle {
             r#type: None,
             color,
             vao,
             ebo,
             amount: amount.try_into().unwrap(),
-        });
+        })
     }
 }
 
@@ -198,6 +198,6 @@ impl WebGlElement<'_> for Rectangle {
             0.0,
         );
 
-        return Ok(());
+        Ok(())
     }
 }

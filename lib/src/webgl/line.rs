@@ -88,12 +88,12 @@ impl Line {
         gl.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, None);
         gl.bind_vertex_array(None);
 
-        return Ok(Self {
+        Ok(Self {
             r#type: None,
             color,
             amount: amount.try_into().unwrap(),
             vao,
-        });
+        })
     }
 }
 
@@ -132,6 +132,6 @@ impl WebGlElement<'_> for Line {
         gl.bind_vertex_array(Some(&self.vao));
         gl.draw_arrays(WebGl2RenderingContext::LINES, 0, self.amount);
 
-        return Ok(());
+        Ok(())
     }
 }

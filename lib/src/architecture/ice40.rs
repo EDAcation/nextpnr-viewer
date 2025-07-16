@@ -250,7 +250,7 @@ impl Architecture<DecalID> for ICE40Arch {
             }
         }
 
-        return g;
+        g
     }
 
     fn get_bel_decals(&self) -> Vec<Decal> {
@@ -383,29 +383,29 @@ impl Architecture<DecalID> for ICE40Arch {
             .enumerate()
             .filter(|(_i, pip)| {
                 // Pip location
-                return location.x == pip.x.into() && location.y == pip.y.into();
+                location.x == pip.x.into() && location.y == pip.y.into()
             })
             .filter(|(_i, pip)| {
                 // Pip source wire
                 let src_wire = &self.chipdb.wire_data[pip.src as usize];
-                return from.location.x == src_wire.x.into()
+                from.location.x == src_wire.x.into()
                     && from.location.y == src_wire.y.into()
-                    && src_wire.name == from.name;
+                    && src_wire.name == from.name
             })
             .filter(|(_i, pip)| {
                 // Pip dest wire
                 let dst_wire = &self.chipdb.wire_data[pip.dst as usize];
-                return to.location.x == dst_wire.x.into()
+                to.location.x == dst_wire.x.into()
                     && to.location.y == dst_wire.y.into()
-                    && dst_wire.name == to.name;
+                    && dst_wire.name == to.name
             })
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
 
-        let index = pips.get(0)?.clone() as i32;
+        let index = *pips.first()? as i32;
 
-        return Some(Decal::new(
-            DecalID::new(decal::ICE40DecalType::TYPE_PIP, index as i32, true),
+        Some(Decal::new(
+            DecalID::new(decal::ICE40DecalType::TYPE_PIP, index, true),
             0.0,
             0.0,
             format!(
@@ -419,6 +419,6 @@ impl Architecture<DecalID> for ICE40Arch {
                 to.location.y,
                 to.name
             ),
-        ));
+        ))
     }
 }
