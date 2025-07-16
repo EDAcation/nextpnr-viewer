@@ -16,7 +16,7 @@ pub struct BelWirePOD {
 
 pub struct BelInfoPOD {
     pub name: String,
-    pub r#type: gfx::ConstId,
+    pub r#type: gfx::ecp5::ConstId,
     pub z: i32,
     pub bel_wires: Vec<BelWirePOD>,
 }
@@ -46,7 +46,7 @@ pub struct PipLocatorPOD {
 
 pub struct WireInfoPOD {
     pub name: String,
-    pub r#type: gfx::ConstId,
+    pub r#type: gfx::ecp5::ConstId,
     pub tile_wire: gfx::ecp5::GfxTileWireId,
     pub pips_uphill: Vec<PipLocatorPOD>,
     pub pips_downhill: Vec<PipLocatorPOD>,

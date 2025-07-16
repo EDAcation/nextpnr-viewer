@@ -35,7 +35,7 @@ fn read_relarr<T>(
 ) -> Result<Vec<T>> {
     // 8-byte header
     let offset = cur.read_i32::<LittleEndian>()?;
-    let len = cur.read_i32::<LittleEndian>()?;
+    let len = cur.read_u32::<LittleEndian>()?;
 
     if len == 0 {
         return Ok(vec![]);
@@ -59,7 +59,7 @@ pub fn read_relstring(cur: &mut Cursor<ByteArray>) -> Result<String> {
         return Ok(String::new());
     }
 
-    let res = seek_and_read(cur, offset - 4, |c| {
+    return seek_and_read(cur, offset - 4, |c| {
         let mut res = String::new();
         while let StdResult::Ok(chr) = c.read_u8() {
             if chr == 0 {
@@ -70,9 +70,14 @@ pub fn read_relstring(cur: &mut Cursor<ByteArray>) -> Result<String> {
         }
 
         return Ok::<String>(res);
-    })?;
+    });
+}
 
-    return Ok(res);
+pub fn read_relptr<T: POD>(cur: &mut Cursor<ByteArray>) -> Result<T> {
+    // 4-byte header
+    let offset = cur.read_i32::<LittleEndian>()?;
+
+    return seek_and_read(cur, offset - 4, |c| T::new(c));
 }
 
 pub fn read_relslice<T: POD>(cur: &mut Cursor<ByteArray>) -> Result<Vec<T>> {
@@ -85,4 +90,8 @@ pub fn read_relstringarr(cur: &mut Cursor<ByteArray>) -> Result<Vec<String>> {
 
 pub fn read_reli32arr(cur: &mut Cursor<ByteArray>) -> Result<Vec<i32>> {
     return read_relarr(cur, |c| Ok(c.read_i32::<LittleEndian>()?));
+}
+
+pub fn read_relu32arr(cur: &mut Cursor<ByteArray>) -> Result<Vec<u32>> {
+    return read_relarr(cur, |c| Ok(c.read_u32::<LittleEndian>()?));
 }

@@ -1,4 +1,5 @@
 mod ecp5;
+mod ice40;
 
 pub struct DecalXY<DecalID> {
     pub decal: DecalID,
@@ -14,3 +15,4 @@ impl<DecalID> DecalXY<DecalID> {
 }
 
 pub use ecp5::{ECP5DecalID, ECP5DecalType};
+pub use ice40::{ICE40DecalID, ICE40DecalType, ICE40GroupId, ICE40GroupType, ICE40TileType};

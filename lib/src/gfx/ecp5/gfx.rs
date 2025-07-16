@@ -39,13 +39,13 @@ pub fn tile_bel(
     z: i32,
     _w: i32,
     h: i32,
-    bel_type: &gfx::ConstId,
+    bel_type: &gfx::ecp5::ConstId,
     style: &gfx::Style,
 ) -> Vec<gfx::GraphicElement> {
     let mut g = vec![];
     let mut el = gfx::GraphicElement::new(gfx::Type::Box, style.clone());
 
-    if bel_type == &gfx::ConstId::TRELLIS_COMB {
+    if bel_type == &gfx::ecp5::ConstId::TRELLIS_COMB {
         let lc = z >> consts::lc_idx_shift;
 
         el.x1 = x + consts::slice_x1 + consts::slice_comb_dx1;
@@ -99,7 +99,7 @@ pub fn tile_bel(
             + 0.25 * consts::wire_distance;
         el.y1 = el.y2 - 3.5 * consts::wire_distance;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::TRELLIS_FF {
+    } else if bel_type == &gfx::ecp5::ConstId::TRELLIS_FF {
         let lc = z >> consts::lc_idx_shift;
         el.x1 = x + consts::slice_x1 + consts::slice_ff_dx1;
         el.x2 = el.x1 + consts::slice_ff_w;
@@ -113,10 +113,10 @@ pub fn tile_bel(
             });
         el.y2 = el.y1 + consts::slice_comb_h;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::TRELLIS_IO
-        || bel_type == &gfx::ConstId::IOLOGIC
-        || bel_type == &gfx::ConstId::SIOLOGIC
-        || bel_type == &gfx::ConstId::DQSBUFM
+    } else if bel_type == &gfx::ecp5::ConstId::TRELLIS_IO
+        || bel_type == &gfx::ecp5::ConstId::IOLOGIC
+        || bel_type == &gfx::ecp5::ConstId::SIOLOGIC
+        || bel_type == &gfx::ecp5::ConstId::DQSBUFM
     {
         let top_bottom = y as i32 == 0 || y as i32 == (h - 1);
         if top_bottom {
@@ -141,58 +141,58 @@ pub fn tile_bel(
             el.y2 = y + consts::io_cell_v_y1 + z as f64 * consts::io_cell_gap + 0.08;
         }
         g.push(el);
-    } else if bel_type == &gfx::ConstId::DCCA {
+    } else if bel_type == &gfx::ecp5::ConstId::DCCA {
         el.x1 = x + consts::switchbox_x1 + z as f64 * 0.025;
         el.y1 = y + 0.14;
         el.x2 = x + consts::switchbox_x1 + z as f64 * 0.025 + 0.020;
         el.y2 = y + 0.18;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::DP16KD
-        || bel_type == &gfx::ConstId::MULT18X18D
-        || bel_type == &gfx::ConstId::ALU54B
+    } else if bel_type == &gfx::ecp5::ConstId::DP16KD
+        || bel_type == &gfx::ecp5::ConstId::MULT18X18D
+        || bel_type == &gfx::ecp5::ConstId::ALU54B
     {
         el.x1 = x + consts::slice_x1;
         el.x2 = x + consts::slice_x2_wide;
         el.y1 = y + consts::slice_y1 - 1.0 * consts::slice_pitch;
         el.y2 = y + consts::slice_y2 + 3.0 * consts::slice_pitch;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::EHXPLLL {
+    } else if bel_type == &gfx::ecp5::ConstId::EHXPLLL {
         el.x1 = x + consts::slice_x1;
         el.x2 = x + consts::slice_x2_wide;
         el.y1 = y + consts::slice_y1;
         el.y2 = y + consts::slice_y2;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::DCUA {
+    } else if bel_type == &gfx::ecp5::ConstId::DCUA {
         el.x1 = x + consts::slice_x1;
         el.x2 = x + consts::slice_x2_wide;
         el.y1 = y + consts::slice_y2;
         el.y2 = y + 0.25;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::EXTREFB
-        || bel_type == &gfx::ConstId::PCSCLKDIV
-        || bel_type == &gfx::ConstId::DTR
-        || bel_type == &gfx::ConstId::USRMCLK
-        || bel_type == &gfx::ConstId::SEDGA
-        || bel_type == &gfx::ConstId::GSR
-        || bel_type == &gfx::ConstId::JTAGG
-        || bel_type == &gfx::ConstId::OSCG
+    } else if bel_type == &gfx::ecp5::ConstId::EXTREFB
+        || bel_type == &gfx::ecp5::ConstId::PCSCLKDIV
+        || bel_type == &gfx::ecp5::ConstId::DTR
+        || bel_type == &gfx::ecp5::ConstId::USRMCLK
+        || bel_type == &gfx::ecp5::ConstId::SEDGA
+        || bel_type == &gfx::ecp5::ConstId::GSR
+        || bel_type == &gfx::ecp5::ConstId::JTAGG
+        || bel_type == &gfx::ecp5::ConstId::OSCG
     {
         el.x1 = x + consts::slice_x1;
         el.x2 = x + consts::slice_x2_wide;
         el.y1 = y + consts::slice_y1 + z as f64 * consts::slice_pitch;
         el.y2 = y + consts::slice_y2 + z as f64 * consts::slice_pitch;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::DDRDLL {
+    } else if bel_type == &gfx::ecp5::ConstId::DDRDLL {
         el.x1 = x + consts::dll_cell_x1;
         el.x2 = x + consts::dll_cell_x2;
         el.y1 = y + consts::dll_cell_y1;
         el.y2 = y + consts::dll_cell_y2;
         g.push(el);
-    } else if bel_type == &gfx::ConstId::DLLDELD
-        || bel_type == &gfx::ConstId::CLKDIVF
-        || bel_type == &gfx::ConstId::ECLKSYNCB
-        || bel_type == &gfx::ConstId::TRELLIS_ECLKBUF
-        || bel_type == &gfx::ConstId::ECLKBRIDGECS
+    } else if bel_type == &gfx::ecp5::ConstId::DLLDELD
+        || bel_type == &gfx::ecp5::ConstId::CLKDIVF
+        || bel_type == &gfx::ecp5::ConstId::ECLKSYNCB
+        || bel_type == &gfx::ecp5::ConstId::TRELLIS_ECLKBUF
+        || bel_type == &gfx::ecp5::ConstId::ECLKBRIDGECS
     {
         el.x1 = x + 0.1 + z as f64 * 0.05;
         el.x2 = x + 0.14 + z as f64 * 0.05;
@@ -209,14 +209,14 @@ pub fn tile_wire(
     y: f64,
     w: i32,
     h: i32,
-    wire_type: &gfx::ConstId,
+    wire_type: &gfx::ecp5::ConstId,
     tilewire: &tilewire::GfxTileWireId,
     style: &gfx::Style,
 ) -> Vec<gfx::GraphicElement> {
     let mut g: Vec<gfx::GraphicElement> = vec![];
     let mut el = gfx::GraphicElement::new(gfx::Type::Line, style.clone());
 
-    if wire_type == &gfx::ConstId::WIRE_TYPE_SLICE
+    if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE
         && tilewire != &tilewire::GfxTileWireId::TILE_WIRE_NONE
     {
         if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE
@@ -276,7 +276,7 @@ pub fn tile_wire(
             el.y2 = el.y1;
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02 {
         if x as i32 == 0 {
             el.x1 = 0.9;
         } else {
@@ -355,7 +355,7 @@ pub fn tile_wire(
         if x as i32 != 0 && x as i32 != 1 {
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02 {
         if y as i32 == 0 {
             el.y1 = 0.9;
         } else {
@@ -434,7 +434,7 @@ pub fn tile_wire(
         if y as i32 != 0 && y as i32 != 1 {
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06 {
         if x as i32 == 0 {
             el.x1 = 0.9;
         } else {
@@ -513,7 +513,7 @@ pub fn tile_wire(
         if x as i32 != 0 && x as i32 != 1 && x as i32 != 2 && x as i32 != 3 {
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06 {
         if y as i32 == 0 {
             el.y1 = 0.9;
         } else {
@@ -592,7 +592,7 @@ pub fn tile_wire(
         if y as i32 != 0 && y as i32 != 1 && y as i32 != 2 && y as i32 != 3 {
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_V01 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01 {
         if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_V01N0001
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_V01S0100
         {
@@ -615,7 +615,7 @@ pub fn tile_wire(
 
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_H01 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01 {
         if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_H01E0001
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_HL7W0001
         {
@@ -636,7 +636,7 @@ pub fn tile_wire(
             el.y2 = el.y1;
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_V00 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00 {
         let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_V00T0000) / 2;
         el.x1 = x + consts::switchbox_x2
             - consts::wire_distance
@@ -650,7 +650,7 @@ pub fn tile_wire(
             el.y2 = y + consts::switchbox_y2 + consts::wire_distance * 4.0;
         }
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_H00 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00 {
         let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_H00L0000) / 2;
         el.y1 = y
             + consts::switchbox_y1
@@ -666,7 +666,7 @@ pub fn tile_wire(
             el.x2 = x + consts::switchbox_x1;
         }
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_NONE {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE {
         if tilewire >= &tilewire::GfxTileWireId::TILE_WIRE_NBOUNCE
             && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_SBOUNCE
         {
@@ -913,7 +913,7 @@ pub fn tile_wire(
             el.y1 = el.y2;
             g.push(el);
         }
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_G_HPBX {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_G_HPBX {
         el.x1 = x;
         el.x2 = x + 1.0;
         el.y1 = y
@@ -930,7 +930,7 @@ pub fn tile_wire(
         el.x2 = el.x1;
         el.y2 = y + consts::switchbox_y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_G_VPTX {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_G_VPTX {
         el.x1 = x
             + 0.1
             + consts::wire_distance
@@ -939,7 +939,7 @@ pub fn tile_wire(
         el.y1 = y;
         el.y2 = y + 1.0;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_L_HPBX {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_L_HPBX {
         el.x1 = x - 3.0;
         el.x2 = x + 0.08;
         el.y1 = y
@@ -948,7 +948,7 @@ pub fn tile_wire(
                 * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_L_HPBX0000 + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_R_HPBX {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_R_HPBX {
         el.x1 = x + 0.2;
         el.x2 = x + 3.0;
         el.y1 = y
@@ -957,7 +957,7 @@ pub fn tile_wire(
                 * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_R_HPBX0000 + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_PIO {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_PIO {
         let top_bottom = y as i32 == 0 || y as i32 == (h - 1);
         let gap = 3 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) / 7;
         let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) % 7;
@@ -989,7 +989,7 @@ pub fn tile_wire(
             el.y2 = el.y1;
         }
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_DDRDLL {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_DDRDLL {
         let num = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DDRDLL;
         el.x1 = x + consts::io_cell_h_x1 + 0.2 + consts::wire_distance * (num + 1) as f64;
         el.x2 = el.x1;
@@ -1001,14 +1001,14 @@ pub fn tile_wire(
             el.y2 = el.y1 + consts::wire_length_long;
         }
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_CCLK {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_CCLK {
         let num = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JPADDI_CCLK;
         el.x1 = x + consts::slice_x1 + consts::wire_distance * (num + 1) as f64;
         el.x2 = el.x1;
         el.y1 = y + consts::slice_y2 - 1.0 * consts::slice_pitch;
         el.y2 = el.y1 - consts::wire_length_long;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC {
         let gap = 7 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) / 42;
         let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) % 42;
         if x as i32 == 0 {
@@ -1024,7 +1024,7 @@ pub fn tile_wire(
             + consts::wire_distance * (num + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC {
         let gap = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) / 20;
         let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) % 20;
         el.x1 = x
@@ -1040,7 +1040,7 @@ pub fn tile_wire(
             el.y2 = el.y1 + consts::wire_length_long;
         }
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_DQS {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_DQS {
         let num = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DQS;
         if x as i32 == 0 {
             el.x1 = x + 1.0 - consts::io_cell_v_x1;
@@ -1055,7 +1055,7 @@ pub fn tile_wire(
             + consts::wire_distance * (num + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_EBR {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_EBR {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1064,7 +1064,7 @@ pub fn tile_wire(
             + 3.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_MULT18 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_MULT18 {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1073,7 +1073,7 @@ pub fn tile_wire(
             + 3.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_ALU54 {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_ALU54 {
         let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) % 225;
         let group = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) / 225;
         if group == 0 {
@@ -1087,7 +1087,7 @@ pub fn tile_wire(
             + 3.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_PLL {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_PLL {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1095,7 +1095,7 @@ pub fn tile_wire(
                 * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PLL + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_GSR {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_GSR {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1103,7 +1103,7 @@ pub fn tile_wire(
                 * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JCLK_GSR + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_JTAG {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_JTAG {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1112,7 +1112,7 @@ pub fn tile_wire(
             + 1.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_OSC {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_OSC {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1121,7 +1121,7 @@ pub fn tile_wire(
             + 2.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_SED {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_SED {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1130,7 +1130,7 @@ pub fn tile_wire(
             + 3.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_DTR {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_DTR {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1138,7 +1138,7 @@ pub fn tile_wire(
                 * (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_JSTARTPULSE_DTR + 1) as f64;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_EXTREF {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_EXTREF {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1147,7 +1147,7 @@ pub fn tile_wire(
             + 1.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_DCU {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_DCU {
         el.x1 = x + consts::slice_x1 - consts::wire_length;
         el.x2 = x + consts::slice_x1;
         el.y1 = y + consts::slice_y2
@@ -1156,7 +1156,7 @@ pub fn tile_wire(
             + 0.0 * consts::slice_pitch;
         el.y2 = el.y1;
         g.push(el);
-    } else if wire_type == &gfx::ConstId::WIRE_TYPE_PCSCLKDIV {
+    } else if wire_type == &gfx::ecp5::ConstId::WIRE_TYPE_PCSCLKDIV {
         let num = (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) % 7;
         let group = 1 - (tilewire - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) / 7;
         el.x1 = x + consts::slice_x1 - consts::wire_length;
@@ -1177,10 +1177,10 @@ fn set_source(
     _w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
 ) {
-    if src_type == &gfx::ConstId::WIRE_TYPE_H00 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00 {
         let group = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_H00L0000) / 2;
         el.y1 = y
             + consts::switchbox_y1
@@ -1193,7 +1193,7 @@ fn set_source(
             el.x1 = x + consts::switchbox_x1;
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01 {
         if x as i32 == src.location.x as i32 {
             el.x1 = x + consts::switchbox_x1;
         } else {
@@ -1204,7 +1204,7 @@ fn set_source(
             + consts::wire_distance
                 * (10 + (src_id - &tilewire::GfxTileWireId::TILE_WIRE_H01E0001)) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02 {
         el.x1 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1213,7 +1213,7 @@ fn set_source(
                     + 20 * (src.location.x as i32 % 3)) as f64;
         el.y1 = y + consts::switchbox_y1;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06 {
         el.x1 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1222,7 +1222,7 @@ fn set_source(
                     + 10 * (src.location.x as i32 % 9)) as f64;
         el.y1 = y + consts::switchbox_y1;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V00 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00 {
         let group = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_V00T0000) / 2;
         el.x1 = x + consts::switchbox_x2
             - consts::wire_distance
@@ -1233,7 +1233,7 @@ fn set_source(
             el.y1 = y + consts::switchbox_y2;
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V01 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01 {
         el.x1 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1244,7 +1244,7 @@ fn set_source(
             el.y1 = y + consts::switchbox_y1;
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02 {
         el.x1 = x + consts::switchbox_x1;
         el.y1 = y
             + consts::switchbox_y1
@@ -1253,7 +1253,7 @@ fn set_source(
                     + (src_id - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701)
                     + 20 * (src.location.y as i32 % 3)) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06 {
         el.x1 = x + consts::switchbox_x1;
         el.y1 = y
             + consts::switchbox_y1
@@ -1262,7 +1262,7 @@ fn set_source(
                     + (src_id - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303)
                     + 10 * (src.location.y as i32 % 9)) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_NONE {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE {
         if src_id >= &tilewire::GfxTileWireId::TILE_WIRE_CLK0
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_LSR1
         {
@@ -1310,7 +1310,7 @@ fn set_source(
             }
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC {
         let gap = 7 - (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) / 42;
         let num = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) % 42;
         if src.location.x as i32 == 0 {
@@ -1323,7 +1323,7 @@ fn set_source(
             + gap as f64 * consts::io_cell_gap
             + consts::wire_distance * (num + 1) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC {
         let gap = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) / 20;
         let num = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) % 20;
         el.x1 = src.location.x
@@ -1336,7 +1336,7 @@ fn set_source(
             el.y1 = src.location.y + consts::io_cell_h_y2 + consts::wire_length_long;
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_PIO {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_PIO {
         let top_bottom = src.location.y as i32 == 0 || src.location.y as i32 == (h - 1);
         let gap = 3 - (src_id - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) / 7;
         let num = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) % 7;
@@ -1362,21 +1362,21 @@ fn set_source(
                 + consts::wire_distance * (num + 1) as f64;
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_EBR {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_EBR {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JADA0_EBR + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_MULT18 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_MULT18 {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance_small
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_MULT18 + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_ALU54 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_ALU54 {
         let num = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) % 225;
         let group = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) / 225;
         if group == 0 {
@@ -1387,67 +1387,67 @@ fn set_source(
         el.y1 = src.location.y + consts::slice_y2 - consts::wire_distance_small * (num + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_PLL {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_PLL {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PLL + 1) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_GSR {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_GSR {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK_GSR + 1) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_JTAG {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_JTAG {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JJCE1_JTAG + 1) as f64
             + 1.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_OSC {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_OSC {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_OSC + 1) as f64
             + 2.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_SED {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_SED {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_SED + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_DTR {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DTR {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_JSTARTPULSE_DTR + 1) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_EXTREF {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_EXTREF {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_REFCLKP_EXTREF + 1) as f64
             + 1.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_DCU {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DCU {
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2
             - consts::wire_distance
                 * (src_id - &tilewire::GfxTileWireId::TILE_WIRE_CH0_RX_REFCLK_DCU + 1) as f64
             + 0.0 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_PCSCLKDIV {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_PCSCLKDIV {
         let num = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) % 7;
         let group = 1 - (src_id - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) / 7;
         el.x1 = src.location.x + consts::slice_x1 - consts::wire_length;
         el.y1 = src.location.y + consts::slice_y2 - consts::wire_distance * (num + 1) as f64
             + group as f64 * consts::slice_pitch;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_DQS {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DQS {
         let num = src_id - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DQS;
         if src.location.x as i32 == 0 {
             el.x1 = src.location.x + 1.0 - consts::io_cell_v_x1 + consts::wire_length_long;
@@ -1459,7 +1459,7 @@ fn set_source(
             + 8.0 * consts::io_cell_gap
             + consts::wire_distance * (num + 1) as f64;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_DDRDLL {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DDRDLL {
         let num = src_id - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DDRDLL;
         el.x1 = src.location.x
             + consts::io_cell_h_x1
@@ -1471,14 +1471,14 @@ fn set_source(
             el.y1 = src.location.y + consts::dll_cell_y2 + consts::wire_length_long;
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_CCLK {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_CCLK {
         let num = src_id - &tilewire::GfxTileWireId::TILE_WIRE_JPADDI_CCLK;
         el.x1 = src.location.x + consts::slice_x1 + consts::wire_distance * (num + 1) as f64;
         el.y1 = src.location.y + consts::slice_y2
             - 1.0 * consts::slice_pitch
             - consts::wire_length_long;
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_G_HPBX {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_G_HPBX {
         el.x1 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1494,10 +1494,10 @@ fn set_destination(
     _w: i32,
     h: i32,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
 ) {
-    if dst_type == &gfx::ConstId::WIRE_TYPE_H00 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00 {
         let group = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_H00L0000) / 2;
         el.y2 = y
             + consts::switchbox_y1
@@ -1510,7 +1510,7 @@ fn set_destination(
             el.x2 = x + consts::switchbox_x1;
         }
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_H01 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01 {
         if x == dst.location.x {
             el.x2 = x + consts::switchbox_x1;
         } else {
@@ -1521,7 +1521,7 @@ fn set_destination(
             + consts::wire_distance
                 * (10 + (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_H01E0001)) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02 {
         el.x2 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1530,7 +1530,7 @@ fn set_destination(
                     + 20 * (dst.location.x as i32 % 3)) as f64;
         el.y2 = y + consts::switchbox_y1;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06 {
         el.x2 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1539,7 +1539,7 @@ fn set_destination(
                     + 10 * (dst.location.x as i32 % 9)) as f64;
         el.y2 = y + consts::switchbox_y1;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_V00 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00 {
         let group = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_V00T0000) / 2;
         el.x2 = x + consts::switchbox_x2
             - consts::wire_distance
@@ -1550,7 +1550,7 @@ fn set_destination(
             el.y2 = y + consts::switchbox_y2;
         }
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_V01 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01 {
         el.x2 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1561,7 +1561,7 @@ fn set_destination(
             el.y2 = y + consts::switchbox_y1;
         }
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02 {
         el.x2 = x + consts::switchbox_x1;
         el.y2 = y
             + consts::switchbox_y1
@@ -1570,7 +1570,7 @@ fn set_destination(
                     + (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701)
                     + 20 * (dst.location.y as i32 % 3)) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06 {
         el.x2 = x + consts::switchbox_x1;
         el.y2 = y
             + consts::switchbox_y1
@@ -1580,7 +1580,7 @@ fn set_destination(
                     + 10 * (dst.location.y as i32 % 9)) as f64;
     }
 
-    if dst_type == &gfx::ConstId::WIRE_TYPE_NONE {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE {
         if dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_CLK0
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_LSR1
         {
@@ -1629,7 +1629,7 @@ fn set_destination(
         }
     }
 
-    if dst_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC {
         let gap = 7 - (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) / 42;
         let num = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADND_IOLOGIC) % 42;
         if dst.location.x as i32 == 0 {
@@ -1642,7 +1642,7 @@ fn set_destination(
             + gap as f64 * consts::io_cell_gap
             + consts::wire_distance * (num + 1) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC {
         let gap = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) / 20;
         let num = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JLOADNB_SIOLOGIC) % 20;
         el.x2 = dst.location.x
@@ -1655,7 +1655,7 @@ fn set_destination(
             el.y2 = dst.location.y + consts::io_cell_h_y2 + consts::wire_length_long;
         }
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_PIO {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_PIO {
         let top_bottom = dst.location.y as i32 == 0 || dst.location.y as i32 == (h - 1);
         let gap = 3 - (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) / 7;
         let num = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_PADDOD_PIO) % 7;
@@ -1681,21 +1681,21 @@ fn set_destination(
                 + consts::wire_distance * (num + 1) as f64;
         }
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_EBR {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_EBR {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JADA0_EBR + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_MULT18 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_MULT18 {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance_small
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_MULT18 + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_ALU54 {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_ALU54 {
         let num = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) % 225;
         let group = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK0_ALU54) / 225;
         if group == 0 {
@@ -1706,67 +1706,67 @@ fn set_destination(
         el.y2 = dst.location.y + consts::slice_y2 - consts::wire_distance_small * (num + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_PLL {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_PLL {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PLL + 1) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_GSR {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_GSR {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JCLK_GSR + 1) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_JTAG {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_JTAG {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JJCE1_JTAG + 1) as f64
             + 1.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_OSC {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_OSC {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_OSC + 1) as f64
             + 2.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_SED {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SED {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_SEDSTDBY_SED + 1) as f64
             + 3.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_DTR {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DTR {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JSTARTPULSE_DTR + 1) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_EXTREF {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_EXTREF {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_REFCLKP_EXTREF + 1) as f64
             + 1.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_DCU {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DCU {
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2
             - consts::wire_distance
                 * (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_CH0_RX_REFCLK_DCU + 1) as f64
             + 0.0 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_PCSCLKDIV {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_PCSCLKDIV {
         let num = (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) % 7;
         let group = 1 - (dst_id - &tilewire::GfxTileWireId::TILE_WIRE_CLKI_PCSCLKDIV1) / 7;
         el.x2 = dst.location.x + consts::slice_x1 - consts::wire_length;
         el.y2 = dst.location.y + consts::slice_y2 - consts::wire_distance * (num + 1) as f64
             + group as f64 * consts::slice_pitch;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_DQS {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DQS {
         let num = dst_id - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DQS;
         if dst.location.x as i32 == 0 {
             el.x2 = dst.location.x + 1.0 - consts::io_cell_v_x1 + consts::wire_length_long;
@@ -1778,7 +1778,7 @@ fn set_destination(
             + 8.0 * consts::io_cell_gap
             + consts::wire_distance * (num + 1) as f64;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_DDRDLL {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DDRDLL {
         let num = dst_id - &tilewire::GfxTileWireId::TILE_WIRE_DDRDEL_DDRDLL;
         el.x2 = dst.location.x
             + consts::io_cell_h_x1
@@ -1790,14 +1790,14 @@ fn set_destination(
             el.y2 = dst.location.y + consts::dll_cell_y2 + consts::wire_length_long;
         }
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_CCLK {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_CCLK {
         let num = dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JPADDI_CCLK;
         el.x2 = dst.location.x + consts::slice_x1 + consts::wire_distance * (num + 1) as f64;
         el.y2 = dst.location.y + consts::slice_y2
             - 1.0 * consts::slice_pitch
             - consts::wire_length_long;
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_G_HPBX {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_G_HPBX {
         el.x2 = x
             + consts::switchbox_x1
             + consts::wire_distance
@@ -1814,10 +1814,10 @@ fn straight_line(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
 ) {
     set_source(el, x, y, w, h, src, src_type, src_id);
@@ -1833,10 +1833,10 @@ fn lut_perm_pip(
     _w: i32,
     _h: i32,
     src: &WireId,
-    _src_type: &gfx::ConstId,
+    _src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     _dst: &WireId,
-    _dst_type: &gfx::ConstId,
+    _dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
 ) {
     let gap = (src_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO) / 24;
@@ -1861,10 +1861,10 @@ fn to_same_side_hor(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
     idx: i32,
@@ -1899,10 +1899,10 @@ fn to_same_side_ver(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
     idx: i32,
@@ -1937,10 +1937,10 @@ fn to_same_side_h1_ver(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
     idx: i32,
@@ -1972,10 +1972,10 @@ fn to_same_side_h1_hor(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
     _idx: i32,
@@ -1985,9 +1985,9 @@ fn to_same_side_h1_hor(
     let mut el2 = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
 
     set_destination(&mut el2, x, y, w, h, dst, dst_type, dst_id);
-    if dst_type == &gfx::ConstId::WIRE_TYPE_H01
-        || src_type == &gfx::ConstId::WIRE_TYPE_V01
-        || dst_type == &gfx::ConstId::WIRE_TYPE_H00
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00
     {
         el.x2 = el.x1;
         el.y2 = el2.y2;
@@ -2011,10 +2011,10 @@ fn to_same_side_v1_ver(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
     idx: i32,
@@ -2044,10 +2044,10 @@ pub fn tile_pip(
     w: i32,
     h: i32,
     src: &WireId,
-    src_type: &gfx::ConstId,
+    src_type: &gfx::ecp5::ConstId,
     src_id: &tilewire::GfxTileWireId,
     dst: &WireId,
-    dst_type: &gfx::ConstId,
+    dst_type: &gfx::ecp5::ConstId,
     dst_id: &tilewire::GfxTileWireId,
     style: &gfx::Style,
 ) -> Vec<gfx::GraphicElement> {
@@ -2055,7 +2055,9 @@ pub fn tile_pip(
     let mut el = gfx::GraphicElement::new(gfx::Type::Arrow, style.clone());
 
     // To H00
-    if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_H00 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00
+    {
         to_same_side_h1_ver(
             &mut g,
             &mut el,
@@ -2073,14 +2075,18 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_H00L0000 + 30,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_H00 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
     // To H01
-    if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_H01 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+    {
         to_same_side_h1_hor(
             &mut g,
             &mut el,
@@ -2100,7 +2106,9 @@ pub fn tile_pip(
     }
 
     // To H02
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+    {
         to_same_side_h1_hor(
             &mut g,
             &mut el,
@@ -2118,7 +2126,9 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+    {
         to_same_side_hor(
             &mut g,
             &mut el,
@@ -2136,7 +2146,9 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+    {
         to_same_side_hor(
             &mut g,
             &mut el,
@@ -2154,7 +2166,9 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+    {
         if y == src.location.y {
             straight_line(
                 &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
@@ -2178,19 +2192,25 @@ pub fn tile_pip(
             );
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_H02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
     // To H06
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+    {
         to_same_side_h1_hor(
             &mut g,
             &mut el,
@@ -2208,7 +2228,9 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+    {
         to_same_side_hor(
             &mut g,
             &mut el,
@@ -2226,7 +2248,9 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_H02W0701,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+    {
         to_same_side_hor(
             &mut g,
             &mut el,
@@ -2244,7 +2268,9 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_H06W0303,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+    {
         if y == src.location.y {
             straight_line(
                 &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
@@ -2268,19 +2294,25 @@ pub fn tile_pip(
             );
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_H06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
 
     // To V00
-    if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_V00 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_V00 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00
+    {
         to_same_side_v1_ver(
             &mut g,
             &mut el,
@@ -2300,7 +2332,9 @@ pub fn tile_pip(
     }
 
     // To V01
-    if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_V01 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+    {
         to_same_side_h1_hor(
             &mut g,
             &mut el,
@@ -2320,7 +2354,9 @@ pub fn tile_pip(
     }
 
     // To V02
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+    {
         if x == src.location.x {
             to_same_side_h1_ver(
                 &mut g,
@@ -2344,17 +2380,23 @@ pub fn tile_pip(
             );
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H02 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+    {
         to_same_side_h1_hor(
             &mut g,
             &mut el,
@@ -2372,7 +2414,9 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+    {
         to_same_side_ver(
             &mut g,
             &mut el,
@@ -2390,7 +2434,9 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_V02 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+    {
         to_same_side_ver(
             &mut g,
             &mut el,
@@ -2410,7 +2456,9 @@ pub fn tile_pip(
     }
 
     // To V06
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+    {
         if x == src.location.x {
             to_same_side_h1_ver(
                 &mut g,
@@ -2434,12 +2482,16 @@ pub fn tile_pip(
             );
         }
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H06 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+    {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V01 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+    {
         to_same_side_h1_hor(
             &mut g,
             &mut el,
@@ -2457,7 +2509,9 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_V06N0303,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V02 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+    {
         to_same_side_ver(
             &mut g,
             &mut el,
@@ -2475,7 +2529,9 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_V02N0701,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_V06 && dst_type == &gfx::ConstId::WIRE_TYPE_V06 {
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V06
+    {
         to_same_side_ver(
             &mut g,
             &mut el,
@@ -2494,8 +2550,8 @@ pub fn tile_pip(
         );
     }
 
-    if src_type == &gfx::ConstId::WIRE_TYPE_H00
-        && dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
     {
@@ -2516,8 +2572,8 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H00
-        && dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H00
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
@@ -2538,8 +2594,8 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_JCE0,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01
-        && dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
     {
@@ -2560,8 +2616,8 @@ pub fn tile_pip(
             dst_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_H01
-        && dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
@@ -2583,11 +2639,11 @@ pub fn tile_pip(
         );
     }
 
-    if (src_type == &gfx::ConstId::WIRE_TYPE_H02
-        || src_type == &gfx::ConstId::WIRE_TYPE_V00
-        || src_type == &gfx::ConstId::WIRE_TYPE_V01
-        || src_type == &gfx::ConstId::WIRE_TYPE_V02)
-        && dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if (src_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00
+        || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02)
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && ((dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
             || (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
@@ -2597,11 +2653,11 @@ pub fn tile_pip(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if (dst_type == &gfx::ConstId::WIRE_TYPE_H02
-        || dst_type == &gfx::ConstId::WIRE_TYPE_V00
-        || dst_type == &gfx::ConstId::WIRE_TYPE_V01
-        || dst_type == &gfx::ConstId::WIRE_TYPE_V02)
-        && src_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if (dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H02
+        || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V00
+        || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01
+        || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V02)
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && ((src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
             || (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
@@ -2612,10 +2668,10 @@ pub fn tile_pip(
         );
     }
 
-    if dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
-        && src_type == &gfx::ConstId::WIRE_TYPE_NONE
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI)
     {
@@ -2636,10 +2692,10 @@ pub fn tile_pip(
             src_id - &tilewire::GfxTileWireId::TILE_WIRE_FCO,
         );
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JCE0)
-        && src_type == &gfx::ConstId::WIRE_TYPE_NONE
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JCE0)
     {
@@ -2661,7 +2717,9 @@ pub fn tile_pip(
         );
     }
 
-    if dst_type == &gfx::ConstId::WIRE_TYPE_SLICE && src_type == &gfx::ConstId::WIRE_TYPE_NONE {
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SLICE
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+    {
         if src_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_FCI
             && dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_FCO_SLICE
@@ -2689,24 +2747,24 @@ pub fn tile_pip(
         }
     }
 
-    if (src_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && (dst_type == &gfx::ConstId::WIRE_TYPE_PLL
-            || dst_type == &gfx::ConstId::WIRE_TYPE_GSR
-            || dst_type == &gfx::ConstId::WIRE_TYPE_JTAG
-            || dst_type == &gfx::ConstId::WIRE_TYPE_OSC
-            || dst_type == &gfx::ConstId::WIRE_TYPE_SED
-            || dst_type == &gfx::ConstId::WIRE_TYPE_DTR
-            || dst_type == &gfx::ConstId::WIRE_TYPE_EXTREF
-            || dst_type == &gfx::ConstId::WIRE_TYPE_DCU
-            || dst_type == &gfx::ConstId::WIRE_TYPE_PCSCLKDIV
-            || dst_type == &gfx::ConstId::WIRE_TYPE_DDRDLL
-            || dst_type == &gfx::ConstId::WIRE_TYPE_CCLK
-            || dst_type == &gfx::ConstId::WIRE_TYPE_DQS
-            || dst_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC
-            || dst_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC
-            || dst_type == &gfx::ConstId::WIRE_TYPE_EBR
-            || dst_type == &gfx::ConstId::WIRE_TYPE_MULT18
-            || dst_type == &gfx::ConstId::WIRE_TYPE_ALU54))
+    if (src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && (dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_PLL
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_GSR
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_JTAG
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_OSC
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SED
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DTR
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_EXTREF
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DCU
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_PCSCLKDIV
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DDRDLL
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_CCLK
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_DQS
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_EBR
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_MULT18
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_ALU54))
         && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
@@ -2714,24 +2772,24 @@ pub fn tile_pip(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if (dst_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && (src_type == &gfx::ConstId::WIRE_TYPE_PLL
-            || src_type == &gfx::ConstId::WIRE_TYPE_GSR
-            || src_type == &gfx::ConstId::WIRE_TYPE_JTAG
-            || src_type == &gfx::ConstId::WIRE_TYPE_OSC
-            || src_type == &gfx::ConstId::WIRE_TYPE_SED
-            || src_type == &gfx::ConstId::WIRE_TYPE_DTR
-            || src_type == &gfx::ConstId::WIRE_TYPE_EXTREF
-            || src_type == &gfx::ConstId::WIRE_TYPE_DCU
-            || src_type == &gfx::ConstId::WIRE_TYPE_PCSCLKDIV
-            || src_type == &gfx::ConstId::WIRE_TYPE_DDRDLL
-            || src_type == &gfx::ConstId::WIRE_TYPE_CCLK
-            || src_type == &gfx::ConstId::WIRE_TYPE_DQS
-            || src_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC
-            || src_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC
-            || src_type == &gfx::ConstId::WIRE_TYPE_EBR
-            || src_type == &gfx::ConstId::WIRE_TYPE_MULT18
-            || src_type == &gfx::ConstId::WIRE_TYPE_ALU54))
+    if (dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && (src_type == &gfx::ecp5::ConstId::WIRE_TYPE_PLL
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_GSR
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_JTAG
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_OSC
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_SED
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DTR
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_EXTREF
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DCU
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_PCSCLKDIV
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DDRDLL
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_CCLK
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_DQS
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_EBR
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_MULT18
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_ALU54))
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
     {
@@ -2740,10 +2798,10 @@ pub fn tile_pip(
         );
     }
 
-    if (src_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && (dst_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC
-            || dst_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC
-            || dst_type == &gfx::ConstId::WIRE_TYPE_PIO))
+    if (src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && (dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC
+            || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_PIO))
         && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JDIA
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_ECLKD)
     {
@@ -2751,10 +2809,10 @@ pub fn tile_pip(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if (dst_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && (src_type == &gfx::ConstId::WIRE_TYPE_IOLOGIC
-            || src_type == &gfx::ConstId::WIRE_TYPE_SIOLOGIC
-            || src_type == &gfx::ConstId::WIRE_TYPE_PIO))
+    if (dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && (src_type == &gfx::ecp5::ConstId::WIRE_TYPE_IOLOGIC
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_SIOLOGIC
+            || src_type == &gfx::ecp5::ConstId::WIRE_TYPE_PIO))
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JDIA
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_ECLKD)
     {
@@ -2762,8 +2820,8 @@ pub fn tile_pip(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if src_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && dst_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JDIA
             && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_ECLKD)
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
@@ -2773,8 +2831,8 @@ pub fn tile_pip(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if dst_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && src_type == &gfx::ConstId::WIRE_TYPE_NONE
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
         && (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JDIA
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_ECLKD)
         && (src_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
@@ -2785,8 +2843,8 @@ pub fn tile_pip(
         );
     }
 
-    if dst_type == &gfx::ConstId::WIRE_TYPE_NONE
-        && src_type == &gfx::ConstId::WIRE_TYPE_G_HPBX
+    if dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_NONE
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_G_HPBX
         && ((dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_JCE0
             && dst_id <= &tilewire::GfxTileWireId::TILE_WIRE_JQ7)
             || (dst_id >= &tilewire::GfxTileWireId::TILE_WIRE_CLK0
@@ -2796,8 +2854,9 @@ pub fn tile_pip(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,
         );
     }
-    if (dst_type == &gfx::ConstId::WIRE_TYPE_H01 || dst_type == &gfx::ConstId::WIRE_TYPE_V01)
-        && src_type == &gfx::ConstId::WIRE_TYPE_G_HPBX
+    if (dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_H01
+        || dst_type == &gfx::ecp5::ConstId::WIRE_TYPE_V01)
+        && src_type == &gfx::ecp5::ConstId::WIRE_TYPE_G_HPBX
     {
         straight_line(
             &mut g, &mut el, x, y, w, h, src, src_type, src_id, dst, dst_type, dst_id,

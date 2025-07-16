@@ -3,8 +3,7 @@ use std::{convert::TryFrom, io::Cursor};
 use crate::chipdb::reltypes::{
     read_reli32arr, read_relslice, read_relstring, read_relstringarr, ByteArray, POD,
 };
-use crate::gfx::ecp5::GfxTileWireId;
-use crate::gfx::ConstId;
+use crate::gfx::ecp5::{ConstId, GfxTileWireId};
 
 use super::types::{
     BelInfoPOD, BelPortPOD, BelWirePOD, CellPropDelayPOD, CellSetupHoldPOD, CellTimingPOD,
