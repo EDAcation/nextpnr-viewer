@@ -1,4 +1,4 @@
-use super::types::{Architecture, Pip, PipLocation};
+use super::types::{Architecture, Wire, WireLocation};
 use crate::chipdb;
 use crate::decal;
 use crate::decal::ECP5DecalID;
@@ -195,7 +195,7 @@ impl Architecture<DecalID> for ECP5Arch {
                 .map(|w| &w.name);
 
             ret.push(Decal::new(
-                ECP5DecalID::new(
+                DecalID::new(
                     decal::ECP5DecalType::TYPE_BEL,
                     x as f64,
                     y as f64,
@@ -324,9 +324,9 @@ impl Architecture<DecalID> for ECP5Arch {
 
     fn find_pip_decal_by_loc_from_to(
         &self,
-        location: &PipLocation,
-        from: &Pip,
-        to: &Pip,
+        location: &WireLocation,
+        from: &Wire,
+        to: &Wire,
     ) -> Option<Decal> {
         let tile = (location.y as i32) * self.chipdb.width + (location.x as i32);
         let loc_type = self.chipdb.location_type.get(tile as usize)?;

@@ -9,7 +9,7 @@ use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 
 use crate::architecture::Architecture;
 use crate::gfx::{Color, GraphicElement, Style, Type};
-use crate::pnrjson::{INextpnrJSON, NextpnrJson};
+use crate::pnrjson::{Chip, INextpnrJSON, NextpnrJson};
 use crate::webgl::{
     ElementType, Line, LineCoords, Rectangle, RectangleCoords, RenderingProgram, WebGlElement,
 };
@@ -128,11 +128,11 @@ impl<'a, T> Renderer<'a, T> {
         return Ok(());
     }
 
-    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<()> {
+    pub fn show_json(&mut self, obj: INextpnrJSON, chip: Chip) -> Result<()> {
         self.ensure_graphic_elements();
 
         let json = NextpnrJson::from_jsobj(obj)?;
-        let elems = json.get_elements();
+        let elems = json.get_elements(&chip);
 
         let wire_map = self
             .graphic_elements

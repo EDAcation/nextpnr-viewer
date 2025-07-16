@@ -8,7 +8,12 @@ use anyhow::{Error, Result};
 pub use types_rs::NextpnrJson;
 pub use types_ts::INextpnrJSON;
 
-use crate::architecture::{Pip, PipLocation};
+use crate::architecture::{Wire, WireLocation};
+
+pub enum Chip {
+    ICE40,
+    ECP5,
+}
 
 pub struct NextpnrBel<'a> {
     pub nextpnr_bel: &'a String,
@@ -29,16 +34,16 @@ pub struct RoutingPart {
 
 #[derive(Clone)]
 pub struct PipFromTo {
-    pub location: PipLocation,
-    pub from: Pip,
-    pub to: Pip,
+    pub location: WireLocation,
+    pub from: Wire,
+    pub to: Wire,
     pub name: String,
 }
 
-fn parse_pip(s: String) -> Option<Pip> {
-    let parts: Vec<_> = s.splitn(3, '_').collect();
-    return Some(Pip {
-        location: PipLocation {
+fn parse_wire(s: String, delimiter: &str) -> Option<Wire> {
+    let parts: Vec<_> = s.splitn(3, delimiter).collect();
+    return Some(Wire {
+        location: WireLocation {
             x: parts.get(0)?.parse().ok()?,
             y: parts.get(1)?.parse().ok()?,
         },
@@ -46,7 +51,7 @@ fn parse_pip(s: String) -> Option<Pip> {
     });
 }
 
-fn parse_pip_from_to(s: String) -> Option<PipFromTo> {
+fn parse_pip_from_to(s: String, chip: &Chip) -> Option<PipFromTo> {
     let parts: Vec<_> = s.splitn(3, '/').collect();
     let x = match parts.get(0)? {
         &"" => return None,
@@ -57,12 +62,17 @@ fn parse_pip_from_to(s: String) -> Option<PipFromTo> {
         y_str => y_str[1..].parse().ok()?,
     };
 
-    let pip_parts: Vec<_> = parts.get(2)?.splitn(2, "->").collect();
-    let pip_from = parse_pip(pip_parts.get(0)?.to_string())?;
-    let pip_to = parse_pip(pip_parts.get(1)?.to_string())?;
+    let (pip_delim, wire_delim) = match chip {
+        Chip::ICE40 => (".->.", "."),
+        Chip::ECP5 => ("->", "_"),
+    };
+
+    let pip_parts: Vec<_> = parts.get(2)?.splitn(2, pip_delim).collect();
+    let pip_from = parse_wire(pip_parts.get(0)?.to_string(), wire_delim)?;
+    let pip_to = parse_wire(pip_parts.get(1)?.to_string(), wire_delim)?;
 
     return Some(PipFromTo {
-        location: PipLocation { x, y },
+        location: WireLocation { x, y },
         from: pip_from,
         to: pip_to,
         name: s,
@@ -70,14 +80,14 @@ fn parse_pip_from_to(s: String) -> Option<PipFromTo> {
 }
 
 impl Netname {
-    pub fn get_routing(&self) -> Vec<RoutingPart> {
+    pub fn get_routing(&self, chip: &Chip) -> Vec<RoutingPart> {
         let parts: Vec<&str> = self.attributes.ROUTING.split(';').collect();
         return parts
             .chunks(3)
             .filter_map(|c| {
                 Some(RoutingPart {
                     wire_id: c.get(0)?.to_string(),
-                    pip: parse_pip_from_to(c.get(1)?.to_string())?,
+                    pip: parse_pip_from_to(c.get(1)?.to_string(), &chip)?,
                 })
             })
             .collect();
@@ -92,9 +102,9 @@ impl NextpnrJson {
         }
     }
 
-    pub fn get_elements(&self) -> NextpnrElements<'_> {
+    pub fn get_elements(&self, chip: &Chip) -> NextpnrElements<'_> {
         let bels = self.get_bels();
-        let all_routings = self.get_all_routings();
+        let all_routings = self.get_all_routings(&chip);
 
         return NextpnrElements {
             wires: all_routings.iter().map(|r| r.wire_id.clone()).collect(),
@@ -104,12 +114,12 @@ impl NextpnrJson {
         };
     }
 
-    fn get_all_routings(&self) -> Vec<RoutingPart> {
+    fn get_all_routings(&self, chip: &Chip) -> Vec<RoutingPart> {
         self.modules
             .top
             .netnames
             .values()
-            .map(Netname::get_routing)
+            .map(|nn| nn.get_routing(&chip))
             .flatten()
             .collect()
     }

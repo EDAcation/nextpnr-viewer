@@ -1,10 +1,11 @@
-import wasmInit, {Color, ViewerECP5, ColorConfig as RendererColorConfig, NextpnrJson, CellColorConfig} from '../pkg';
+import wasmInit, {Color, ViewerECP5, ViewerICE40, ColorConfig as RendererColorConfig, NextpnrJson, CellColorConfig} from '../pkg';
 
 export {NextpnrJson};
 
 // **** Auxiliary types ****
 export const SUPPORTED_DEVICES = <const> {
     ecp5: ['25k', '45k', '85k'],
+    ice40: ['1k', '5k', '8k', '384', 'u4k'],
 };
 export type SupportedFamily = keyof typeof SUPPORTED_DEVICES;
 
@@ -12,7 +13,9 @@ interface Chip<Family extends SupportedFamily> {
     family: Family;
     device: typeof SUPPORTED_DEVICES[Family][number];
 }
-export type SupportedChip = Chip<keyof typeof SUPPORTED_DEVICES>;
+export type SupportedChip = {
+    [F in SupportedFamily]: Chip<F>
+}[SupportedFamily];
 
 
 // **** Config ****
@@ -61,16 +64,21 @@ const CHIP_DBS: ChipDatabases = {
         "25k": new URL(`../static/chipdb/ecp5/25k.bin`, import.meta.url),
         "45k": new URL(`../static/chipdb/ecp5/45k.bin`, import.meta.url),
         "85k": new URL(`../static/chipdb/ecp5/85k.bin`, import.meta.url),
-    }
+    },
+    "ice40": {
+        "1k": new URL(`../static/chipdb/ice40/1k.bin`, import.meta.url),
+        "5k": new URL(`../static/chipdb/ice40/5k.bin`, import.meta.url),
+        "8k": new URL(`../static/chipdb/ice40/8k.bin`, import.meta.url),
+        "384": new URL(`../static/chipdb/ice40/384.bin`, import.meta.url),
+        "u4k": new URL(`../static/chipdb/ice40/u4k.bin`, import.meta.url),
+    },
 }
 
-function getChipDbUrl(chip: SupportedChip) {
-    const url = (CHIP_DBS[chip.family] ?? {})[chip.device];
-    if (url === undefined) {
-        throw new Error(`Could not find chip database for ${chip.family}:${chip.device}!`)
-    }
+export function getChipDbUrl(chip: SupportedChip): URL {
+  const { family, device } = chip;
+  const familyDb = CHIP_DBS[family];
 
-    return url;
+  return familyDb[device as keyof typeof familyDb];
 }
 
 async function getChipDb(url: URL): Promise<Uint8Array> {
@@ -107,9 +115,10 @@ function doInAnimFrame(f: () => void) {
     })
 }
 
-type Viewer = ViewerECP5;
+type Viewer = ViewerECP5 | ViewerICE40;
 const VIEWERS = <const> {
-    'ecp5': ViewerECP5
+    'ecp5': ViewerECP5,
+    'ice40': ViewerICE40,
 }
 function getViewer<Family extends SupportedFamily>(family: Family): typeof VIEWERS[Family] {
     let viewer = VIEWERS[family];
@@ -131,7 +140,7 @@ async function init() {
 // **** External API ****
 export function isSupported<Family extends SupportedFamily>(family: Family, device: typeof SUPPORTED_DEVICES[Family][number]): boolean {
     const devices = SUPPORTED_DEVICES[family] ?? [];
-    return devices.includes(device);
+    return (devices as readonly string[]).includes(device);
 }
 
 export class NextPNRViewer {

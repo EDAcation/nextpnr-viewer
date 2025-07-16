@@ -2,14 +2,14 @@ use crate::decal;
 use crate::gfx;
 
 #[derive(Clone)]
-pub struct PipLocation {
+pub struct WireLocation {
     pub x: i16,
     pub y: i16,
 }
 
 #[derive(Clone)]
-pub struct Pip {
-    pub location: PipLocation,
+pub struct Wire {
+    pub location: WireLocation,
     pub name: String,
 }
 
@@ -21,8 +21,8 @@ pub trait Architecture<DecalID> {
     fn get_group_decals(&self) -> Vec<decal::DecalXY<DecalID>>;
     fn find_pip_decal_by_loc_from_to(
         &self,
-        location: &PipLocation,
-        from: &Pip,
-        to: &Pip,
+        location: &WireLocation,
+        from: &Wire,
+        to: &Wire,
     ) -> Option<decal::DecalXY<DecalID>>;
 }
