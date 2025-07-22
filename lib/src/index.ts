@@ -157,11 +157,12 @@ async function init() {
 }
 
 // **** External API ****
-export function isSupported<Family extends SupportedFamily>(family: Family, device: keyof typeof SUPPORTED_DEVICES[Family]): boolean {
-    const devices = SUPPORTED_DEVICES[family];
-    if (devices === undefined) return false;
+export function isSupported(chip: {family: string, device: string}): chip is SupportedChip {
+    const family = chip.family as SupportedFamily;
+    if (!(family in SUPPORTED_DEVICES)) return false;
 
-    return devices[device] !== undefined;
+    const devices = SUPPORTED_DEVICES[family];
+    return chip.device in devices;
 }
 
 export class NextPNRViewer {
