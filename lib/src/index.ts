@@ -2,16 +2,55 @@ import wasmInit, {Color, ViewerECP5, ViewerICE40, ColorConfig as RendererColorCo
 
 export {NextpnrJson};
 
+const CHIP_DBS = <const> {
+    "ecp5": {
+        "25k": new URL(`../static/chipdb/ecp5/25k.bin`, import.meta.url),
+        "45k": new URL(`../static/chipdb/ecp5/45k.bin`, import.meta.url),
+        "85k": new URL(`../static/chipdb/ecp5/85k.bin`, import.meta.url),
+    },
+    "ice40": {
+        "384": new URL(`../static/chipdb/ice40/384.bin`, import.meta.url),
+        "1k": new URL(`../static/chipdb/ice40/1k.bin`, import.meta.url),
+        "u4k": new URL(`../static/chipdb/ice40/u4k.bin`, import.meta.url),
+        "5k": new URL(`../static/chipdb/ice40/5k.bin`, import.meta.url),
+        "8k": new URL(`../static/chipdb/ice40/8k.bin`, import.meta.url),
+    },
+}
+
 // **** Auxiliary types ****
 export const SUPPORTED_DEVICES = <const> {
-    ecp5: ['25k', '45k', '85k'],
-    ice40: ['1k', '5k', '8k', '384', 'u4k'],
+    ecp5: {
+        "12k": CHIP_DBS['ecp5']['25k'],
+        "25k": CHIP_DBS['ecp5']['25k'],
+        "um-25k": CHIP_DBS['ecp5']['25k'],
+        "um5g-25k": CHIP_DBS['ecp5']['25k'],
+        "45k": CHIP_DBS['ecp5']['45k'],
+        "um-45k": CHIP_DBS['ecp5']['45k'],
+        "um5g-45k": CHIP_DBS['ecp5']['45k'],
+        "85k": CHIP_DBS['ecp5']['85k'],
+        "um-85k": CHIP_DBS['ecp5']['85k'],
+        "um5g-85k": CHIP_DBS['ecp5']['85k'],
+    },
+    ice40: {
+        lp384: CHIP_DBS['ice40']['384'],
+        lp1k: CHIP_DBS['ice40']['1k'],
+        hx1k: CHIP_DBS['ice40']['1k'],
+        u1k: CHIP_DBS['ice40']['u4k'],
+        u2k: CHIP_DBS['ice40']['u4k'],
+        u4k: CHIP_DBS['ice40']['u4k'],
+        up3k: CHIP_DBS['ice40']['5k'],
+        up5k: CHIP_DBS['ice40']['5k'],
+        lp8k: CHIP_DBS['ice40']['8k'],
+        hx8k: CHIP_DBS['ice40']['8k'],
+        lp4k: CHIP_DBS['ice40']['8k'],
+        hx4k: CHIP_DBS['ice40']['8k'],
+    },
 };
 export type SupportedFamily = keyof typeof SUPPORTED_DEVICES;
 
 interface Chip<Family extends SupportedFamily> {
     family: Family;
-    device: typeof SUPPORTED_DEVICES[Family][number];
+    device: keyof typeof SUPPORTED_DEVICES[Family];
 }
 export type SupportedChip = {
     [F in SupportedFamily]: Chip<F>
@@ -54,29 +93,9 @@ export const defaultConfig: ViewerConfig = {
 
 
 // **** Internal functions ****
-type ChipDatabases = {
-    [Family in SupportedFamily]: {
-        [Device in typeof SUPPORTED_DEVICES[Family][number]]: URL;
-    };
-};
-const CHIP_DBS: ChipDatabases = {
-    "ecp5": {
-        "25k": new URL(`../static/chipdb/ecp5/25k.bin`, import.meta.url),
-        "45k": new URL(`../static/chipdb/ecp5/45k.bin`, import.meta.url),
-        "85k": new URL(`../static/chipdb/ecp5/85k.bin`, import.meta.url),
-    },
-    "ice40": {
-        "1k": new URL(`../static/chipdb/ice40/1k.bin`, import.meta.url),
-        "5k": new URL(`../static/chipdb/ice40/5k.bin`, import.meta.url),
-        "8k": new URL(`../static/chipdb/ice40/8k.bin`, import.meta.url),
-        "384": new URL(`../static/chipdb/ice40/384.bin`, import.meta.url),
-        "u4k": new URL(`../static/chipdb/ice40/u4k.bin`, import.meta.url),
-    },
-}
-
-export function getChipDbUrl(chip: SupportedChip): URL {
+function getChipDbUrl(chip: SupportedChip): URL {
   const { family, device } = chip;
-  const familyDb = CHIP_DBS[family];
+  const familyDb = SUPPORTED_DEVICES[family];
 
   return familyDb[device as keyof typeof familyDb];
 }
@@ -138,9 +157,11 @@ async function init() {
 }
 
 // **** External API ****
-export function isSupported<Family extends SupportedFamily>(family: Family, device: typeof SUPPORTED_DEVICES[Family][number]): boolean {
-    const devices = SUPPORTED_DEVICES[family] ?? [];
-    return (devices as readonly string[]).includes(device);
+export function isSupported<Family extends SupportedFamily>(family: Family, device: keyof typeof SUPPORTED_DEVICES[Family]): boolean {
+    const devices = SUPPORTED_DEVICES[family];
+    if (devices === undefined) return false;
+
+    return devices[device] !== undefined;
 }
 
 export class NextPNRViewer {
