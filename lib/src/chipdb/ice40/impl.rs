@@ -8,20 +8,34 @@ use crate::chipdb::reltypes::{
 use super::types::{
     BelConfigEntryPOD, BelConfigPOD, BelInfoPOD, BelPortPOD, BelWirePOD, BitstreamInfoPOD,
     CellPathDelayPOD, CellTimingPOD, ChipInfoPOD, ConfigBitPOD, ConfigEntryPOD,
-    GlobalNetworkInfoPOD, IerenInfoPOD, PackageInfoPOD, PackagePinPOD, PipInfoPOD, SwitchInfoPOD,
-    TileInfoPOD, WireInfoPOD, WireSegmentPOD,
+    GlobalNetworkInfoPOD, IerenInfoPOD, MinimizedChipInfoPOD, PackageInfoPOD, PackagePinPOD,
+    PipInfoPOD, SwitchInfoPOD, TileInfoPOD, WireInfoPOD, WireSegmentPOD,
 };
 
 use anyhow::Result;
+use bincode::config;
+use bincode::config::Configuration;
 use byteorder::{LittleEndian, ReadBytesExt};
 
-pub fn get_chipdb(chipdata: &[u8]) -> Result<ChipInfoPOD> {
+const BINCODE_CFG: Configuration = config::standard().with_variable_int_encoding();
+
+pub fn get_full_chipinfo(chipdata: &[u8]) -> Result<ChipInfoPOD> {
     let mut cur = Cursor::new(chipdata);
 
     let offset = cur.read_u32::<LittleEndian>()?;
     cur.set_position(offset as u64);
 
     ChipInfoPOD::new(&mut cur)
+}
+
+pub fn get_min_chipinfo(chipdata: &[u8]) -> Result<MinimizedChipInfoPOD> {
+    Ok(bincode::serde::decode_from_slice(chipdata, BINCODE_CFG)?.0)
+}
+
+impl MinimizedChipInfoPOD {
+    pub fn encode(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serde::encode_to_vec(&self, BINCODE_CFG)?)
+    }
 }
 
 impl POD for BelWirePOD {

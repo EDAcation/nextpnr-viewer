@@ -128,7 +128,7 @@ impl ViewerICE40 {
                 Err(e) => return Err(JsError::from(e)),
             };
 
-        let db = match ice40::get_chipdb(chipdata) {
+        let db = match ice40::get_min_chipinfo(chipdata) {
             Ok(db) => db,
             Err(e) => return Err(JsError::from(&*e)),
         };
