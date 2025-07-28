@@ -4,16 +4,16 @@ export {NextpnrJson};
 
 const CHIP_DBS = <const> {
     "ecp5": {
-        "25k": new URL(`../static/chipdb/ecp5/25k.bin`, import.meta.url),
-        "45k": new URL(`../static/chipdb/ecp5/45k.bin`, import.meta.url),
-        "85k": new URL(`../static/chipdb/ecp5/85k.bin`, import.meta.url),
+        "25k": new URL(`../static/chipdb/ecp5/25k-min.bin`, import.meta.url),
+        "45k": new URL(`../static/chipdb/ecp5/45k-min.bin`, import.meta.url),
+        "85k": new URL(`../static/chipdb/ecp5/85k-min.bin`, import.meta.url),
     },
     "ice40": {
-        "384": new URL(`../static/chipdb/ice40/384.bin`, import.meta.url),
-        "1k": new URL(`../static/chipdb/ice40/1k.bin`, import.meta.url),
-        "u4k": new URL(`../static/chipdb/ice40/u4k.bin`, import.meta.url),
-        "5k": new URL(`../static/chipdb/ice40/5k.bin`, import.meta.url),
-        "8k": new URL(`../static/chipdb/ice40/8k.bin`, import.meta.url),
+        "384": new URL(`../static/chipdb/ice40/384-min.bin`, import.meta.url),
+        "1k": new URL(`../static/chipdb/ice40/1k-min.bin`, import.meta.url),
+        "u4k": new URL(`../static/chipdb/ice40/u4k-min.bin`, import.meta.url),
+        "5k": new URL(`../static/chipdb/ice40/5k-min.bin`, import.meta.url),
+        "8k": new URL(`../static/chipdb/ice40/8k-min.bin`, import.meta.url),
     },
 }
 

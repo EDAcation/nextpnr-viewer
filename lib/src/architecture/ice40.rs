@@ -9,11 +9,11 @@ type DecalID = decal::ICE40DecalID;
 type Decal = decal::DecalXY<DecalID>;
 
 pub struct ICE40Arch {
-    chipdb: chipdb::ice40::ChipInfoPOD,
+    chipdb: chipdb::ice40::MinimizedChipInfoPOD,
 }
 
 impl ICE40Arch {
-    pub fn new(chipdb: chipdb::ice40::ChipInfoPOD) -> Self {
+    pub fn new(chipdb: chipdb::ice40::MinimizedChipInfoPOD) -> Self {
         ICE40Arch { chipdb }
     }
 }

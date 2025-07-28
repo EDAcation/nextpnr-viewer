@@ -4,6 +4,7 @@ use std::{convert::TryFrom, ops::Sub};
 use anyhow::{Error, Result};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use serde::{Deserialize, Serialize};
 
 impl Sub for &GfxTileWireId {
     type Output = i32;
@@ -32,7 +33,7 @@ impl TryFrom<u32> for GfxTileWireId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, FromPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, FromPrimitive, Serialize, Deserialize)]
 #[repr(u32)]
 #[allow(dead_code)]
 pub enum GfxTileWireId {

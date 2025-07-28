@@ -1,17 +1,25 @@
 #![allow(dead_code)]
 
+use minimize_derive::Minimize;
+
 pub struct BelWirePOD {
     pub port: i32,
     pub r#type: i32,
     pub wire_index: i32,
 }
 
+#[derive(Minimize)]
 pub struct BelInfoPOD {
+    #[include]
     pub name: String,
+    #[include]
     pub r#type: i32,
     pub bel_wires: Vec<BelWirePOD>,
+    #[include]
     pub x: i8,
+    #[include]
     pub y: i8,
+    #[include]
     pub z: i8,
     pub padding_0: i8,
 }
@@ -21,15 +29,22 @@ pub struct BelPortPOD {
     pub port: i32,
 }
 
+#[derive(Minimize)]
 pub struct PipInfoPOD {
     // RelPtr<char> name;
+    #[include]
     pub src: i32,
+    #[include]
     pub dst: i32,
     pub fast_delay: i32,
     pub slow_delay: i32,
+    #[include]
     pub x: i8,
+    #[include]
     pub y: i8,
+    #[include]
     pub src_seg: i16,
+    #[include]
     pub dst_seg: i16,
     pub switch_mask: i16,
     pub switch_index: i32,
@@ -42,13 +57,19 @@ pub struct PipInfoPOD {
     pub pip_flags: u32,
 }
 
+#[derive(Minimize)]
 pub struct WireSegmentPOD {
+    #[include]
     pub x: i8,
+    #[include]
     pub y: i8,
+    #[include]
     pub index: i16,
 }
 
+#[derive(Minimize)]
 pub struct WireInfoPOD {
+    #[include]
     pub name: String,
     pub name_x: i8,
     pub name_y: i8,
@@ -56,12 +77,15 @@ pub struct WireInfoPOD {
     pub pips_uphill: Vec<i32>,
     pub pips_downhill: Vec<i32>,
     pub bel_pins: Vec<BelPortPOD>,
+    #[include_rewrite]
     pub segments: Vec<WireSegmentPOD>,
 
     pub fast_delay: i32,
     pub slow_delay: i32,
 
+    #[include]
     pub x: i8,
+    #[include]
     pub y: i8,
     pub z: i8,
 
@@ -176,12 +200,18 @@ pub struct GlobalNetworkInfoPOD {
     pub pad: u16,
 }
 
+#[derive(Minimize)]
 pub struct ChipInfoPOD {
+    #[include]
     pub width: i32,
+    #[include]
     pub height: i32,
     pub num_switches: u32,
+    #[include_rewrite]
     pub bel_data: Vec<BelInfoPOD>,
+    #[include_rewrite]
     pub wire_data: Vec<WireInfoPOD>,
+    #[include_rewrite]
     pub pip_data: Vec<PipInfoPOD>,
 
     // {
@@ -196,6 +226,7 @@ pub struct ChipInfoPOD {
     //     TILE_DSP3 = 8,
     //     TILE_IPCON = 9
     // };
+    #[include]
     pub tile_grid: Vec<u32>,
 
     pub bits_info: BitstreamInfoPOD,

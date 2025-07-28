@@ -5,6 +5,7 @@ use std::convert::TryFrom;
 use anyhow::{Error, Result};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use serde::{Deserialize, Serialize};
 
 impl TryFrom<u32> for ConstId {
     type Error = Error;
@@ -17,7 +18,7 @@ impl TryFrom<u32> for ConstId {
     }
 }
 
-#[derive(PartialEq, FromPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, Serialize, Deserialize)]
 #[repr(u32)]
 pub enum ConstId {
     A0 = 1,

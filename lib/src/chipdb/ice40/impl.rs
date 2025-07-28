@@ -15,7 +15,7 @@ use super::types::{
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt};
 
-pub fn get_chipdb(chipdata: &[u8]) -> Result<ChipInfoPOD> {
+pub fn get_full_chipinfo(chipdata: &[u8]) -> Result<ChipInfoPOD> {
     let mut cur = Cursor::new(chipdata);
 
     let offset = cur.read_u32::<LittleEndian>()?;

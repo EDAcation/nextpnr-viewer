@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, io::Cursor};
+use std::io::Cursor;
 
 use crate::chipdb::reltypes::{
     read_reli32arr, read_relslice, read_relstring, read_relstringarr, ByteArray, POD,
@@ -15,7 +15,7 @@ use super::types::{
 use anyhow::Result;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
 
-pub fn get_chipdb(chipdata: &[u8]) -> Result<ChipInfoPOD> {
+pub fn get_full_chipinfo(chipdata: &[u8]) -> Result<ChipInfoPOD> {
     let mut cur = Cursor::new(chipdata);
 
     let offset = cur.read_u32::<LittleEndian>()?;

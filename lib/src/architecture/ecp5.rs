@@ -9,11 +9,11 @@ type DecalID = decal::ECP5DecalID;
 type Decal = decal::DecalXY<DecalID>;
 
 pub struct ECP5Arch {
-    chipdb: chipdb::ecp5::ChipInfoPOD,
+    chipdb: chipdb::ecp5::MinimizedChipInfoPOD,
 }
 
 impl ECP5Arch {
-    pub fn new(chipdb: chipdb::ecp5::ChipInfoPOD) -> Self {
+    pub fn new(chipdb: chipdb::ecp5::MinimizedChipInfoPOD) -> Self {
         ECP5Arch { chipdb }
     }
 }
