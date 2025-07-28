@@ -7,18 +7,13 @@ use crate::gfx::ecp5::{ConstId, GfxTileWireId};
 
 use super::types::{
     BelInfoPOD, BelPortPOD, BelWirePOD, CellPropDelayPOD, CellSetupHoldPOD, CellTimingPOD,
-    ChipInfoPOD, GlobalInfoPOD, LocationPOD, LocationTypePOD, MinimizedChipInfoPOD, PIOInfoPOD,
-    PackageInfoPOD, PackagePinPOD, PipDelayPOD, PipInfoPOD, PipLocatorPOD, SpeedGradePOD,
-    TileInfoPOD, TileNamePOD, WireInfoPOD,
+    ChipInfoPOD, GlobalInfoPOD, LocationPOD, LocationTypePOD, PIOInfoPOD, PackageInfoPOD,
+    PackagePinPOD, PipDelayPOD, PipInfoPOD, PipLocatorPOD, SpeedGradePOD, TileInfoPOD, TileNamePOD,
+    WireInfoPOD,
 };
 
-use anyhow::{bail, Result};
-use bincode::config;
-use bincode::config::Configuration;
+use anyhow::Result;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
-use miniz_oxide::{deflate, inflate};
-
-const BINCODE_CFG: Configuration = config::standard().with_variable_int_encoding();
 
 pub fn get_full_chipinfo(chipdata: &[u8]) -> Result<ChipInfoPOD> {
     let mut cur = Cursor::new(chipdata);
@@ -27,21 +22,6 @@ pub fn get_full_chipinfo(chipdata: &[u8]) -> Result<ChipInfoPOD> {
     cur.set_position(offset as u64);
 
     ChipInfoPOD::new(&mut cur)
-}
-
-pub fn get_min_chipinfo(chipdata: &[u8]) -> Result<MinimizedChipInfoPOD> {
-    let decompressed = match inflate::decompress_to_vec(chipdata) {
-        Ok(res) => res,
-        Err(_) => bail!("Failed to decompress chipdb"),
-    };
-    Ok(bincode::serde::decode_from_slice(&decompressed, BINCODE_CFG)?.0)
-}
-
-impl MinimizedChipInfoPOD {
-    pub fn encode(&self) -> Result<Vec<u8>> {
-        let encoded = bincode::serde::encode_to_vec(&self, BINCODE_CFG)?;
-        Ok(deflate::compress_to_vec(&encoded, 5))
-    }
 }
 
 impl POD for LocationPOD {

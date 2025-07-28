@@ -1,6 +1,6 @@
 use crate::{
     architecture::{ECP5Arch, ICE40Arch},
-    chipdb::{ecp5, ice40},
+    chipdb,
     decal::{ECP5DecalID, ICE40DecalID},
     pnrjson::{Chip, INextpnrJSON},
     renderer::{CellColorConfig, ColorConfig, Renderer},
@@ -60,7 +60,7 @@ impl ViewerECP5 {
                 Err(e) => return Err(JsError::from(e)),
             };
 
-        let db = match ecp5::get_min_chipinfo(chipdata) {
+        let db = match chipdb::decode_min_chipinfo(chipdata) {
             Ok(db) => db,
             Err(e) => return Err(JsError::from(&*e)),
         };
@@ -128,7 +128,7 @@ impl ViewerICE40 {
                 Err(e) => return Err(JsError::from(e)),
             };
 
-        let db = match ice40::get_min_chipinfo(chipdata) {
+        let db = match chipdb::decode_min_chipinfo(chipdata) {
             Ok(db) => db,
             Err(e) => return Err(JsError::from(&*e)),
         };

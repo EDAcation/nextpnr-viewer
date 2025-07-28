@@ -1,4 +1,4 @@
-use nextpnr_renderer::chipdb::{ecp5, ice40};
+use nextpnr_renderer::chipdb::{self, ecp5, ice40};
 use std::{
     env,
     fs::File,
@@ -85,7 +85,7 @@ fn main() {
                 exit(1);
             });
             let min: ecp5::MinimizedChipInfoPOD = chipinfo.into();
-            min.encode().unwrap()
+            chipdb::encode_min_chipinfo(min).unwrap()
         }
         "ice40" => {
             let chipinfo = ice40::get_full_chipinfo(&buf).unwrap_or_else(|err| {
@@ -93,7 +93,7 @@ fn main() {
                 exit(1);
             });
             let min: ice40::MinimizedChipInfoPOD = chipinfo.into();
-            min.encode().unwrap()
+            chipdb::encode_min_chipinfo(min).unwrap()
         }
         _ => {
             eprintln!("Unsupported architecture: {}", arch);
