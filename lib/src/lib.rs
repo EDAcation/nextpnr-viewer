@@ -1,5 +1,5 @@
 mod architecture;
-mod chipdb;
+pub mod chipdb;
 mod decal;
 mod gfx;
 mod pnrjson;

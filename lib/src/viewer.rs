@@ -60,7 +60,7 @@ impl ViewerECP5 {
                 Err(e) => return Err(JsError::from(e)),
             };
 
-        let db = match ecp5::get_chipdb(chipdata) {
+        let db = match ecp5::get_min_chipinfo(chipdata) {
             Ok(db) => db,
             Err(e) => return Err(JsError::from(&*e)),
         };
