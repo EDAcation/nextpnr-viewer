@@ -12,10 +12,11 @@ use super::types::{
     TileInfoPOD, TileNamePOD, WireInfoPOD,
 };
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bincode::config;
 use bincode::config::Configuration;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
+use miniz_oxide::{deflate, inflate};
 
 const BINCODE_CFG: Configuration = config::standard().with_variable_int_encoding();
 
@@ -29,12 +30,17 @@ pub fn get_full_chipinfo(chipdata: &[u8]) -> Result<ChipInfoPOD> {
 }
 
 pub fn get_min_chipinfo(chipdata: &[u8]) -> Result<MinimizedChipInfoPOD> {
-    Ok(bincode::serde::decode_from_slice(chipdata, BINCODE_CFG)?.0)
+    let decompressed = match inflate::decompress_to_vec(chipdata) {
+        Ok(res) => res,
+        Err(_) => bail!("Failed to decompress chipdb"),
+    };
+    Ok(bincode::serde::decode_from_slice(&decompressed, BINCODE_CFG)?.0)
 }
 
 impl MinimizedChipInfoPOD {
     pub fn encode(&self) -> Result<Vec<u8>> {
-        Ok(bincode::serde::encode_to_vec(&self, BINCODE_CFG)?)
+        let encoded = bincode::serde::encode_to_vec(&self, BINCODE_CFG)?;
+        Ok(deflate::compress_to_vec(&encoded, 5))
     }
 }
 
