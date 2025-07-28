@@ -23,6 +23,7 @@ serde-wasm-bindgen = "0.6.5"
 itertools = "0.13.0"
 minimize_derive = { path = "../macros/minimize_derive" }
 bincode = { version = "2.0.1", features = ["serde"] }
+miniz_oxide = "0.8.9"
 
 [dependencies.web-sys]
 version = "0.3.72"

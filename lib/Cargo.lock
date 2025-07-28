@@ -173,9 +173,9 @@ dependencies = [
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.0"
+version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2d80299ef12ff69b16a84bb182e3b9df68b5a91574d3d4fa6e41b65deec4df1"
+checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
 dependencies = [
  "adler2",
 ]
@@ -190,6 +190,7 @@ dependencies = [
  "console_error_panic_hook",
  "itertools",
  "minimize_derive",
+ "miniz_oxide",
  "num-derive",
  "num-traits",
  "serde",
