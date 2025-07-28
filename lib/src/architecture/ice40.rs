@@ -254,7 +254,7 @@ impl Architecture<DecalID> for ICE40Arch {
     }
 
     fn get_bel_decals(&self) -> Vec<Decal> {
-        return self
+        self
             .chipdb
             .bel_data
             .iter()
@@ -267,11 +267,11 @@ impl Architecture<DecalID> for ICE40Arch {
                     format!("X{}/Y{}/{}", bel.x, bel.y, bel.name),
                 )
             })
-            .collect();
+            .collect()
     }
 
     fn get_wire_decals(&self) -> Vec<Decal> {
-        return self
+        self
             .chipdb
             .wire_data
             .iter()
@@ -284,11 +284,11 @@ impl Architecture<DecalID> for ICE40Arch {
                     format!("X{}/Y{}/{}", wire.x, wire.y, wire.name),
                 )
             })
-            .collect();
+            .collect()
     }
 
     fn get_pip_decals(&self) -> Vec<Decal> {
-        return self
+        self
             .chipdb
             .pip_data
             .iter()
@@ -301,7 +301,7 @@ impl Architecture<DecalID> for ICE40Arch {
                     format!("X{}/Y{}", pip.x, pip.y),
                 )
             })
-            .collect();
+            .collect()
     }
 
     fn get_group_decals(&self) -> Vec<Decal> {
@@ -354,7 +354,7 @@ impl Architecture<DecalID> for ICE40Arch {
             }
         }
 
-        return groups
+        groups
             .iter()
             .map(|group| {
                 let index = ((group.r#type as i32 & 255) << 16)
@@ -367,7 +367,7 @@ impl Architecture<DecalID> for ICE40Arch {
                     format!("X{}/Y{}/{}", group.x, group.y, group.name()),
                 )
             })
-            .collect();
+            .collect()
     }
 
     fn find_pip_decal_by_loc_from_to(

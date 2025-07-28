@@ -84,7 +84,7 @@ fn parse_pip_from_to(s: String, chip: &Chip) -> Option<PipFromTo> {
 impl Netname {
     pub fn get_routing(&self, chip: &Chip) -> Vec<RoutingPart> {
         let parts: Vec<&str> = self.attributes.ROUTING.split(';').collect();
-        return parts
+        parts
             .chunks(3)
             .filter_map(|c| {
                 Some(RoutingPart {
@@ -92,7 +92,7 @@ impl Netname {
                     pip: parse_pip_from_to(c.get(1)?.to_string(), chip)?,
                 })
             })
-            .collect();
+            .collect()
     }
 }
 
@@ -108,12 +108,12 @@ impl NextpnrJson {
         let bels = self.get_bels();
         let all_routings = self.get_all_routings(chip);
 
-        return NextpnrElements {
+        NextpnrElements {
             wires: all_routings.iter().map(|r| r.wire_id.clone()).collect(),
             groups: vec![],
             bels,
             pips: all_routings.iter().map(|r| r.pip.clone()).collect(),
-        };
+        }
     }
 
     fn get_all_routings(&self, chip: &Chip) -> Vec<RoutingPart> {
