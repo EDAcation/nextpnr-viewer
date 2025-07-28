@@ -1,7 +1,7 @@
 {
   "name": "nextpnr-viewer",
   "description": "A HTML 5 Canvas based viewer for nextpnr place and route visualizations.",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "license": "MIT",
   "contributors": [
     "Bram Wesselink <wesselinkbram@gmail.com>",
