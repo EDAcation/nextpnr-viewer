@@ -6,3 +6,4 @@ parcel-optimizer-array-buffer/lib/
 .direnv/
 target/
 pkg/
+*-min.bin
