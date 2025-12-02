@@ -125,7 +125,7 @@ impl NextpnrJson {
             .collect()
     }
 
-    fn get_bels(&self) -> Vec<NextpnrBel> {
+    fn get_bels(&self) -> Vec<NextpnrBel<'_>> {
         self.modules
             .top
             .cells
