@@ -44,18 +44,7 @@ pub enum Style {
     Inactive, // Render using low-contrast color
     Active,   // Render using high-contrast color
 
-    // UI highlight groups
-    Highlighted0,
-    Highlighted1,
-    Highlighted2,
-    Highlighted3,
-    Highlighted4,
-    Highlighted5,
-    Highlighted6,
-    Highlighted7,
-
-    Selected,
-    Hover,
+    CritPath, // Element is part of a critical path
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::f32::consts::E;
 
 use anyhow::{bail, Result};
@@ -9,7 +9,7 @@ use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 
 use crate::architecture::Architecture;
 use crate::gfx::{Color, GraphicElement, Style, Type};
-use crate::pnrjson::{Chip, INextpnrJSON, NextpnrJson};
+use crate::pnrjson::{Chip, INextpnrJSON, IReportJSON, NextpnrJson, ReportJson};
 use crate::webgl::{
     ElementType, Line, LineCoords, Rectangle, RectangleCoords, RenderingProgram, WebGlElement,
 };
@@ -25,6 +25,7 @@ pub struct ColorConfig {
     inactive: Color,
     frame: Color,
     background: Color,
+    critical: Color,
 }
 
 pub type CellColorConfig = HashMap<String, Color>;
@@ -129,19 +130,43 @@ impl<'a, T> Renderer<'a, T> {
         Ok(())
     }
 
-    pub fn show_json(&mut self, obj: INextpnrJSON, chip: Chip) -> Result<()> {
+    pub fn show_json(
+        &mut self,
+        obj: INextpnrJSON,
+        report: Option<IReportJSON>,
+        chip: Chip,
+    ) -> Result<()> {
         self.ensure_graphic_elements();
 
         let json = NextpnrJson::from_jsobj(obj)?;
         let elems = json.get_elements(&chip);
+
+        // parse report (if it exists) and extract critical path details
+        let report = report.map(ReportJson::from_jsobj).transpose()?;
+        let crit_routings = report.map_or(vec![], |r| {
+            r.get_critical_netnames()
+                .iter()
+                .filter_map(|&n| json.get_netname(n))
+                .flat_map(|n| n.get_routing(&chip))
+                .collect()
+        });
+        let crit_wires: HashSet<&String> =
+            HashSet::from_iter(crit_routings.iter().map(|r| &r.wire_id));
+        let crit_pips: HashSet<&String> =
+            HashSet::from_iter(crit_routings.iter().map(|r| &r.pip.name));
 
         let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
         for wire in elems.wires {
             let Some(ge) = wire_map.get_mut(&wire) else {
                 continue;
             };
+
             for g in ge {
-                g.style = Style::Active;
+                g.style = if crit_wires.contains(&wire) {
+                    Style::CritPath
+                } else {
+                    Style::Active
+                };
             }
         }
 
@@ -157,7 +182,7 @@ impl<'a, T> Renderer<'a, T> {
                 .map_or(String::new(), |t| t.replace('$', ""));
             let color = self.cell_colors.get(&cell_type).copied();
 
-            ge.iter_mut().for_each(|g| {
+            for g in ge {
                 g.style = Style::Active;
                 g.color = color;
 
@@ -165,7 +190,7 @@ impl<'a, T> Renderer<'a, T> {
                 if !cell_type.is_empty() {
                     g.r#type = Type::FilledBox;
                 }
-            });
+            }
         }
 
         let pip_map = self.graphic_elements.entry(ElementType::Pip).or_default();
@@ -178,10 +203,15 @@ impl<'a, T> Renderer<'a, T> {
                 continue;
             };
 
-            let mut ges = self.architecture.get_decal_graphics(&decal.decal);
-            ges.iter_mut().for_each(|g| g.style = Style::Active);
-
-            pip_map.insert(decal.id, ges);
+            let mut ge = self.architecture.get_decal_graphics(&decal.decal);
+            for g in ge.iter_mut() {
+                g.style = if crit_pips.contains(&pip.name) {
+                    Style::CritPath
+                } else {
+                    Style::Active
+                };
+            }
+            pip_map.insert(decal.id, ge);
         }
 
         self.webgl_elements_dirty = true;
@@ -276,6 +306,7 @@ impl<'a, T> Renderer<'a, T> {
             Style::Active => Some(orig_color.unwrap_or(self.colors.active)),
             Style::Inactive => Some(self.colors.inactive),
             Style::Frame => Some(self.colors.frame),
+            Style::CritPath => Some(self.colors.critical),
             _ => None, // Hidden or some other style, cannot determine color
         }
     }
@@ -377,6 +408,7 @@ impl<'a, T> Renderer<'a, T> {
                         _ => 1,
                     },
                     match key.0 {
+                        Style::CritPath => 2,
                         Style::Active => 1,
                         _ => 0,
                     },

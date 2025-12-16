@@ -1,6 +1,6 @@
-import wasmInit, {Color, ViewerECP5, ViewerICE40, ColorConfig as RendererColorConfig, NextpnrJson, CellColorConfig} from '../pkg';
+import wasmInit, {Color, ViewerECP5, ViewerICE40, ColorConfig as RendererColorConfig, NextpnrJson, ReportJson, CellColorConfig} from '../pkg';
 
-export {NextpnrJson};
+export {NextpnrJson, ReportJson};
 
 const CHIP_DBS = <const> {
     "ecp5": {
@@ -63,6 +63,7 @@ type ColorConfig = {
     inactive: string;
     frame: string;
     background: string;
+    critical: string;
 };
 
 export type ViewerConfig = {
@@ -82,7 +83,8 @@ export const defaultConfig: ViewerConfig = {
         active: '#F8F8F2',
         inactive: '#6272A4',
         frame: '#BD93F9',
-        background: '#282A36'
+        background: '#282A36',
+        critical: '#FF0000',
     },
     cellColors: {},
     chip: {
@@ -182,7 +184,8 @@ export class NextPNRViewer {
             active: fromCssColor(this.config.colors.active),
             inactive: fromCssColor(this.config.colors.inactive),
             frame: fromCssColor(this.config.colors.frame),
-            background: fromCssColor(this.config.colors.background)
+            background: fromCssColor(this.config.colors.background),
+            critical: fromCssColor(this.config.colors.critical),
         };
         const cellColors: CellColorConfig = Object.fromEntries(
             Object.entries(this.config.cellColors).map(
@@ -206,12 +209,13 @@ export class NextPNRViewer {
         await this._doRender(true);
     }
 
-    async showJson(json: NextpnrJson) {
-        json = (typeof json === 'string') ? JSON.parse(json) : json;
+    async showJson(nextpnrJson: NextpnrJson, reportJson?: ReportJson) {
+        nextpnrJson = (typeof nextpnrJson === 'string') ? JSON.parse(nextpnrJson) : nextpnrJson;
+        reportJson = (typeof reportJson === 'string') ? JSON.parse(reportJson) : reportJson;
 
         const viewer = await this.viewer;
 
-        viewer.show_json(json);
+        viewer.show_json(nextpnrJson, reportJson);
     }
 
     async resize(width: number, height: number) {

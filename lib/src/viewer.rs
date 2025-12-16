@@ -2,7 +2,7 @@ use crate::{
     architecture::{ECP5Arch, ICE40Arch},
     chipdb,
     decal::{ECP5DecalID, ICE40DecalID},
-    pnrjson::{Chip, INextpnrJSON},
+    pnrjson::{Chip, INextpnrJSON, IReportJSON},
     renderer::{CellColorConfig, ColorConfig, Renderer},
 };
 
@@ -22,6 +22,7 @@ interface ColorConfig {
     inactive: Color,
     frame: Color,
     background: Color,
+    critical: Color,
 }
 
 type CellColorConfig = Record<string, Color>;
@@ -77,30 +78,32 @@ impl ViewerECP5 {
 
     #[wasm_bindgen]
     pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        let _ = self.renderer.render(force_first.unwrap_or(true));
-
-        Ok(())
+        self.renderer
+            .render(force_first.unwrap_or(true))
+            .map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
-    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
-        let _ = self.renderer.show_json(obj, Chip::ECP5);
-
-        Ok(())
+    pub fn show_json(
+        &mut self,
+        obj: INextpnrJSON,
+        report: Option<IReportJSON>,
+    ) -> Result<(), JsError> {
+        self.renderer
+            .show_json(obj, report, Chip::ECP5)
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen]
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.zoom(amt, x, y);
-
-        Ok(())
+        self.renderer
+            .zoom(amt, x, y)
+            .map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.pan(x, y);
-
-        Ok(())
+        self.renderer.pan(x, y).map_err(|e| JsError::from(&*e))
     }
 }
 
@@ -145,29 +148,31 @@ impl ViewerICE40 {
 
     #[wasm_bindgen]
     pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        let _ = self.renderer.render(force_first.unwrap_or(true));
-
-        Ok(())
+        self.renderer
+            .render(force_first.unwrap_or(true))
+            .map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
-    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
-        let _ = self.renderer.show_json(obj, Chip::ICE40);
-
-        Ok(())
+    pub fn show_json(
+        &mut self,
+        obj: INextpnrJSON,
+        report: Option<IReportJSON>,
+    ) -> Result<(), JsError> {
+        self.renderer
+            .show_json(obj, report, Chip::ICE40)
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen]
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.zoom(amt, x, y);
-
-        Ok(())
+        self.renderer
+            .zoom(amt, x, y)
+            .map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.pan(x, y);
-
-        Ok(())
+        self.renderer.pan(x, y).map_err(|e| JsError::from(&*e))
     }
 }
