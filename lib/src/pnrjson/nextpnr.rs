@@ -2,12 +2,7 @@ use anyhow::{Error, Result};
 
 use crate::architecture::{Wire, WireLocation};
 use crate::pnrjson::nextpnr_types::Netname;
-use crate::pnrjson::{INextpnrJSON, NextpnrJson};
-
-pub enum Chip {
-    ICE40,
-    ECP5,
-}
+use crate::pnrjson::{Chip, INextpnrJSON, NextpnrJson};
 
 pub struct NextpnrBel<'a> {
     pub nextpnr_bel: &'a String,

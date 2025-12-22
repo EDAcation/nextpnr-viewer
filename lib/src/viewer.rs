@@ -77,10 +77,8 @@ impl ViewerECP5 {
     }
 
     #[wasm_bindgen]
-    pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        self.renderer
-            .render(force_first.unwrap_or(true))
-            .map_err(|e| JsError::from(&*e))
+    pub fn render(&mut self) -> Result<(), JsError> {
+        self.renderer.render().map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
@@ -147,10 +145,8 @@ impl ViewerICE40 {
     }
 
     #[wasm_bindgen]
-    pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        self.renderer
-            .render(force_first.unwrap_or(true))
-            .map_err(|e| JsError::from(&*e))
+    pub fn render(&mut self) -> Result<(), JsError> {
+        self.renderer.render().map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]

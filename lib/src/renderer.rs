@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::f32::consts::E;
 
 use anyhow::{bail, Result};
 use itertools::Itertools;
@@ -43,7 +42,6 @@ pub struct Renderer<'a, T> {
     colors: ColorConfig,
     cell_colors: CellColorConfig,
 
-    is_rendering: bool,
     offset: (f32, f32),
     scale: f32,
 }
@@ -78,7 +76,6 @@ impl<'a, T> Renderer<'a, T> {
             graphic_elements_dirty: true,
             webgl_elements: vec![],
             webgl_elements_dirty: true,
-            is_rendering: false,
 
             colors,
             cell_colors,
@@ -88,17 +85,11 @@ impl<'a, T> Renderer<'a, T> {
         })
     }
 
-    pub fn render(&mut self, force_first_render: bool) -> Result<()> {
-        if !self.is_rendering && !force_first_render {
-            // First actual render must be forced
-            return Ok(());
-        }
-        self.is_rendering = true;
-
+    pub fn render(&mut self) -> Result<()> {
         self.ensure_webgl_elements()?;
 
         let gl = self.program.get_gl();
-        let canvas = self.get_canvas();
+        let canvas = &self.canvas;
 
         gl.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
 
@@ -216,12 +207,12 @@ impl<'a, T> Renderer<'a, T> {
 
         self.webgl_elements_dirty = true;
 
-        self.render(false)?;
+        self.render()?;
         Ok(())
     }
 
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<()> {
-        let mut amt = E.powf(-amt);
+        let mut amt = (-amt).exp();
 
         let old_scale = self.scale;
         self.scale *= amt;
@@ -234,7 +225,7 @@ impl<'a, T> Renderer<'a, T> {
         self.offset.0 -= x / (self.scale * amt) - x / self.scale;
         self.offset.1 -= y / (self.scale * amt) - y / self.scale;
 
-        self.render(false)?;
+        self.render()?;
         Ok(())
     }
 
@@ -242,12 +233,8 @@ impl<'a, T> Renderer<'a, T> {
         self.offset.0 -= x / self.scale;
         self.offset.1 -= y / self.scale;
 
-        self.render(false)?;
+        self.render()?;
         Ok(())
-    }
-
-    fn get_canvas(&self) -> &HtmlCanvasElement {
-        &self.canvas
     }
 
     fn ensure_graphic_elements(&mut self) {
@@ -293,7 +280,7 @@ impl<'a, T> Renderer<'a, T> {
         let g_elems = self
             .graphic_elements
             .values()
-            .flat_map(|h| h.values().flat_map(|g| g.clone()));
+            .flat_map(|h| h.values().flat_map(|g| g.iter()));
 
         self.webgl_elements = self.to_webgl_elements(g_elems)?;
         self.webgl_elements_dirty = false;
@@ -311,87 +298,67 @@ impl<'a, T> Renderer<'a, T> {
         }
     }
 
-    fn to_webgl_elements(
+    fn to_webgl_elements<'b>(
         &self,
-        ges: impl Iterator<Item = GraphicElement>,
+        ges: impl Iterator<Item = &'b GraphicElement>,
     ) -> Result<WebGlElements<'a>> {
         type Key = (Style, Type, Option<Color>);
 
-        // Create 'groups' of elements with the same style, type and color so we can batch them
-        // when rendering.
-        let mut groups: HashMap<Key, Vec<GraphicElement>> = HashMap::new();
+        // Group elements by final draw state (style, type, resolved color).
+        let mut groups: HashMap<Key, Vec<&GraphicElement>> = HashMap::new();
         for elem in ges {
-            let key = (elem.style, elem.r#type, elem.color);
+            // Skip hidden or invalid early and compute resolved color once.
+            let resolved = self.get_elem_color(&elem.style, &elem.color);
+            if elem.style == Style::Hidden || resolved.is_none() {
+                continue;
+            }
+            let key: Key = (elem.style, elem.r#type, resolved);
             groups.entry(key).or_default().push(elem);
         }
 
         let mut elems: HashMap<Key, WebGlElements> = HashMap::new();
         for (key, group) in groups.into_iter() {
-            if group.is_empty() || key.0 == Style::Hidden {
+            if group.is_empty() {
                 continue;
             }
-            let Some(color) = self.get_elem_color(&key.0, &key.2) else {
-                continue; // Invalid color
-            };
+            let color = key.2.expect("color ensured above");
 
             let new_elem: Box<dyn WebGlElement<'a> + 'a>;
             if key.1 == Type::Box {
-                let ls: Vec<_> = group
-                    .into_iter()
-                    .flat_map(|e| {
-                        [
-                            LineCoords {
-                                x1: e.x1 as f32,
-                                x2: e.x2 as f32,
-                                y1: e.y1 as f32,
-                                y2: e.y1 as f32,
-                            },
-                            LineCoords {
-                                x1: e.x1 as f32,
-                                x2: e.x2 as f32,
-                                y1: e.y2 as f32,
-                                y2: e.y2 as f32,
-                            },
-                            LineCoords {
-                                x1: e.x1 as f32,
-                                x2: e.x1 as f32,
-                                y1: e.y1 as f32,
-                                y2: e.y2 as f32,
-                            },
-                            LineCoords {
-                                x1: e.x2 as f32,
-                                x2: e.x2 as f32,
-                                y1: e.y1 as f32,
-                                y2: e.y2 as f32,
-                            },
-                        ]
-                    })
-                    .collect();
-
+                // Pre-allocate: 4 line segments per box.
+                let mut ls = Vec::with_capacity(group.len() * 4);
+                for e in group {
+                    let x1 = e.x1 as f32;
+                    let x2 = e.x2 as f32;
+                    let y1 = e.y1 as f32;
+                    let y2 = e.y2 as f32;
+                    ls.push(LineCoords { x1, x2, y1, y2: y1 });
+                    ls.push(LineCoords { x1, x2, y1: y2, y2 });
+                    ls.push(LineCoords { x1, x2: x1, y1, y2 });
+                    ls.push(LineCoords { x1: x2, x2, y1, y2 });
+                }
                 new_elem = Box::new(Line::new(&self.program, ls, color)?);
             } else if key.1 == Type::FilledBox {
-                let ls = group
-                    .into_iter()
-                    .map(|e| RectangleCoords {
+                let mut ls = Vec::with_capacity(group.len());
+                for e in group {
+                    ls.push(RectangleCoords {
                         x1: e.x1 as f32,
                         x2: e.x2 as f32,
                         y1: e.y1 as f32,
                         y2: e.y2 as f32,
-                    })
-                    .collect();
-
+                    });
+                }
                 new_elem = Box::new(Rectangle::new(&self.program, ls, color)?);
             } else {
-                let ls = group
-                    .into_iter()
-                    .map(|e| LineCoords {
+                let mut ls = Vec::with_capacity(group.len());
+                for e in group {
+                    ls.push(LineCoords {
                         x1: e.x1 as f32,
                         y1: e.y1 as f32,
                         x2: e.x2 as f32,
                         y2: e.y2 as f32,
-                    })
-                    .collect();
-
+                    });
+                }
                 new_elem = Box::new(Line::new(&self.program, ls, color)?);
             }
 
