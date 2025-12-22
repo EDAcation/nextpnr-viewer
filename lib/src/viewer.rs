@@ -2,7 +2,7 @@ use crate::{
     architecture::{ECP5Arch, ICE40Arch},
     chipdb,
     decal::{ECP5DecalID, ICE40DecalID},
-    pnrjson::{Chip, INextpnrJSON, IReportJSON},
+    pnrjson::{Chip, INextpnrJSON, IReportJSON, PnrInfo},
     renderer::{CellColorConfig, ColorConfig, Renderer},
 };
 
@@ -87,9 +87,12 @@ impl ViewerECP5 {
         obj: INextpnrJSON,
         report: Option<IReportJSON>,
     ) -> Result<(), JsError> {
-        self.renderer
-            .show_json(obj, report, Chip::ECP5)
-            .map_err(|e| JsError::new(&e.to_string()))
+        let pnr_info = PnrInfo::from_jsobj(Chip::ECP5, obj, report)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        return self
+            .renderer
+            .show_json(pnr_info)
+            .map_err(|e| JsError::new(&e.to_string()));
     }
 
     #[wasm_bindgen]
@@ -155,9 +158,12 @@ impl ViewerICE40 {
         obj: INextpnrJSON,
         report: Option<IReportJSON>,
     ) -> Result<(), JsError> {
-        self.renderer
-            .show_json(obj, report, Chip::ICE40)
-            .map_err(|e| JsError::new(&e.to_string()))
+        let pnr_info = PnrInfo::from_jsobj(Chip::ICE40, obj, report)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        return self
+            .renderer
+            .show_json(pnr_info)
+            .map_err(|e| JsError::new(&e.to_string()));
     }
 
     #[wasm_bindgen]

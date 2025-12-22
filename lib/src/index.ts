@@ -205,8 +205,7 @@ export class NextPNRViewer {
     };
 
     async render() {
-        // Explicit call to start rendering, so set force to true
-        await this._doRender(true);
+        (await this.viewer).render();
     }
 
     async showJson(nextpnrJson: NextpnrJson, reportJson?: ReportJson) {
@@ -221,16 +220,7 @@ export class NextPNRViewer {
     async resize(width: number, height: number) {
         this._doResize(width, height);
 
-        // First render can be delayed, so set force to false
-        await this._doRender(false);
-    }
-
-    private async _doRender(force: boolean) {
-        // The first render is relatively expensive, so it is a good idea to delay it until we really need it.
-        // Setting force to true will immediately trigger this first render, while setting it to false essentially
-        // makes this method a no-op until the first render has occurred.
-        const viewer = await this.viewer;
-        viewer.render(force);
+        (await this.viewer).render();
     }
 
     private _doResize(width: number, height: number) {

@@ -8,7 +8,7 @@ use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 
 use crate::architecture::Architecture;
 use crate::gfx::{Color, GraphicElement, Style, Type};
-use crate::pnrjson::{Chip, INextpnrJSON, IReportJSON, NextpnrJson, ReportJson};
+use crate::pnrjson::PnrInfo;
 use crate::webgl::{
     ElementType, Line, LineCoords, Rectangle, RectangleCoords, RenderingProgram, WebGlElement,
 };
@@ -33,6 +33,8 @@ pub struct Renderer<'a, T> {
     architecture: Box<dyn Architecture<T>>,
     program: RenderingProgram,
     canvas: HtmlCanvasElement,
+
+    pnr_info: Option<PnrInfo>,
 
     graphic_elements: GraphicElements,
     graphic_elements_dirty: bool,
@@ -71,6 +73,8 @@ impl<'a, T> Renderer<'a, T> {
             architecture: Box::new(architecture),
             program,
             canvas,
+
+            pnr_info: None,
 
             graphic_elements: HashMap::new(),
             graphic_elements_dirty: true,
@@ -121,26 +125,12 @@ impl<'a, T> Renderer<'a, T> {
         Ok(())
     }
 
-    pub fn show_json(
-        &mut self,
-        obj: INextpnrJSON,
-        report: Option<IReportJSON>,
-        chip: Chip,
-    ) -> Result<()> {
+    pub fn show_json(&mut self, pnr_info: PnrInfo) -> Result<()> {
         self.ensure_graphic_elements();
 
-        let json = NextpnrJson::from_jsobj(obj)?;
-        let elems = json.get_elements(&chip);
+        let elems = pnr_info.get_elements();
 
-        // parse report (if it exists) and extract critical path details
-        let report = report.map(ReportJson::from_jsobj).transpose()?;
-        let crit_routings = report.map_or(vec![], |r| {
-            r.get_critical_netnames()
-                .iter()
-                .filter_map(|&n| json.get_netname(n))
-                .flat_map(|n| n.get_routing(&chip))
-                .collect()
-        });
+        let crit_routings = pnr_info.get_critical_netnames();
         let crit_wires: HashSet<&String> =
             HashSet::from_iter(crit_routings.iter().map(|r| &r.wire_id));
         let crit_pips: HashSet<&String> =
@@ -206,6 +196,8 @@ impl<'a, T> Renderer<'a, T> {
         }
 
         self.webgl_elements_dirty = true;
+
+        self.pnr_info = Some(pnr_info);
 
         self.render()?;
         Ok(())
