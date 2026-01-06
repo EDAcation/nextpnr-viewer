@@ -30,7 +30,9 @@
     "check": "tsc --noEmit",
     "build-minifier": "cargo build --release",
     "build-wasm": "wasm-pack build --release --target web",
+    "build-wasm-dev": "wasm-pack build --debug --target web",
     "build": "npm run-script build-minifier && npm run-script build-wasm && npm exec rollup -- -c",
+    "build-dev": "npm run-script build-wasm-dev && npm exec rollup -- -c",
     "prepare": "npm run build"
   }
 }
