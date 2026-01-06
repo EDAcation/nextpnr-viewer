@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use super::RenderingProgram;
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum ElementType {
     Wire,
     Group,

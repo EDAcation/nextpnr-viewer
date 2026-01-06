@@ -64,6 +64,7 @@ type ColorConfig = {
     frame: string;
     background: string;
     critical: string;
+    highlight: string;
 };
 
 export type ViewerConfig = {
@@ -85,6 +86,7 @@ export const defaultConfig: ViewerConfig = {
         frame: '#BD93F9',
         background: '#282A36',
         critical: '#FF0000',
+        highlight: '#F8F8F2'
     },
     cellColors: {},
     chip: {
@@ -186,6 +188,7 @@ export class NextPNRViewer {
             frame: fromCssColor(this.config.colors.frame),
             background: fromCssColor(this.config.colors.background),
             critical: fromCssColor(this.config.colors.critical),
+            highlight: fromCssColor(this.config.colors.highlight),
         };
         const cellColors: CellColorConfig = Object.fromEntries(
             Object.entries(this.config.cellColors).map(
@@ -271,14 +274,16 @@ export class NextPNRViewer {
             down = false;
         });
         canvas.addEventListener('mousemove', (e) => doInAnimFrame(() => {
+            console.log(viewer.select_at_coords(e.offsetX, e.offsetY));
+
             if (down) {
                 if (!firstEvent) {
-                    viewer.pan(e.clientX - oldx, e.clientY - oldy);
+                    viewer.pan(e.offsetX - oldx, e.offsetY - oldy);
                 }
 
                 firstEvent = false;
-                oldx = e.clientX;
-                oldy = e.clientY;
+                oldx = e.offsetX;
+                oldy = e.offsetY;
             }
         }));
     }

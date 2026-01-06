@@ -7,7 +7,7 @@ use crate::{
 };
 
 use wasm_bindgen::prelude::*;
-use web_sys::HtmlCanvasElement;
+use web_sys::{js_sys, HtmlCanvasElement};
 
 #[wasm_bindgen(typescript_custom_section)]
 const ICOLOR_CONFIG: &'static str = r#"
@@ -23,6 +23,7 @@ interface ColorConfig {
     frame: Color,
     background: Color,
     critical: Color,
+    highlight: Color,
 }
 
 type CellColorConfig = Record<string, Color>;
@@ -106,6 +107,23 @@ impl ViewerECP5 {
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
         self.renderer.pan(x, y).map_err(|e| JsError::from(&*e))
     }
+
+    #[wasm_bindgen]
+    pub fn select_at_coords(&mut self, x: f32, y: f32) -> Result<JsValue, JsError> {
+        let selection = self
+            .renderer
+            .select_decals_at_canvas(x, y)
+            .map_err(|e| JsError::from(&*e))?;
+
+        Ok(selection
+            .map(|(et, s)| {
+                let arr = js_sys::Array::new();
+                arr.push(&JsValue::from_str(&format!("{:?}", et)));
+                arr.push(&JsValue::from_str(&s));
+                arr.into()
+            })
+            .unwrap_or_default())
+    }
 }
 
 #[wasm_bindgen]
@@ -176,5 +194,22 @@ impl ViewerICE40 {
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
         self.renderer.pan(x, y).map_err(|e| JsError::from(&*e))
+    }
+
+    #[wasm_bindgen]
+    pub fn select_at_coords(&mut self, x: f32, y: f32) -> Result<JsValue, JsError> {
+        let selection = self
+            .renderer
+            .select_decals_at_canvas(x, y)
+            .map_err(|e| JsError::from(&*e))?;
+
+        Ok(selection
+            .map(|(et, s)| {
+                let arr = js_sys::Array::new();
+                arr.push(&JsValue::from_str(&format!("{:?}", et)));
+                arr.push(&JsValue::from_str(&s));
+                arr.into()
+            })
+            .unwrap_or_default())
     }
 }
