@@ -65,6 +65,7 @@ type ColorConfig = {
     background: string;
     critical: string;
     highlight: string;
+    selected: string;
 };
 
 export type ViewerConfig = {
@@ -87,7 +88,8 @@ export const defaultConfig: ViewerConfig = {
         frame: '#BD93F9',
         background: '#282A36',
         critical: '#FF0000',
-        highlight: '#F8F8F2'
+        highlight: '#81ff81',
+        selected: '#00FF00',
     },
     cellColors: {},
     chip: {
@@ -199,6 +201,7 @@ export class NextPNRViewer {
             background: fromCssColor(this.config.colors.background),
             critical: fromCssColor(this.config.colors.critical),
             highlight: fromCssColor(this.config.colors.highlight),
+            selected: fromCssColor(this.config.colors.selected),
         };
         const cellColors: CellColorConfig = Object.fromEntries(
             Object.entries(this.config.cellColors).map(
@@ -316,6 +319,8 @@ export class NextPNRViewer {
             down = false;
         });
         canvas.addEventListener('mousemove', (e) => doInAnimFrame(() => {
+            viewer.select_at_coords(e.offsetX, e.offsetY, true);
+
             if (down) {
                 if (!firstEvent) {
                     viewer.pan(e.offsetX - oldx, e.offsetY - oldy);
@@ -330,7 +335,7 @@ export class NextPNRViewer {
         // Selection
         canvas.addEventListener('click', async (e) => {
             try {
-                const selection = await viewer.select_at_coords(e.offsetX, e.offsetY);
+                const selection = viewer.select_at_coords(e.offsetX, e.offsetY, false);
                 
                 if (selection && Array.isArray(selection)) {
                     const elementType = selection[0] as ElementType;

@@ -25,6 +25,7 @@ interface ColorConfig {
     background: Color,
     critical: Color,
     highlight: Color,
+    selected: Color,
 }
 
 type CellColorConfig = Record<string, Color>;
@@ -110,14 +111,19 @@ impl ViewerECP5 {
     }
 
     #[wasm_bindgen]
-    pub fn select_at_coords(&mut self, x: f32, y: f32) -> Result<JsValue, JsError> {
+    pub fn select_at_coords(
+        &mut self,
+        x: f32,
+        y: f32,
+        only_highlight: bool,
+    ) -> Result<JsValue, JsError> {
         let selection = self
             .renderer
-            .select_decal_at_canvas(x, y)
+            .select_decal_at_canvas(x, y, only_highlight)
             .map_err(|e| JsError::from(&*e))?;
 
         Ok(selection
-            .map(|(et, s)| {
+            .map(|(_, et, s)| {
                 let arr = js_sys::Array::new();
                 arr.push(&JsValue::from_f64(et as u8 as f64));
                 arr.push(&JsValue::from_str(&s));
@@ -129,7 +135,7 @@ impl ViewerECP5 {
     #[wasm_bindgen]
     pub fn select(&mut self, element_type: ElementType, decal_id: &str) -> Result<(), JsError> {
         self.renderer
-            .select_decal(element_type, decal_id, true)
+            .select_decal(element_type, decal_id, true, false)
             .map_err(|e| JsError::from(&*e))
     }
 
@@ -219,14 +225,19 @@ impl ViewerICE40 {
     }
 
     #[wasm_bindgen]
-    pub fn select_at_coords(&mut self, x: f32, y: f32) -> Result<JsValue, JsError> {
+    pub fn select_at_coords(
+        &mut self,
+        x: f32,
+        y: f32,
+        only_highlight: bool,
+    ) -> Result<JsValue, JsError> {
         let selection = self
             .renderer
-            .select_decal_at_canvas(x, y)
+            .select_decal_at_canvas(x, y, only_highlight)
             .map_err(|e| JsError::from(&*e))?;
 
         Ok(selection
-            .map(|(et, s)| {
+            .map(|(_, et, s)| {
                 let arr = js_sys::Array::new();
                 arr.push(&JsValue::from_f64(et as u8 as f64));
                 arr.push(&JsValue::from_str(&s));
@@ -238,7 +249,7 @@ impl ViewerICE40 {
     #[wasm_bindgen]
     pub fn select(&mut self, element_type: ElementType, decal_id: &str) -> Result<(), JsError> {
         self.renderer
-            .select_decal(element_type, decal_id, true)
+            .select_decal(element_type, decal_id, true, false)
             .map_err(|e| JsError::from(&*e))
     }
 

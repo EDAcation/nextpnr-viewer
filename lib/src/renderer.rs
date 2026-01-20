@@ -24,6 +24,8 @@ type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
 type RTreeElementData = (ElementType, String);
 type RTreeData = GeomWithData<RTreeRect<[f32; 2]>, RTreeElementData>;
 
+type DecalSelection = (bool, ElementType, String);
+
 const PICK_EPSILON: f32 = 0.0005;
 
 #[derive(Serialize, Deserialize)]
@@ -34,6 +36,7 @@ pub struct ColorConfig {
     background: Color,
     critical: Color,
     highlight: Color,
+    selected: Color,
 }
 
 pub type CellColorConfig = HashMap<String, Color>;
@@ -59,7 +62,7 @@ pub struct Renderer<'a, DecalID> {
     offset: (f32, f32),
     scale: f32,
 
-    selection: Option<RTreeElementData>,
+    selection: Option<DecalSelection>,
 }
 
 fn create_rendering_context(canvas: &HtmlCanvasElement) -> Result<WebGl2RenderingContext> {
@@ -142,7 +145,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
         // If we have a selection, draw only the selected elements over our previously rendered content
         // This avoids having to regenerate all webgl elements, which is very slow.
-        if let Some((etype, decal_id)) = &self.selection {
+        if let Some((only_highlight, etype, decal_id)) = &self.selection {
             if let Some(ge_vec) = self
                 .graphic_elements
                 .get(etype)
@@ -150,7 +153,12 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             {
                 let items = ge_vec.iter().map(|g| (etype, decal_id.as_str(), g));
 
-                let (selection_elems, _) = self.to_webgl_elements(items, true)?;
+                let color = if *only_highlight {
+                    Some(self.colors.highlight)
+                } else {
+                    Some(self.colors.selected)
+                };
+                let (selection_elems, _) = self.to_webgl_elements(items, color)?;
 
                 for elem in selection_elems {
                     draw(&elem)?
@@ -323,7 +331,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             })
         });
 
-        let (webgl, rtree) = self.to_webgl_elements(iter, false)?;
+        let (webgl, rtree) = self.to_webgl_elements(iter, None)?;
         self.webgl_elements = webgl;
         self.rtree = Some(rtree);
 
@@ -335,10 +343,10 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         &self,
         style: &Style,
         orig_color: &Option<Color>,
-        highlight: bool,
+        color_override: Option<Color>,
     ) -> Option<Color> {
-        if highlight {
-            return Some(self.colors.highlight);
+        if color_override.is_some() {
+            return color_override;
         }
         match style {
             Style::Active => Some(orig_color.unwrap_or(self.colors.active)),
@@ -352,7 +360,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
     fn to_webgl_elements<'b>(
         &self,
         ges: impl Iterator<Item = (&'b ElementType, &'b str, &'b GraphicElement)>,
-        highlight: bool,
+        color_override: Option<Color>,
     ) -> Result<(WebGlElements<'a>, RTree<RTreeData>)> {
         type Key = (Style, Type, Option<Color>);
 
@@ -360,7 +368,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         let mut groups: HashMap<Key, Vec<(&ElementType, &str, &GraphicElement)>> = HashMap::new();
         for (etype, decal_id, elem) in ges {
             // Skip hidden or invalid early and compute resolved color once.
-            let resolved = self.get_elem_color(&elem.style, &elem.color, highlight);
+            let resolved = self.get_elem_color(&elem.style, &elem.color, color_override);
             if elem.style == Style::Hidden || resolved.is_none() {
                 continue;
             }
@@ -514,8 +522,9 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         element_type: ElementType,
         decal_id: &str,
         do_zoom: bool,
+        only_highlight: bool,
     ) -> Result<()> {
-        self.selection = Some((element_type, decal_id.to_string()));
+        self.selection = Some((only_highlight, element_type, decal_id.to_string()));
 
         if do_zoom {
             // Calculate the bounding box of the selected decal from its graphic elements
@@ -577,22 +586,36 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         Ok(())
     }
 
-    pub fn canvas_to_world(&self, x: f32, y: f32) -> (f32, f32) {
+    fn canvas_to_world(&self, x: f32, y: f32) -> (f32, f32) {
         let wx = (x / self.scale) + self.offset.0;
         // Don't flip Y - the vertex shader handles Y-axis transformation
         let wy = -(y / self.scale) - self.offset.1;
         (wx, wy)
     }
 
-    pub fn select_decal_at_world(&mut self, x: f32, y: f32) -> Result<Option<RTreeElementData>> {
+    pub fn select_decal_at_world(
+        &mut self,
+        x: f32,
+        y: f32,
+        only_highlight: bool,
+    ) -> Result<Option<DecalSelection>> {
         let Some(rtree) = &self.rtree else {
             return Ok(None);
         };
 
+        // If our active selection is not 'only_highlight' (so a proper 'click' selection) but our current
+        // instruction is an only_highlight, we ignore the request because we don't want a hover
+        // to override a click selection.
+        if let Some((current_only_highlight, _, _)) = &self.selection {
+            if !*current_only_highlight && only_highlight {
+                return Ok(None);
+            }
+        }
+
         let selection = rtree.locate_at_point(&[x, y]).map(|f| f.data.clone());
 
         if let Some((etype, decal_id)) = selection {
-            self.select_decal(etype, &decal_id, false)?;
+            self.select_decal(etype, &decal_id, false, only_highlight)?;
         } else {
             self.cancel_selection()?;
         }
@@ -600,8 +623,13 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         Ok(self.selection.clone())
     }
 
-    pub fn select_decal_at_canvas(&mut self, x: f32, y: f32) -> Result<Option<RTreeElementData>> {
+    pub fn select_decal_at_canvas(
+        &mut self,
+        x: f32,
+        y: f32,
+        only_highlight: bool,
+    ) -> Result<Option<DecalSelection>> {
         let (wx, wy) = self.canvas_to_world(x, y);
-        self.select_decal_at_world(wx, wy)
+        self.select_decal_at_world(wx, wy, only_highlight)
     }
 }
