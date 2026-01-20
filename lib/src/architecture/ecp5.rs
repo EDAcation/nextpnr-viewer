@@ -86,16 +86,14 @@ impl Architecture<DecalID> for ECP5Arch {
             // Utility functions to get wire/decal loc info
             let loc_info_wire = |wire: &gfx::ecp5::WireId| {
                 let tile = wire.location.y * (self.chipdb.width as f64) + wire.location.x;
-                self
-                    .chipdb
+                self.chipdb
                     .location_type
                     .get(tile as usize)
                     .and_then(|&t| self.chipdb.locations.get(t as usize))
             };
             let loc_info_decal = |decal: &decal::ECP5DecalID| {
                 let tile = decal.location.y * (self.chipdb.width as f64) + decal.location.x;
-                self
-                    .chipdb
+                self.chipdb
                     .location_type
                     .get(tile as usize)
                     .and_then(|&t| self.chipdb.locations.get(t as usize))

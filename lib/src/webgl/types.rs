@@ -1,8 +1,10 @@
 use anyhow::Result;
+use wasm_bindgen::prelude::*;
 
 use super::RenderingProgram;
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[wasm_bindgen]
 pub enum ElementType {
     Wire,
     Group,

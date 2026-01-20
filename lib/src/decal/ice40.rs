@@ -4,8 +4,11 @@ use anyhow::{Error, Result};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+use wasm_bindgen::prelude::*;
+
 #[allow(non_camel_case_types)]
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
+#[wasm_bindgen]
 pub enum ICE40DecalType {
     TYPE_NONE,
     TYPE_BEL,
@@ -14,7 +17,8 @@ pub enum ICE40DecalType {
     TYPE_GROUP,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
+#[wasm_bindgen]
 pub struct ICE40DecalID {
     pub r#type: ICE40DecalType,
     pub index: i32,

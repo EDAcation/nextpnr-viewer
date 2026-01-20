@@ -4,6 +4,7 @@ use crate::{
     decal::{ECP5DecalID, ICE40DecalID},
     pnrjson::{Chip, INextpnrJSON, IReportJSON, PnrInfo},
     renderer::{CellColorConfig, ColorConfig, Renderer},
+    webgl::ElementType,
 };
 
 use wasm_bindgen::prelude::*;
@@ -112,17 +113,38 @@ impl ViewerECP5 {
     pub fn select_at_coords(&mut self, x: f32, y: f32) -> Result<JsValue, JsError> {
         let selection = self
             .renderer
-            .select_decals_at_canvas(x, y)
+            .select_decal_at_canvas(x, y)
             .map_err(|e| JsError::from(&*e))?;
 
         Ok(selection
             .map(|(et, s)| {
                 let arr = js_sys::Array::new();
-                arr.push(&JsValue::from_str(&format!("{:?}", et)));
+                arr.push(&JsValue::from_f64(et as u8 as f64));
                 arr.push(&JsValue::from_str(&s));
                 arr.into()
             })
-            .unwrap_or_default())
+            .unwrap_or(JsValue::NULL))
+    }
+
+    #[wasm_bindgen]
+    pub fn select(&mut self, element_type: ElementType, decal_id: &str) -> Result<(), JsError> {
+        self.renderer
+            .select_decal(element_type, decal_id, true)
+            .map_err(|e| JsError::from(&*e))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decal_ids(&mut self, decal_type: ElementType) -> Result<Vec<String>, JsError> {
+        Ok(self.renderer.get_decal_ids(decal_type))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decal(
+        &mut self,
+        decal_type: ElementType,
+        decal_id: &str,
+    ) -> Result<Option<ECP5DecalID>, JsError> {
+        Ok(self.renderer.get_decal(decal_type, decal_id))
     }
 }
 
@@ -200,16 +222,37 @@ impl ViewerICE40 {
     pub fn select_at_coords(&mut self, x: f32, y: f32) -> Result<JsValue, JsError> {
         let selection = self
             .renderer
-            .select_decals_at_canvas(x, y)
+            .select_decal_at_canvas(x, y)
             .map_err(|e| JsError::from(&*e))?;
 
         Ok(selection
             .map(|(et, s)| {
                 let arr = js_sys::Array::new();
-                arr.push(&JsValue::from_str(&format!("{:?}", et)));
+                arr.push(&JsValue::from_f64(et as u8 as f64));
                 arr.push(&JsValue::from_str(&s));
                 arr.into()
             })
-            .unwrap_or_default())
+            .unwrap_or(JsValue::NULL))
+    }
+
+    #[wasm_bindgen]
+    pub fn select(&mut self, element_type: ElementType, decal_id: &str) -> Result<(), JsError> {
+        self.renderer
+            .select_decal(element_type, decal_id, true)
+            .map_err(|e| JsError::from(&*e))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decal_ids(&mut self, decal_type: ElementType) -> Result<Vec<String>, JsError> {
+        Ok(self.renderer.get_decal_ids(decal_type))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decal(
+        &mut self,
+        decal_type: ElementType,
+        decal_id: &str,
+    ) -> Result<Option<ICE40DecalID>, JsError> {
+        Ok(self.renderer.get_decal(decal_type, decal_id))
     }
 }

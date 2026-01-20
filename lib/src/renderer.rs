@@ -10,12 +10,12 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 
-use crate::architecture::Architecture;
 use crate::gfx::{Color, GraphicElement, Style, Type};
 use crate::pnrjson::PnrInfo;
 use crate::webgl::{
     ElementType, Line, LineCoords, Rectangle, RectangleCoords, RenderingProgram, WebGlElement,
 };
+use crate::{architecture::Architecture, decal::DecalXY};
 
 type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
 type GraphicElements = HashMap<ElementType, GraphicElementCollection>;
@@ -23,6 +23,8 @@ type GraphicElements = HashMap<ElementType, GraphicElementCollection>;
 type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
 type RTreeElementData = (ElementType, String);
 type RTreeData = GeomWithData<RTreeRect<[f32; 2]>, RTreeElementData>;
+
+const PICK_EPSILON: f32 = 0.0005;
 
 #[derive(Serialize, Deserialize)]
 pub struct ColorConfig {
@@ -36,20 +38,20 @@ pub struct ColorConfig {
 
 pub type CellColorConfig = HashMap<String, Color>;
 
-pub struct Renderer<'a, T> {
-    architecture: Box<dyn Architecture<T>>,
+pub struct Renderer<'a, DecalID> {
+    architecture: Box<dyn Architecture<DecalID>>,
     program: RenderingProgram,
     canvas: HtmlCanvasElement,
 
     pnr_info: Option<PnrInfo>,
 
+    decals: HashMap<ElementType, HashMap<String, DecalXY<DecalID>>>,
     graphic_elements: GraphicElements,
     graphic_elements_dirty: bool,
     webgl_elements: WebGlElements<'a>,
     webgl_elements_dirty: bool,
 
     rtree: Option<RTree<RTreeData>>,
-    pick_epsilon: f32,
 
     colors: ColorConfig,
     cell_colors: CellColorConfig,
@@ -71,10 +73,10 @@ fn create_rendering_context(canvas: &HtmlCanvasElement) -> Result<WebGl2Renderin
     Ok(context)
 }
 
-impl<'a, T> Renderer<'a, T> {
+impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
     pub fn new(
         canvas: HtmlCanvasElement,
-        architecture: impl Architecture<T> + 'static,
+        architecture: impl Architecture<DecalID> + 'static,
         colors: ColorConfig,
         cell_colors: CellColorConfig,
     ) -> Result<Self> {
@@ -88,13 +90,13 @@ impl<'a, T> Renderer<'a, T> {
 
             pnr_info: None,
 
+            decals: HashMap::new(),
             graphic_elements: HashMap::new(),
             graphic_elements_dirty: true,
             webgl_elements: vec![],
             webgl_elements_dirty: true,
 
             rtree: None,
-            pick_epsilon: 0.0005,
 
             colors,
             cell_colors,
@@ -276,25 +278,31 @@ impl<'a, T> Renderer<'a, T> {
         // Wires
         let wire_decals = self.architecture.get_wire_decals();
         let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
+        let wire_decal_map = self.decals.entry(ElementType::Wire).or_default();
         for decal in wire_decals {
             let g = self.architecture.get_decal_graphics(&decal.decal);
-            wire_map.insert(decal.id, g);
+            wire_map.insert(decal.id.clone(), g);
+            wire_decal_map.insert(decal.id.clone(), decal);
         }
 
         // BELs
         let bel_decals = self.architecture.get_bel_decals();
         let bel_map = self.graphic_elements.entry(ElementType::Bel).or_default();
+        let bel_decal_map = self.decals.entry(ElementType::Bel).or_default();
         for decal in bel_decals {
             let g = self.architecture.get_decal_graphics(&decal.decal);
-            bel_map.insert(decal.id, g);
+            bel_map.insert(decal.id.clone(), g);
+            bel_decal_map.insert(decal.id.clone(), decal);
         }
 
         // Groups
         let group_decals = self.architecture.get_group_decals();
         let group_map = self.graphic_elements.entry(ElementType::Group).or_default();
+        let group_decal_map = self.decals.entry(ElementType::Group).or_default();
         for decal in group_decals {
             let g = self.architecture.get_decal_graphics(&decal.decal);
-            group_map.insert(decal.id, g);
+            group_map.insert(decal.id.clone(), g);
+            group_decal_map.insert(decal.id.clone(), decal);
         }
 
         self.graphic_elements_dirty = false;
@@ -363,7 +371,6 @@ impl<'a, T> Renderer<'a, T> {
 
         let mut elems: HashMap<Key, WebGlElements> = HashMap::new();
         let mut pick_entries: Vec<RTreeData> = Vec::new();
-        let eps = self.pick_epsilon;
 
         for (key, group) in groups.into_iter() {
             if group.is_empty() {
@@ -390,12 +397,12 @@ impl<'a, T> Renderer<'a, T> {
                 // One pick rectangle per underlying box (inflate for easier picking).
                 for (etype, decal_id, e) in group {
                     let (minx, maxx) = (
-                        (e.x1 as f32).min(e.x2 as f32) - eps,
-                        (e.x1 as f32).max(e.x2 as f32) + eps,
+                        (e.x1 as f32).min(e.x2 as f32) - PICK_EPSILON,
+                        (e.x1 as f32).max(e.x2 as f32) + PICK_EPSILON,
                     );
                     let (miny, maxy) = (
-                        (e.y1 as f32).min(e.y2 as f32) - eps,
-                        (e.y1 as f32).max(e.y2 as f32) + eps,
+                        (e.y1 as f32).min(e.y2 as f32) - PICK_EPSILON,
+                        (e.y1 as f32).max(e.y2 as f32) + PICK_EPSILON,
                     );
                     pick_entries.push(GeomWithData::new(
                         RTreeRect::from_corners([minx, miny], [maxx, maxy]),
@@ -443,12 +450,12 @@ impl<'a, T> Renderer<'a, T> {
 
                 for (etype, decal_id, e) in group {
                     let (minx, maxx) = (
-                        (e.x1 as f32).min(e.x2 as f32) - eps,
-                        (e.x1 as f32).max(e.x2 as f32) + eps,
+                        (e.x1 as f32).min(e.x2 as f32) - PICK_EPSILON,
+                        (e.x1 as f32).max(e.x2 as f32) + PICK_EPSILON,
                     );
                     let (miny, maxy) = (
-                        (e.y1 as f32).min(e.y2 as f32) - eps,
-                        (e.y1 as f32).max(e.y2 as f32) + eps,
+                        (e.y1 as f32).min(e.y2 as f32) - PICK_EPSILON,
+                        (e.y1 as f32).max(e.y2 as f32) + PICK_EPSILON,
                     );
                     pick_entries.push(GeomWithData::new(
                         RTreeRect::from_corners([minx, miny], [maxx, maxy]),
@@ -486,6 +493,90 @@ impl<'a, T> Renderer<'a, T> {
         Ok((res, rtree))
     }
 
+    pub fn get_decal_ids(&mut self, element_type: ElementType) -> Vec<String> {
+        self.ensure_graphic_elements();
+
+        let decal_map = self.graphic_elements.entry(element_type).or_default();
+
+        decal_map.keys().cloned().sorted().collect()
+    }
+
+    pub fn get_decal(&mut self, element_type: ElementType, decal_id: &str) -> Option<DecalID> {
+        self.ensure_graphic_elements();
+
+        let decal_map = self.decals.entry(element_type).or_default();
+
+        decal_map.get(decal_id).map(|d| d.decal.clone())
+    }
+
+    pub fn select_decal(
+        &mut self,
+        element_type: ElementType,
+        decal_id: &str,
+        do_zoom: bool,
+    ) -> Result<()> {
+        self.selection = Some((element_type, decal_id.to_string()));
+
+        if do_zoom {
+            // Calculate the bounding box of the selected decal from its graphic elements
+            if let Some(ge_vec) = self
+                .graphic_elements
+                .get(&element_type)
+                .and_then(|m| m.get(decal_id))
+            {
+                if !ge_vec.is_empty() {
+                    // Find the bounding box of all graphic elements
+                    let mut min_x = f32::INFINITY;
+                    let mut max_x = f32::NEG_INFINITY;
+                    let mut min_y = f32::INFINITY;
+                    let mut max_y = f32::NEG_INFINITY;
+
+                    for ge in ge_vec {
+                        min_x = min_x.min(ge.x1 as f32).min(ge.x2 as f32);
+                        max_x = max_x.max(ge.x1 as f32).max(ge.x2 as f32);
+                        min_y = min_y.min(ge.y1 as f32).min(ge.y2 as f32);
+                        max_y = max_y.max(ge.y1 as f32).max(ge.y2 as f32);
+                    }
+
+                    // Calculate center of the bounding box
+                    let center_x = (min_x + max_x) / 2.0;
+                    let center_y = (min_y + max_y) / 2.0;
+
+                    // Calculate dimensions
+                    let width = max_x - min_x;
+                    let height = max_y - min_y;
+
+                    // Set scale to fit the decal in view with some padding (80% of canvas)
+                    let canvas_width = self.canvas.width() as f32;
+                    let canvas_height = self.canvas.height() as f32;
+
+                    let scale_x = (canvas_width * 0.8) / width;
+                    let scale_y = (canvas_height * 0.8) / height;
+                    self.scale = scale_x.min(scale_y).clamp(10.0, 4000.0);
+
+                    // Center the view on the decal
+                    // The shader does: (position.x - offset.x) / canvas_width * scale
+                    // For Y: (-position.y - offset.y) / canvas_height * scale
+                    // To center at canvas_center, we need the above to equal 0.5
+                    self.offset.0 = center_x - (canvas_width / 2.0) / self.scale;
+                    self.offset.1 = -center_y - (canvas_height / 2.0) / self.scale;
+                }
+            }
+        }
+
+        self.render()?;
+
+        Ok(())
+    }
+
+    pub fn cancel_selection(&mut self) -> Result<()> {
+        self.selection = None;
+
+        self.render()?;
+
+        Ok(())
+    }
+
     pub fn canvas_to_world(&self, x: f32, y: f32) -> (f32, f32) {
         let wx = (x / self.scale) + self.offset.0;
         // Don't flip Y - the vertex shader handles Y-axis transformation
@@ -493,20 +584,24 @@ impl<'a, T> Renderer<'a, T> {
         (wx, wy)
     }
 
-    pub fn select_decals_at_world(&mut self, x: f32, y: f32) -> Result<Option<RTreeElementData>> {
+    pub fn select_decal_at_world(&mut self, x: f32, y: f32) -> Result<Option<RTreeElementData>> {
         let Some(rtree) = &self.rtree else {
             return Ok(None);
         };
 
-        self.selection = rtree.locate_at_point(&[x, y]).map(|f| f.data.clone());
+        let selection = rtree.locate_at_point(&[x, y]).map(|f| f.data.clone());
 
-        self.render()?;
+        if let Some((etype, decal_id)) = selection {
+            self.select_decal(etype, &decal_id, false)?;
+        } else {
+            self.cancel_selection()?;
+        }
 
         Ok(self.selection.clone())
     }
 
-    pub fn select_decals_at_canvas(&mut self, x: f32, y: f32) -> Result<Option<RTreeElementData>> {
+    pub fn select_decal_at_canvas(&mut self, x: f32, y: f32) -> Result<Option<RTreeElementData>> {
         let (wx, wy) = self.canvas_to_world(x, y);
-        self.select_decals_at_world(wx, wy)
+        self.select_decal_at_world(wx, wy)
     }
 }

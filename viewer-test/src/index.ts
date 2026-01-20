@@ -34,10 +34,11 @@ window.onload = () => {
 
             if (!nextpnrViewer) {
                 nextpnrViewer = new NextPNRViewer(container, {
-                    width: 1920,
+                    width: 1620, // 300px for sidebar
                     height: 1080,
                     chip: data.chip,
-                    cellColors: cellColors
+                    cellColors: cellColors,
+                    sidebarWidth: 300
                 });
                 nextpnrViewer.render();
             }
