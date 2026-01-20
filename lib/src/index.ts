@@ -302,8 +302,8 @@ export class NextPNRViewer {
             if (e.deltaY === 0) return;
             doInAnimFrame(() => viewer.zoom(
                 e.deltaY > 0 ? 0.05 : -0.05,
-                e.clientX - canvas.offsetLeft,
-                e.clientY - canvas.offsetTop
+                e.offsetX,
+                e.offsetY
             ));
         });
 
