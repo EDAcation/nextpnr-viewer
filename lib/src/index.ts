@@ -101,11 +101,37 @@ export const defaultConfig: ViewerConfig = {
 
 
 // **** Internal functions ****
-function getChipDbUrl(chip: SupportedChip): URL {
-  const { family, device } = chip;
-  const familyDb = SUPPORTED_DEVICES[family];
+function listGetters(instance: object) {
+    // Utility function to peek into an object returned from rust_bindgen
+    // https://stackoverflow.com/questions/60400066/how-to-enumerate-discover-getters-and-setters-in-javascript
+    return Object.entries(
+        Object.getOwnPropertyDescriptors(
+        Reflect.getPrototypeOf(instance)
+        )
+    )
+    .filter(e => typeof e[1].get === 'function' && e[0] !== '__proto__')
+    .map(e => e[0]);
+}
 
-  return familyDb[device as keyof typeof familyDb];
+function wasmToObject(wasmObj: object) {
+    //@ts-expect-error
+    if (wasmObj['__wbg_ptr'] === undefined) {
+        return wasmObj;
+    }
+
+    const result: Record<string, any> = {};
+    listGetters(wasmObj).forEach((key) => {
+        const value = (wasmObj as any)[key];
+        result[key] = wasmToObject(value);
+    });
+    return result;
+}
+
+function getChipDbUrl(chip: SupportedChip): URL {
+    const { family, device } = chip;
+    const familyDb = SUPPORTED_DEVICES[family];
+
+    return familyDb[device as keyof typeof familyDb];
 }
 
 async function getChipDb(url: URL): Promise<Uint8Array> {
@@ -174,19 +200,23 @@ export function isSupported(chip: {family: string, device: string}): chip is Sup
 }
 
 export class NextPNRViewer {
+    private static readonly BATCH_SIZE = 100;
+
     private config: ViewerConfig;
     private viewer: Promise<Viewer>;
 
     private container: HTMLDivElement;
     private canvas: HTMLCanvasElement;
     private sidebar: HTMLDivElement;
-    private canvasContainer: HTMLDivElement;
+
     private decalIdsCache: Map<ElementType, string[]> = new Map();
     private renderedDecalItems: Map<string, HTMLDivElement> = new Map();
     private selectedElement: { type: ElementType, id: string } | null = null;
     private currentElementType: ElementType | null = null;
-    private loadedRanges: Map<ElementType, Array<[number, number]>> = new Map();
+    private renderedBatches: Set<number> = new Set();
     private tabButtons: Map<ElementType, HTMLButtonElement> = new Map();
+    private loadMoreButtons: Map<number, Set<HTMLButtonElement>> = new Map();
+    private decalListElement: HTMLDivElement | null = null;
 
     constructor(container: HTMLDivElement, config?: Partial<ViewerConfig>) {
         this.config = {...defaultConfig, ...config};
@@ -211,7 +241,6 @@ export class NextPNRViewer {
 
         this.container = container;
         const { canvasContainer, sidebar } = this._createLayout(container);
-        this.canvasContainer = canvasContainer;
         this.sidebar = sidebar;
         this.canvas = this._createCanvas(canvasContainer);
         this._doResize(this.config.width, this.config.height);
@@ -416,16 +445,11 @@ export class NextPNRViewer {
         container.innerHTML = '<div style="color: #888;">Loading...</div>';
 
         try {
-            // Clear rendered items map and update current type
+            // Clear old data
             this.renderedDecalItems.clear();
             this.currentElementType = elementType;
-            
-            // Initialize loaded ranges for this element type
-            if (!this.loadedRanges.has(elementType)) {
-                this.loadedRanges.set(elementType, []);
-            } else {
-                this.loadedRanges.get(elementType)!.length = 0;
-            }
+            this.renderedBatches.clear();
+            this.loadMoreButtons.clear();
 
             // Fetch and cache all decal IDs if not already cached
             if (!this.decalIdsCache.has(elementType)) {
@@ -443,10 +467,10 @@ export class NextPNRViewer {
             container.innerHTML = '';
 
             // Create list container
-            const list = document.createElement('div');
-            list.style.display = 'flex';
-            list.style.flexDirection = 'column';
-            list.style.gap = '2px';
+            this.decalListElement = document.createElement('div');
+            this.decalListElement.style.display = 'flex';
+            this.decalListElement.style.flexDirection = 'column';
+            this.decalListElement.style.gap = '2px';
 
             // Create info header
             const info = document.createElement('div');
@@ -458,102 +482,66 @@ export class NextPNRViewer {
             info.textContent = `Total: ${decalIds.length} decals`;
             container.appendChild(info);
 
-            container.appendChild(list);
+            container.appendChild(this.decalListElement);
 
-            // Render first page
-            this._renderDecalPage(viewer, elementType, decalIds, list, 0);
+            // Render first batch
+            this._renderDecalBatch(viewer, elementType, 0);
         } catch (error) {
             container.innerHTML = `<div style="color: #f44747;">Error: ${error}</div>`;
         }
     }
 
-    private _addRange(elementType: ElementType, start: number, end: number) {
-        const ranges = this.loadedRanges.get(elementType)!;
-        ranges.push([start, end]);
-        // Merge overlapping or adjacent ranges
-        ranges.sort((a, b) => a[0] - b[0]);
-        const merged: Array<[number, number]> = [];
-        for (const [rangeStart, rangeEnd] of ranges) {
-            if (merged.length === 0 || merged[merged.length - 1][1] < rangeStart) {
-                merged.push([rangeStart, rangeEnd]);
-            } else {
-                merged[merged.length - 1][1] = Math.max(merged[merged.length - 1][1], rangeEnd);
+    private _renderDecalBatch(viewer: Viewer, elementType: ElementType, batchIndex: number) {
+        // Check if already rendered
+        if (this.renderedBatches.has(batchIndex)) {
+            return;
+        }
+
+        const decalIds = this.decalIdsCache.get(elementType)!;
+        const startIndex = batchIndex * NextPNRViewer.BATCH_SIZE;
+        const endIndex = Math.min(startIndex + NextPNRViewer.BATCH_SIZE, decalIds.length);
+        const decalsToRender = decalIds.slice(startIndex, endIndex);
+
+        // Strategy: find the first 'load more' button before the batch to find where we need to insert
+        let insertAfter: HTMLElement | null = null;
+        for (const [btnBatch, buttons] of this.loadMoreButtons) {
+            if (btnBatch < batchIndex) {
+                insertAfter = Array.from(buttons).sort((a, b) => {
+                    const aIndex = parseInt(a.dataset.batchIndex || '0', 10);
+                    const bIndex = parseInt(b.dataset.batchIndex || '0', 10);
+                    return bIndex - aIndex;
+                })[0];
             }
         }
-        this.loadedRanges.set(elementType, merged);
-    }
 
-    private _isIndexLoaded(elementType: ElementType, index: number): boolean {
-        const ranges = this.loadedRanges.get(elementType);
-        if (!ranges) return false;
-        return ranges.some(([start, end]) => index >= start && index < end);
-    }
+        // If any buttons are serving this exact batch, remove them
+        const buttonsForThisBatch = this.loadMoreButtons.get(batchIndex) || [];
+        buttonsForThisBatch.forEach(btn => btn.remove());
+        this.loadMoreButtons.delete(batchIndex);
 
-    private _findGaps(elementType: ElementType, totalLength: number): Array<[number, number]> {
-        const ranges = this.loadedRanges.get(elementType);
-        if (!ranges || ranges.length === 0) {
-            return [[0, totalLength]];
+        const newElements: HTMLElement[] = decalsToRender.map(decalId => this._createDecalItem(viewer, elementType, decalId));
+        // Add button above batch if necessary and none exist yet
+        if (startIndex > 0 && !this.renderedBatches.has(batchIndex - 1) && !this.loadMoreButtons.has(batchIndex - 1)) {
+            const batchRange = `${Math.max(0, startIndex - NextPNRViewer.BATCH_SIZE + 1)} - ${startIndex}`;
+            const btn = this._createLoadMoreButton(viewer, elementType, batchIndex - 1, `Load More (${batchRange})`);
+            newElements.unshift(btn);
         }
-        
-        const gaps: Array<[number, number]> = [];
-        
-        // Gap before first range
-        if (ranges[0][0] > 0) {
-            gaps.push([0, ranges[0][0]]);
+        // Add button below batch if necessary and none exist yet
+        if (endIndex < decalIds.length && !this.renderedBatches.has(batchIndex + 1) && !this.loadMoreButtons.has(batchIndex + 1)) {
+            const batchRange = `${endIndex + 1} - ${Math.min(endIndex + NextPNRViewer.BATCH_SIZE, decalIds.length)}`;
+            const btn = this._createLoadMoreButton(viewer, elementType, batchIndex + 1, `Load More (${batchRange})`);
+            newElements.push(btn);
         }
-        
-        // Gaps between ranges
-        for (let i = 0; i < ranges.length - 1; i++) {
-            const gapStart = ranges[i][1];
-            const gapEnd = ranges[i + 1][0];
-            if (gapStart < gapEnd) {
-                gaps.push([gapStart, gapEnd]);
-            }
+
+        // Update DOM
+        if (insertAfter) {
+            insertAfter.after(...newElements);
+        } else {
+            // Insert at end
+            this.decalListElement?.append(...newElements);
         }
-        
-        // Gap after last range
-        const lastEnd = ranges[ranges.length - 1][1];
-        if (lastEnd < totalLength) {
-            gaps.push([lastEnd, totalLength]);
-        }
-        
-        return gaps;
-    }
 
-    private _renderDecalPage(
-        viewer: Viewer,
-        elementType: ElementType,
-        allDecalIds: string[],
-        listContainer: HTMLDivElement,
-        startIndex: number
-    ) {
-        const PAGE_SIZE = 100;
-        const endIndex = Math.min(startIndex + PAGE_SIZE, allDecalIds.length);
-        const decalsToRender = allDecalIds.slice(startIndex, endIndex);
-
-        // Track loaded range
-        this._addRange(elementType, startIndex, endIndex);
-
-        // Render items for this page
-        decalsToRender.forEach(decalId => {
-            const item = this._createDecalItem(viewer, elementType, decalId);
-            listContainer.appendChild(item);
-        });
-
-        // Add "Load items below" button if there are more items
-        if (endIndex < allDecalIds.length) {
-            const nextBatchSize = Math.min(PAGE_SIZE, allDecalIds.length - endIndex);
-            const loadMoreBtn = this._createLoadMoreButton(
-                viewer,
-                elementType,
-                allDecalIds,
-                listContainer,
-                endIndex,
-                endIndex + nextBatchSize,
-                `Load ${nextBatchSize} items below (${endIndex}-${endIndex + nextBatchSize - 1})`
-            );
-            listContainer.appendChild(loadMoreBtn);
-        }
+        this.renderedBatches.add(batchIndex);
     }
 
     private _createDecalItem(viewer: Viewer, elementType: ElementType, decalId: string): HTMLDivElement {
@@ -598,48 +586,44 @@ export class NextPNRViewer {
         let isExpanded = false;
         let detailsLoaded = false;
 
-        header.addEventListener('click', async (e) => {
+        header.addEventListener('click', async (_e) => {
             // Select on canvas
             try {
-                await viewer.select(elementType, decalId);
+                viewer.select(elementType, decalId);
                 await this._updateSelection(elementType, decalId);
-                await viewer.render();
+                viewer.render();  // TODO: can remove?
             } catch (error) {
                 console.error('Error selecting decal:', error);
             }
 
             // Toggle expansion on second click if already selected
             if (this.selectedElement?.type === elementType && this.selectedElement?.id === decalId) {
-                if (!isExpanded) {
-                    // Expand
-                    arrow.style.transform = 'rotate(90deg)';
-                    detailsContainer.style.display = 'block';
-                    isExpanded = true;
-
-                    if (!detailsLoaded) {
-                        detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">Loading...</div>';
-                        
-                        try {
-                            const decal = await viewer.get_decal(elementType, decalId);
-                            
-                            if (decal) {
-                                detailsContainer.innerHTML = '';
-                                this._renderDecalDetails(decal, detailsContainer);
-                            } else {
-                                detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">No details available</div>';
-                            }
-                            
-                            detailsLoaded = true;
-                        } catch (error) {
-                            detailsContainer.innerHTML = `<div style="color: #f44747; font-size: 11px;">Error: ${error}</div>`;
-                        }
-                    }
-                } else {
+                if (isExpanded) {
                     // Collapse
                     arrow.style.transform = 'rotate(0deg)';
                     detailsContainer.style.display = 'none';
                     isExpanded = false;
+                    return;
                 }
+
+                // Expand
+                arrow.style.transform = 'rotate(90deg)';
+                detailsContainer.style.display = 'block';
+                isExpanded = true;
+
+                if (detailsLoaded) return;
+
+                detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">Loading...</div>';
+
+                const decal = viewer.get_decal(elementType, decalId);
+                if (decal) {
+                    detailsContainer.innerHTML = '';
+                    this._renderDecalDetails(wasmToObject(decal), detailsContainer);
+                } else {
+                    detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">No details available</div>';
+                }
+
+                detailsLoaded = true;
             }
         });
 
@@ -737,12 +721,8 @@ export class NextPNRViewer {
             }
         }
 
-        // Check if item is already rendered
-        const itemKey = `${elementType}_${decalId}`;
-        if (!this.renderedDecalItems.has(itemKey)) {
-            // Item not rendered yet - need to render it
-            await this._ensureDecalRendered(viewer, elementType, decalId);
-        }
+        // Ensure item is rendered
+        await this._ensureDecalRendered(viewer, elementType, decalId);
 
         // Update selection highlight
         await this._updateSelection(elementType, decalId);
@@ -756,11 +736,7 @@ export class NextPNRViewer {
             return;
         }
 
-        // Find the list container
-        const contentContainer = this.sidebar.children[1] as HTMLDivElement;
-        const listContainer = contentContainer.children[1] as HTMLDivElement;
-        
-        if (!listContainer) return;
+        if (!this.decalListElement) return;
 
         // Get all decal IDs and find the index of the selected one
         const allDecalIds = this.decalIdsCache.get(elementType);
@@ -769,154 +745,15 @@ export class NextPNRViewer {
         const selectedIndex = allDecalIds.indexOf(decalId);
         if (selectedIndex === -1) return;
 
-        const BATCH_SIZE = 100;
-
-        // Calculate which batch contains the selected index
-        const batchNumber = Math.floor(selectedIndex / BATCH_SIZE);
-        const batchStartIndex = batchNumber * BATCH_SIZE;
-        const batchEndIndex = Math.min(batchStartIndex + BATCH_SIZE, allDecalIds.length);
-
-        // Find gaps around the batch we need to load
-        const ranges = this.loadedRanges.get(elementType)!;
-        
-        // Find the end of the last loaded range before our batch (if any)
-        let lastLoadedRangeEnd = 0;
-        for (const [start, end] of ranges) {
-            if (end <= batchStartIndex) {
-                lastLoadedRangeEnd = end;
-            }
-        }
-        
-        // Find the start of the first loaded range after our batch (if any)
-        let firstLoadedRangeStart = allDecalIds.length;
-        for (const [start, end] of ranges) {
-            if (start >= batchEndIndex) {
-                firstLoadedRangeStart = start;
-                break;
-            }
-        }
-
-        // Find insertion point in DOM (before the first loaded after batch, or at end)
-        let insertBeforeElement: HTMLElement | null = null;
-        if (firstLoadedRangeStart < allDecalIds.length) {
-            const insertBeforeKey = `${elementType}_${allDecalIds[firstLoadedRangeStart]}`;
-            insertBeforeElement = this.renderedDecalItems.get(insertBeforeKey) || null;
-        }
-
-        // Remove any existing buttons in the gap before this batch
-        if (lastLoadedRangeEnd > 0 && lastLoadedRangeEnd < batchStartIndex) {
-            const lastLoadedKey = `${elementType}_${allDecalIds[lastLoadedRangeEnd - 1]}`;
-            const lastLoadedElement = this.renderedDecalItems.get(lastLoadedKey);
-            if (lastLoadedElement) {
-                let nextSibling = lastLoadedElement.nextElementSibling;
-                while (nextSibling && nextSibling.tagName === 'BUTTON' && nextSibling !== insertBeforeElement) {
-                    const buttonToRemove = nextSibling;
-                    nextSibling = nextSibling.nextElementSibling;
-                    buttonToRemove.remove();
-                }
-            }
-        }
-
-        // Add "Load items below" button if there's a gap from last loaded to this batch
-        if (lastLoadedRangeEnd < batchStartIndex) {
-            const gapStart = lastLoadedRangeEnd;
-            const gapEnd = batchStartIndex;
-            const gapSize = gapEnd - gapStart;
-            
-            if (gapSize > 0) {
-                // Load the first batch of the gap
-                const nextBatchSize = Math.min(BATCH_SIZE, gapSize);
-                
-                const loadBtn = this._createLoadMoreButton(
-                    viewer,
-                    elementType,
-                    allDecalIds,
-                    listContainer,
-                    gapStart,
-                    gapStart + nextBatchSize,
-                    `Load ${nextBatchSize} items below (${gapStart}-${gapStart + nextBatchSize - 1})`
-                );
-                
-                // Insert before the newly loaded batch (which is itself before insertBeforeElement)
-                if (insertBeforeElement) {
-                    listContainer.insertBefore(loadBtn, insertBeforeElement);
-                } else {
-                    // Find the first item of the newly loaded batch
-                    const firstNewItemKey = `${elementType}_${allDecalIds[batchStartIndex]}`;
-                    const firstNewItem = this.renderedDecalItems.get(firstNewItemKey);
-                    if (firstNewItem) {
-                        listContainer.insertBefore(loadBtn, firstNewItem);
-                    } else {
-                        listContainer.appendChild(loadBtn);
-                    }
-                }
-            }
-        }
-
-        // Load the entire batch containing the selected item
-        this._addRange(elementType, batchStartIndex, batchEndIndex);
-        
-        for (let i = batchStartIndex; i < batchEndIndex; i++) {
-            const decalIdToRender = allDecalIds[i];
-            const existingKey = `${elementType}_${decalIdToRender}`;
-            
-            // Only create if not already rendered
-            if (!this.renderedDecalItems.has(existingKey)) {
-                const item = this._createDecalItem(viewer, elementType, decalIdToRender);
-                
-                // Add indicator only to the originally selected item
-                if (i === selectedIndex) {
-                    const header = item.children[0] as HTMLDivElement;
-                    const indicator = document.createElement('span');
-                    indicator.textContent = '🔍 ';
-                    indicator.style.marginRight = '5px';
-                    header.insertBefore(indicator, header.firstChild);
-                }
-                
-                if (insertBeforeElement) {
-                    listContainer.insertBefore(item, insertBeforeElement);
-                } else {
-                    listContainer.appendChild(item);
-                }
-            }
-        }
-
-        // Add "Load items above" button if there's a gap from this batch to first loaded after
-        if (firstLoadedRangeStart > batchEndIndex) {
-            const gapStart = batchEndIndex;
-            const gapEnd = firstLoadedRangeStart;
-            const gapSize = gapEnd - gapStart;
-            
-            if (gapSize > 0) {
-                // Load the first batch of the gap
-                const nextBatchSize = Math.min(BATCH_SIZE, gapSize);
-                
-                const loadBtn = this._createLoadMoreButton(
-                    viewer,
-                    elementType,
-                    allDecalIds,
-                    listContainer,
-                    gapStart,
-                    gapStart + nextBatchSize,
-                    `Load ${nextBatchSize} items below (${gapStart}-${gapStart + nextBatchSize - 1})`
-                );
-                
-                if (insertBeforeElement) {
-                    listContainer.insertBefore(loadBtn, insertBeforeElement);
-                } else {
-                    listContainer.appendChild(loadBtn);
-                }
-            }
-        }
+        // Render batch
+        const batchNumber = Math.floor(selectedIndex / NextPNRViewer.BATCH_SIZE);
+        this._renderDecalBatch(viewer, elementType, batchNumber);
     }
 
     private _createLoadMoreButton(
         viewer: Viewer,
         elementType: ElementType,
-        allDecalIds: string[],
-        listContainer: HTMLDivElement,
-        startIndex: number,
-        endIndex: number,
+        batchIndex: number,
         label: string
     ): HTMLButtonElement {
         const loadMoreBtn = document.createElement('button');
@@ -931,6 +768,8 @@ export class NextPNRViewer {
         loadMoreBtn.style.fontSize = '11px';
         loadMoreBtn.style.fontWeight = 'bold';
 
+        loadMoreBtn.dataset.batchIndex = batchIndex.toString();
+
         loadMoreBtn.addEventListener('mouseenter', () => {
             loadMoreBtn.style.backgroundColor = '#1177bb';
         });
@@ -940,63 +779,12 @@ export class NextPNRViewer {
         });
 
         loadMoreBtn.addEventListener('click', () => {
-            const decalsToLoad = allDecalIds.slice(startIndex, endIndex);
-            
-            // Find insertion point for the first item (before the button)
-            let insertPoint = loadMoreBtn;
-            
-            // Load all items in this range
-            this._addRange(elementType, startIndex, endIndex);
-            decalsToLoad.forEach((decalId) => {
-                const item = this._createDecalItem(viewer, elementType, decalId);
-                listContainer.insertBefore(item, insertPoint);
-            });
-            
-            // Remove the button
-            loadMoreBtn.remove();
-            
-            // Find gaps after loading this range
-            const BATCH_SIZE = 100;
-            const ranges = this.loadedRanges.get(elementType)!;
-            
-            // Find the start of the first loaded range after our newly loaded range
-            let nextLoadedRangeStart = allDecalIds.length;
-            for (const [start, end] of ranges) {
-                if (start >= endIndex) {
-                    nextLoadedRangeStart = start;
-                    break;
-                }
-            }
-            
-            // Check if there's still a gap after the range we just loaded
-            if (nextLoadedRangeStart > endIndex) {
-                const gapSize = nextLoadedRangeStart - endIndex;
-                const nextBatchSize = Math.min(BATCH_SIZE, gapSize);
-                
-                const newBtn = this._createLoadMoreButton(
-                    viewer,
-                    elementType,
-                    allDecalIds,
-                    listContainer,
-                    endIndex,
-                    endIndex + nextBatchSize,
-                    `Load ${nextBatchSize} items below (${endIndex}-${endIndex + nextBatchSize - 1})`
-                );
-                
-                // Find where to insert the new button
-                if (nextLoadedRangeStart < allDecalIds.length) {
-                    const nextLoadedKey = `${elementType}_${allDecalIds[nextLoadedRangeStart]}`;
-                    const nextLoadedElement = this.renderedDecalItems.get(nextLoadedKey);
-                    if (nextLoadedElement) {
-                        listContainer.insertBefore(newBtn, nextLoadedElement);
-                    } else {
-                        listContainer.appendChild(newBtn);
-                    }
-                } else {
-                    listContainer.appendChild(newBtn);
-                }
-            }
+            this._renderDecalBatch(viewer, elementType, batchIndex);
         });
+
+        const batchButtons = this.loadMoreButtons.get(batchIndex) || new Set();
+        batchButtons.add(loadMoreBtn);
+        this.loadMoreButtons.set(batchIndex, batchButtons);
 
         return loadMoreBtn;
     }
