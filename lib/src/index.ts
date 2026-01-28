@@ -215,7 +215,7 @@ export class NextPNRViewer {
     private currentElementType: ElementType | null = null;
     private renderedBatches: Set<number> = new Set();
     private tabButtons: Map<ElementType, HTMLButtonElement> = new Map();
-    private loadMoreButtons: Map<number, Set<HTMLButtonElement>> = new Map();
+    private loadMoreButtons: Map<number, HTMLButtonElement> = new Map();
     private decalListElement: HTMLDivElement | null = null;
 
     constructor(container: HTMLDivElement, config?: Partial<ViewerConfig>) {
@@ -504,20 +504,11 @@ export class NextPNRViewer {
 
         // Strategy: find the first 'load more' button before the batch to find where we need to insert
         let insertAfter: HTMLElement | null = null;
-        for (const [btnBatch, buttons] of this.loadMoreButtons) {
-            if (btnBatch < batchIndex) {
-                insertAfter = Array.from(buttons).sort((a, b) => {
-                    const aIndex = parseInt(a.dataset.batchIndex || '0', 10);
-                    const bIndex = parseInt(b.dataset.batchIndex || '0', 10);
-                    return bIndex - aIndex;
-                })[0];
+        for (const [btnBatch, button] of this.loadMoreButtons) {
+            if (btnBatch <= batchIndex) {
+                insertAfter = button;
             }
         }
-
-        // If any buttons are serving this exact batch, remove them
-        const buttonsForThisBatch = this.loadMoreButtons.get(batchIndex) || [];
-        buttonsForThisBatch.forEach(btn => btn.remove());
-        this.loadMoreButtons.delete(batchIndex);
 
         const newElements: HTMLElement[] = decalsToRender.map(decalId => this._createDecalItem(viewer, elementType, decalId));
         // Add button above batch if necessary and none exist yet
@@ -540,6 +531,13 @@ export class NextPNRViewer {
             // Insert at end
             this.decalListElement?.append(...newElements);
         }
+
+        // If any buttons are serving this exact batch, remove them
+        // do this last because if insertAfter is a button for this batch,
+        // we need to keep it until after insertion
+        const buttonForThisBatch = this.loadMoreButtons.get(batchIndex);
+        if (buttonForThisBatch) buttonForThisBatch.remove();
+        this.loadMoreButtons.delete(batchIndex);
 
         this.renderedBatches.add(batchIndex);
     }
@@ -591,7 +589,6 @@ export class NextPNRViewer {
             try {
                 viewer.select(elementType, decalId);
                 await this._updateSelection(elementType, decalId);
-                viewer.render();  // TODO: can remove?
             } catch (error) {
                 console.error('Error selecting decal:', error);
             }
@@ -768,8 +765,6 @@ export class NextPNRViewer {
         loadMoreBtn.style.fontSize = '11px';
         loadMoreBtn.style.fontWeight = 'bold';
 
-        loadMoreBtn.dataset.batchIndex = batchIndex.toString();
-
         loadMoreBtn.addEventListener('mouseenter', () => {
             loadMoreBtn.style.backgroundColor = '#1177bb';
         });
@@ -782,9 +777,7 @@ export class NextPNRViewer {
             this._renderDecalBatch(viewer, elementType, batchIndex);
         });
 
-        const batchButtons = this.loadMoreButtons.get(batchIndex) || new Set();
-        batchButtons.add(loadMoreBtn);
-        this.loadMoreButtons.set(batchIndex, batchButtons);
+        this.loadMoreButtons.set(batchIndex, loadMoreBtn);
 
         return loadMoreBtn;
     }
