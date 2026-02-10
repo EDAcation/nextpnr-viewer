@@ -397,6 +397,7 @@ export class NextPNRViewer {
 
         let down = false;
         let firstEvent = true;
+        let hasMoved = false;
         let oldx = 0;
         let oldy = 0;
 
@@ -415,14 +416,28 @@ export class NextPNRViewer {
         canvas.addEventListener('mousedown', (_) => {
             down = true;
             firstEvent = true;
+            hasMoved = false;
         });
-        canvas.addEventListener('mouseup', (_) => {
+        canvas.addEventListener('mouseup', async (e) => {
             down = false;
+
+            // If the mouse was moved, we consider this a pan action and do not trigger selection
+            if (hasMoved) return;
+
+            const selection = viewer.select_at_coords(e.offsetX, e.offsetY, false);
+            if (!selection || !Array.isArray(selection) || selection.length < 2) return;
+            
+            const elementType = selection[0] as ElementType;
+            const decalId = selection[1] as string;
+            
+            await this._handleCanvasSelection(elementType, decalId);
         });
         canvas.addEventListener('mousemove', (e) => doInAnimFrame(() => {
             viewer.select_at_coords(e.offsetX, e.offsetY, true);
 
             if (down) {
+                hasMoved = true;
+
                 if (!firstEvent) {
                     viewer.pan(e.offsetX - oldx, e.offsetY - oldy);
                 }
@@ -432,22 +447,6 @@ export class NextPNRViewer {
                 oldy = e.offsetY;
             }
         }));
-
-        // Selection
-        canvas.addEventListener('click', async (e) => {
-            try {
-                const selection = viewer.select_at_coords(e.offsetX, e.offsetY, false);
-                
-                if (selection && Array.isArray(selection)) {
-                    const elementType = selection[0] as ElementType;
-                    const decalId = selection[1] as string;
-                    
-                    await this._handleCanvasSelection(elementType, decalId);
-                }
-            } catch (error) {
-                console.error('Selection error:', error);
-            }
-        });
     }
 
     private async _getDecalInfo(elementType: ElementType, decalId: string): Promise<DecalInfo | null> {
