@@ -228,6 +228,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
         let pip_map = self.graphic_elements.entry(ElementType::Pip).or_default();
         pip_map.clear();
+        let pip_decal_map = self.decals.entry(ElementType::Pip).or_default();
+        pip_decal_map.clear();
         for pip in elems.pips {
             let Some(decal) =
                 self.architecture
@@ -235,6 +237,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             else {
                 continue;
             };
+
+            pip_decal_map.insert(decal.id.clone(), decal.clone());
 
             let mut ge = self.architecture.get_decal_graphics(&decal.decal);
             for g in ge.iter_mut() {
