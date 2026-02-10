@@ -5,12 +5,12 @@ use wasm_bindgen::prelude::*;
 
 // === RUST ===
 
-#[derive(Deserialize)]
-pub struct Cell {
-    pub cell: String,
-    pub loc: (i32, i32),
-    pub port: String,
-}
+// #[derive(Deserialize)]
+// pub struct Cell {
+//     pub cell: String,
+//     pub loc: (i32, i32),
+//     pub port: String,
+// }
 
 #[derive(Deserialize)]
 pub struct CriticalPathSegment {

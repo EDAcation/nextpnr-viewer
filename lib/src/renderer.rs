@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{bail, Result};
-use itertools::Itertools;
+use itertools::{sorted_unstable, Itertools};
 use rstar::{
     primitives::{GeomWithData, Rectangle as RTreeRect},
     RTree,
@@ -40,6 +40,14 @@ pub struct ColorConfig {
 }
 
 pub type CellColorConfig = HashMap<String, Color>;
+
+#[derive(Serialize, Deserialize)]
+pub struct DecalInfo<DecalID> {
+    pub id: String,
+    pub is_active: bool,
+    pub is_critical: bool,
+    pub internal: DecalXY<DecalID>,
+}
 
 pub struct Renderer<'a, DecalID> {
     architecture: Box<dyn Architecture<DecalID>>,
@@ -504,17 +512,68 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
     pub fn get_decal_ids(&mut self, element_type: ElementType) -> Vec<String> {
         self.ensure_graphic_elements();
 
-        let decal_map = self.graphic_elements.entry(element_type).or_default();
-
-        decal_map.keys().cloned().sorted().collect()
+        sorted_unstable(
+            self.decals
+                .entry(element_type)
+                .or_default()
+                .keys()
+                .cloned()
+                .collect::<Vec<_>>(),
+        )
+        .collect()
     }
 
-    pub fn get_decal(&mut self, element_type: ElementType, decal_id: &str) -> Option<DecalID> {
+    pub fn get_decal_info(
+        &mut self,
+        element_type: ElementType,
+        decal_ids: &Vec<String>,
+    ) -> HashMap<String, DecalInfo<DecalID>> {
         self.ensure_graphic_elements();
+
+        let crit_routings = self
+            .pnr_info
+            .as_ref()
+            .map(|p| p.get_critical_netnames())
+            .unwrap_or(vec![]);
+        let crit_decals: HashMap<ElementType, HashSet<&String>> = {
+            let mut map: HashMap<ElementType, HashSet<&String>> = HashMap::new();
+            for r in crit_routings.iter() {
+                map.entry(ElementType::Wire).or_default().insert(&r.wire_id);
+                map.entry(ElementType::Pip).or_default().insert(&r.pip.name);
+            }
+            map
+        };
 
         let decal_map = self.decals.entry(element_type).or_default();
 
-        decal_map.get(decal_id).map(|d| d.decal.clone())
+        HashMap::from_iter(decal_ids.iter().filter_map(|decal_id| {
+            let Some(decal) = decal_map.get(decal_id.as_str()) else {
+                return None;
+            };
+
+            let is_critical = crit_decals
+                .get(&element_type)
+                .map_or(false, |s| s.contains(&decal.id));
+
+            let is_active = is_critical // all critical decals are active
+                || self
+                    .graphic_elements
+                    .get(&element_type)
+                    .and_then(|m| m.get(&decal.id))
+                    .map_or(false, |ge_vec| {
+                        ge_vec.iter().any(|g| g.style == Style::Active)
+                    });
+
+            Some((
+                decal_id.to_string(),
+                DecalInfo {
+                    id: decal_id.clone(),
+                    is_active,
+                    is_critical,
+                    internal: decal.clone(),
+                },
+            ))
+        }))
     }
 
     pub fn select_decal(

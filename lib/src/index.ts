@@ -56,6 +56,13 @@ export type SupportedChip = {
     [F in SupportedFamily]: Chip<F>
 }[SupportedFamily];
 
+interface DecalInfo {
+    id: string;
+    is_active: boolean;
+    is_critical: boolean;
+    internal: any;
+}
+
 
 // **** Config ****
 type ColorConfig = {
@@ -111,20 +118,6 @@ function listGetters(instance: object) {
     )
     .filter(e => typeof e[1].get === 'function' && e[0] !== '__proto__')
     .map(e => e[0]);
-}
-
-function wasmToObject(wasmObj: object) {
-    //@ts-expect-error
-    if (wasmObj['__wbg_ptr'] === undefined) {
-        return wasmObj;
-    }
-
-    const result: Record<string, any> = {};
-    listGetters(wasmObj).forEach((key) => {
-        const value = (wasmObj as any)[key];
-        result[key] = wasmToObject(value);
-    });
-    return result;
 }
 
 function getChipDbUrl(chip: SupportedChip): URL {
@@ -208,8 +201,10 @@ export class NextPNRViewer {
     private container: HTMLDivElement;
     private canvas: HTMLCanvasElement;
     private sidebar: HTMLDivElement;
+    private loadingElement: HTMLDivElement | null = null;
 
-    private decalIdsCache: Map<ElementType, string[]> = new Map();
+    private decalsCache: Map<ElementType, string[]> = new Map();
+    private decalInfoCache: Map<string, DecalInfo> = new Map();
     private renderedDecalItems: Map<string, HTMLDivElement> = new Map();
     private selectedElement: { type: ElementType, id: string } | null = null;
     private currentElementType: ElementType | null = null;
@@ -243,6 +238,7 @@ export class NextPNRViewer {
         const { canvasContainer, sidebar } = this._createLayout(container);
         this.sidebar = sidebar;
         this.canvas = this._createCanvas(canvasContainer);
+        this.loadingElement = this._createLoadingIndicator(canvasContainer);
         this._doResize(this.config.width, this.config.height);
 
         this.viewer = Promise.all([
@@ -250,6 +246,7 @@ export class NextPNRViewer {
             getChipDb(url),
         ]).then(([_, db]) => new viewer(this.canvas, db, colors, cellColors));
         this.viewer.then(() => {
+            this._hideLoadingIndicator();
             this._addEventListeners(this.canvas);
             this._setupSidebar();
         });
@@ -320,6 +317,81 @@ export class NextPNRViewer {
         return elem;
     }
 
+    private _createLoadingIndicator(container: HTMLDivElement): HTMLDivElement {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.style.position = 'absolute';
+        loadingOverlay.style.top = '0';
+        loadingOverlay.style.left = '0';
+        loadingOverlay.style.width = '100%';
+        loadingOverlay.style.height = '100%';
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.flexDirection = 'column';
+        loadingOverlay.style.alignItems = 'center';
+        loadingOverlay.style.justifyContent = 'center';
+        loadingOverlay.style.backgroundColor = this.config.colors.background;
+        loadingOverlay.style.zIndex = '1000';
+        loadingOverlay.style.gap = '20px';
+
+        // Create FPGA grid (5x5 cells)
+        const gridContainer = document.createElement('div');
+        gridContainer.style.display = 'grid';
+        gridContainer.style.gridTemplateColumns = 'repeat(5, 12px)';
+        gridContainer.style.gridTemplateRows = 'repeat(5, 12px)';
+        gridContainer.style.gap = '4px';
+        gridContainer.style.padding = '8px';
+        gridContainer.style.border = `2px solid ${this.config.colors.frame}`;
+        gridContainer.style.borderRadius = '4px';
+
+        // Create 25 cells
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.style.width = '12px';
+            cell.style.height = '12px';
+            cell.style.backgroundColor = this.config.colors.inactive;
+            cell.style.borderRadius = '2px';
+            cell.style.animation = `fpgaPulse 2s ease-in-out infinite`;
+            cell.style.animationDelay = `${i * 0.08}s`;
+            gridContainer.appendChild(cell);
+        }
+
+        const loadingText = document.createElement('div');
+        loadingText.textContent = 'Loading Nextpnr Viewer...';
+        loadingText.style.color = this.config.colors.frame;
+        loadingText.style.fontSize = '14px';
+        loadingText.style.fontFamily = 'monospace';
+
+        // Inject keyframes animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fpgaPulse {
+                0%, 100% { 
+                    background-color: ${this.config.colors.inactive};
+                    opacity: 0.3;
+                }
+                50% { 
+                    background-color: ${this.config.colors.frame};
+                    opacity: 1;
+                    box-shadow: 0 0 8px ${this.config.colors.frame};
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        loadingOverlay.appendChild(gridContainer);
+        loadingOverlay.appendChild(loadingText);
+        container.style.position = 'relative';
+        container.appendChild(loadingOverlay);
+
+        return loadingOverlay;
+    }
+
+    private _hideLoadingIndicator() {
+        if (this.loadingElement) {
+            this.loadingElement.remove();
+            this.loadingElement = null;
+        }
+    }
+
     private async _addEventListeners(canvas: HTMLCanvasElement) {
         const viewer = await this.viewer;
 
@@ -376,6 +448,30 @@ export class NextPNRViewer {
                 console.error('Selection error:', error);
             }
         });
+    }
+
+    private async _getDecalInfo(elementType: ElementType, decalId: string): Promise<DecalInfo | null> {
+        const cached = this.decalInfoCache.get(decalId);
+        if (cached) return cached;
+
+        // if not cached, cache the entire batch
+        const decals = this.decalsCache.get(elementType);
+        if (!decals) return null;
+
+        const decalIndex = decals.indexOf(decalId);
+        if (decalIndex === -1) return null;
+
+        const batchIndex = Math.floor(decalIndex / NextPNRViewer.BATCH_SIZE);
+        const startIndex = batchIndex * NextPNRViewer.BATCH_SIZE;
+        const endIndex = Math.min(startIndex + NextPNRViewer.BATCH_SIZE, decals.length);
+        const batchIds = decals.slice(startIndex, endIndex);
+
+        const decalInfos = (await this.viewer).get_decals(elementType, batchIds);
+        for (const [id, info] of decalInfos.entries()) {
+            this.decalInfoCache.set(id, info);
+        }
+
+        return this.decalInfoCache.get(decalId) || null;
     }
 
     private async _setupSidebar() {
@@ -446,20 +542,20 @@ export class NextPNRViewer {
 
         try {
             // Clear old data
+            this.decalInfoCache.clear();
             this.renderedDecalItems.clear();
             this.currentElementType = elementType;
             this.renderedBatches.clear();
             this.loadMoreButtons.clear();
 
             // Fetch and cache all decal IDs if not already cached
-            if (!this.decalIdsCache.has(elementType)) {
-                const decalIds = viewer.get_decal_ids(elementType);
-                this.decalIdsCache.set(elementType, decalIds);
+            if (!this.decalsCache.has(elementType)) {
+                const decals = viewer.get_decal_ids(elementType);
+                this.decalsCache.set(elementType, decals);
             }
 
-            const decalIds = this.decalIdsCache.get(elementType)!;
-
-            if (decalIds.length === 0) {
+            const decals = this.decalsCache.get(elementType)!;
+            if (decals.length === 0) {
                 container.innerHTML = '<div style="color: #888;">No decals found</div>';
                 return;
             }
@@ -479,7 +575,7 @@ export class NextPNRViewer {
             info.style.fontSize = '11px';
             info.style.borderBottom = '1px solid #333';
             info.style.marginBottom = '8px';
-            info.textContent = `Total: ${decalIds.length} decals`;
+            info.textContent = `Total: ${decals.length} decals`;
             container.appendChild(info);
 
             container.appendChild(this.decalListElement);
@@ -491,16 +587,16 @@ export class NextPNRViewer {
         }
     }
 
-    private _renderDecalBatch(viewer: Viewer, elementType: ElementType, batchIndex: number) {
+    private async _renderDecalBatch(viewer: Viewer, elementType: ElementType, batchIndex: number) {
         // Check if already rendered
         if (this.renderedBatches.has(batchIndex)) {
             return;
         }
 
-        const decalIds = this.decalIdsCache.get(elementType)!;
+        const decals = this.decalsCache.get(elementType)!;
         const startIndex = batchIndex * NextPNRViewer.BATCH_SIZE;
-        const endIndex = Math.min(startIndex + NextPNRViewer.BATCH_SIZE, decalIds.length);
-        const decalsToRender = decalIds.slice(startIndex, endIndex);
+        const endIndex = Math.min(startIndex + NextPNRViewer.BATCH_SIZE, decals.length);
+        const decalsToRender = decals.slice(startIndex, endIndex);
 
         // Strategy: find the first 'load more' button before the batch to find where we need to insert
         let insertAfter: HTMLElement | null = null;
@@ -510,7 +606,7 @@ export class NextPNRViewer {
             }
         }
 
-        const newElements: HTMLElement[] = decalsToRender.map(decalId => this._createDecalItem(viewer, elementType, decalId));
+        const newElements: HTMLElement[] = await Promise.all(decalsToRender.map(decal => this._createDecalItem(viewer, elementType, decal)));
         // Add button above batch if necessary and none exist yet
         if (startIndex > 0 && !this.renderedBatches.has(batchIndex - 1) && !this.loadMoreButtons.has(batchIndex - 1)) {
             const batchRange = `${Math.max(0, startIndex - NextPNRViewer.BATCH_SIZE + 1)} - ${startIndex}`;
@@ -518,8 +614,8 @@ export class NextPNRViewer {
             newElements.unshift(btn);
         }
         // Add button below batch if necessary and none exist yet
-        if (endIndex < decalIds.length && !this.renderedBatches.has(batchIndex + 1) && !this.loadMoreButtons.has(batchIndex + 1)) {
-            const batchRange = `${endIndex + 1} - ${Math.min(endIndex + NextPNRViewer.BATCH_SIZE, decalIds.length)}`;
+        if (endIndex < decals.length && !this.renderedBatches.has(batchIndex + 1) && !this.loadMoreButtons.has(batchIndex + 1)) {
+            const batchRange = `${endIndex + 1} - ${Math.min(endIndex + NextPNRViewer.BATCH_SIZE, decals.length)}`;
             const btn = this._createLoadMoreButton(viewer, elementType, batchIndex + 1, `Load More (${batchRange})`);
             newElements.push(btn);
         }
@@ -542,7 +638,9 @@ export class NextPNRViewer {
         this.renderedBatches.add(batchIndex);
     }
 
-    private _createDecalItem(viewer: Viewer, elementType: ElementType, decalId: string): HTMLDivElement {
+    private async _createDecalItem(viewer: Viewer, elementType: ElementType, decalId: string): Promise<HTMLDivElement> {
+        const decal = await this._getDecalInfo(elementType, decalId);
+
         const itemContainer = document.createElement('div');
         itemContainer.style.display = 'flex';
         itemContainer.style.flexDirection = 'column';
@@ -567,12 +665,26 @@ export class NextPNRViewer {
         label.style.fontFamily = 'monospace';
         label.style.fontSize = '12px';
 
+        const activeLabel = document.createElement('span');
+        activeLabel.textContent = decal?.is_active ? '●' : '○';
+        activeLabel.style.marginRight = '5px';
+        activeLabel.style.color = decal?.is_active ? this.config.colors.highlight : '#888';
+        activeLabel.style.fontSize = '10px';
+
+        const criticalLabel = document.createElement('span');
+        criticalLabel.textContent = decal?.is_critical ? '▲' : '△';
+        criticalLabel.style.marginRight = '5px';
+        criticalLabel.style.color = decal?.is_critical ? this.config.colors.critical : '#888';
+        criticalLabel.style.fontSize = '10px';
+
         const arrow = document.createElement('span');
         arrow.textContent = '▶';
         arrow.style.fontSize = '10px';
         arrow.style.transition = 'transform 0.2s';
 
         header.appendChild(label);
+        header.appendChild(activeLabel);
+        header.appendChild(criticalLabel);
         header.appendChild(arrow);
 
         const detailsContainer = document.createElement('div');
@@ -612,10 +724,9 @@ export class NextPNRViewer {
 
                 detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">Loading...</div>';
 
-                const decal = viewer.get_decal(elementType, decalId);
                 if (decal) {
                     detailsContainer.innerHTML = '';
-                    this._renderDecalDetails(wasmToObject(decal), detailsContainer);
+                    this._renderDecalDetails(decal, detailsContainer);
                 } else {
                     detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">No details available</div>';
                 }
@@ -638,14 +749,14 @@ export class NextPNRViewer {
         return itemContainer;
     }
 
-    private _renderDecalDetails(decal: any, container: HTMLDivElement) {
+    private _renderDecalDetails(decal: DecalInfo, container: HTMLDivElement) {
         const table = document.createElement('div');
         table.style.fontFamily = 'monospace';
         table.style.fontSize = '11px';
 
-        const entries = Object.entries(decal);
-        
-        entries.forEach(([key, value]) => {
+        const keyWidth = this.config.sidebarWidth / 2;
+
+        function addRow(key: string, value: any) {
             const row = document.createElement('div');
             row.style.display = 'flex';
             row.style.padding = '3px 0';
@@ -655,7 +766,7 @@ export class NextPNRViewer {
             keySpan.textContent = key + ':';
             keySpan.style.color = '#9cdcfe';
             keySpan.style.fontWeight = 'bold';
-            keySpan.style.minWidth = '80px';
+            keySpan.style.minWidth = `${keyWidth}px`;
             keySpan.style.marginRight = '10px';
 
             const valueSpan = document.createElement('span');
@@ -672,7 +783,27 @@ export class NextPNRViewer {
             row.appendChild(keySpan);
             row.appendChild(valueSpan);
             table.appendChild(row);
-        });
+        }
+
+        function flattenObject(obj: any, prefix = '') {
+            // converts nested objects into flat key-value pairs with dot notation
+            const result: Record<string, any> = {};
+            for (const [key, value] of Object.entries(obj)) {
+                const newKey = prefix ? `${prefix}.${key}` : key;
+                if (typeof value === 'object' && value !== null) {
+                    Object.assign(result, flattenObject(value, newKey));
+                } else {
+                    result[newKey] = value;
+                }
+            }
+            return result;
+        }
+
+        addRow((decal?.is_active ? '●' : '○') + ' Is active', decal.is_active);
+        addRow((decal?.is_critical ? '▲' : '△') + ' Is critical', decal.is_critical);
+        for (const [key, value] of Object.entries(flattenObject(decal.internal))) {
+            addRow(key, value);
+        }
 
         container.appendChild(table);
     }
@@ -736,7 +867,7 @@ export class NextPNRViewer {
         if (!this.decalListElement) return;
 
         // Get all decal IDs and find the index of the selected one
-        const allDecalIds = this.decalIdsCache.get(elementType);
+        const allDecalIds = this.decalsCache.get(elementType);
         if (!allDecalIds) return;
         
         const selectedIndex = allDecalIds.indexOf(decalId);
@@ -744,7 +875,7 @@ export class NextPNRViewer {
 
         // Render batch
         const batchNumber = Math.floor(selectedIndex / NextPNRViewer.BATCH_SIZE);
-        this._renderDecalBatch(viewer, elementType, batchNumber);
+        await this._renderDecalBatch(viewer, elementType, batchNumber);
     }
 
     private _createLoadMoreButton(
@@ -773,8 +904,8 @@ export class NextPNRViewer {
             loadMoreBtn.style.backgroundColor = '#0e639c';
         });
 
-        loadMoreBtn.addEventListener('click', () => {
-            this._renderDecalBatch(viewer, elementType, batchIndex);
+        loadMoreBtn.addEventListener('click', async () => {
+            await this._renderDecalBatch(viewer, elementType, batchIndex);
         });
 
         this.loadMoreButtons.set(batchIndex, loadMoreBtn);

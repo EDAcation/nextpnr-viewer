@@ -145,12 +145,20 @@ impl ViewerECP5 {
     }
 
     #[wasm_bindgen]
-    pub fn get_decal(
+    pub fn get_decals(
         &mut self,
         decal_type: ElementType,
-        decal_id: &str,
-    ) -> Result<Option<ECP5DecalID>, JsError> {
-        Ok(self.renderer.get_decal(decal_type, decal_id))
+        decal_ids: Vec<String>,
+    ) -> Result<js_sys::Map, JsError> {
+        let decal_info = self.renderer.get_decal_info(decal_type, &decal_ids);
+        let map = js_sys::Map::new();
+        for (id, info) in decal_info {
+            map.set(
+                &JsValue::from_str(&id),
+                &serde_wasm_bindgen::to_value(&info).map_err(|e| JsError::new(&e.to_string()))?,
+            );
+        }
+        Ok(map)
     }
 }
 
@@ -259,11 +267,19 @@ impl ViewerICE40 {
     }
 
     #[wasm_bindgen]
-    pub fn get_decal(
+    pub fn get_decals(
         &mut self,
         decal_type: ElementType,
-        decal_id: &str,
-    ) -> Result<Option<ICE40DecalID>, JsError> {
-        Ok(self.renderer.get_decal(decal_type, decal_id))
+        decal_ids: Vec<String>,
+    ) -> Result<js_sys::Map, JsError> {
+        let decal_info = self.renderer.get_decal_info(decal_type, &decal_ids);
+        let map = js_sys::Map::new();
+        for (id, info) in decal_info {
+            map.set(
+                &JsValue::from_str(&id),
+                &serde_wasm_bindgen::to_value(&info).map_err(|e| JsError::new(&e.to_string()))?,
+            );
+        }
+        Ok(map)
     }
 }

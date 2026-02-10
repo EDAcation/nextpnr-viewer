@@ -219,6 +219,7 @@ dependencies = [
  "miniz_oxide",
  "num-derive",
  "num-traits",
+ "numeric-sort",
  "rstar",
  "serde",
  "serde-wasm-bindgen",
@@ -247,6 +248,12 @@ dependencies = [
  "autocfg",
  "libm",
 ]
+
+[[package]]
+name = "numeric-sort"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2dcb6053ab98da45585315f79932c5c9821fab8efa4301c0d7b637c91630eb7"
 
 [[package]]
 name = "object"
