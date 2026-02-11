@@ -74,7 +74,7 @@ impl Netname {
     pub fn get_routing(&self, chip: &Chip) -> Vec<RoutingPart> {
         let parts: Vec<&str> = self.attributes.ROUTING.split(';').collect();
         parts
-            .chunks(3)
+            .chunks_exact(3)
             .filter_map(|c| {
                 Some(RoutingPart {
                     wire_id: c.first()?.to_string(),
