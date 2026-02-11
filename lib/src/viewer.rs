@@ -92,10 +92,9 @@ impl ViewerECP5 {
     ) -> Result<(), JsError> {
         let pnr_info = PnrInfo::from_jsobj(Chip::ECP5, obj, report)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        return self
-            .renderer
+        self.renderer
             .show_json(pnr_info)
-            .map_err(|e| JsError::new(&e.to_string()));
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen]
@@ -214,10 +213,9 @@ impl ViewerICE40 {
     ) -> Result<(), JsError> {
         let pnr_info = PnrInfo::from_jsobj(Chip::ICE40, obj, report)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        return self
-            .renderer
+        self.renderer
             .show_json(pnr_info)
-            .map_err(|e| JsError::new(&e.to_string()));
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen]

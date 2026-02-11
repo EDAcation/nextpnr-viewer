@@ -35,7 +35,7 @@ impl PnrInfo {
     }
 
     pub fn get_elements(&'_ self) -> NextpnrElements<'_> {
-        return self.nextpnr_json.get_elements(&self.chip);
+        self.nextpnr_json.get_elements(&self.chip)
     }
 
     pub fn get_critical_netnames(&self) -> Vec<RoutingPart> {
@@ -43,11 +43,11 @@ impl PnrInfo {
             return vec![];
         };
 
-        return report
+        report
             .get_critical_netnames()
             .iter()
             .filter_map(|&n| self.nextpnr_json.get_netname(n))
             .flat_map(|n| n.get_routing(&self.chip))
-            .collect();
+            .collect()
     }
 }

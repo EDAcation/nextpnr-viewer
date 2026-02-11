@@ -530,7 +530,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
     pub fn get_decal_info(
         &mut self,
         element_type: ElementType,
-        decal_ids: &Vec<String>,
+        decal_ids: &[String],
     ) -> HashMap<String, DecalInfo<DecalID>> {
         self.ensure_graphic_elements();
 
@@ -551,20 +551,18 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         let decal_map = self.decals.entry(element_type).or_default();
 
         HashMap::from_iter(decal_ids.iter().filter_map(|decal_id| {
-            let Some(decal) = decal_map.get(decal_id.as_str()) else {
-                return None;
-            };
+            let decal = decal_map.get(decal_id.as_str())?;
 
             let is_critical = crit_decals
                 .get(&element_type)
-                .map_or(false, |s| s.contains(&decal.id));
+                .is_some_and(|s| s.contains(&decal.id));
 
             let is_active = is_critical // all critical decals are active
                 || self
                     .graphic_elements
                     .get(&element_type)
                     .and_then(|m| m.get(&decal.id))
-                    .map_or(false, |ge_vec| {
+                    .is_some_and(|ge_vec| {
                         ge_vec.iter().any(|g| g.style == Style::Active)
                     });
 
