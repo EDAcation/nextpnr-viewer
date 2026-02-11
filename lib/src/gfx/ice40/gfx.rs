@@ -568,7 +568,7 @@ pub fn tile_wire(
         el.x2 = x + consts::local_swbox_x1;
         let yoff =
             y + (consts::local_swbox_y1 + consts::local_swbox_y2) / 2.0 - 0.005 * 16.0 - 0.075;
-        el.y1 = yoff + 0.005 * idx as f64 + 0.05 * (idx as f64 / 8.0);
+        el.y1 = yoff + 0.005 * idx as f64 + 0.05 * (idx / 8) as f64;
         el.y2 = el.y1;
         g.push(el);
     }
@@ -926,7 +926,7 @@ pub fn get_wire_xy_main(tilewire: &tilewire::GfxTileWireId) -> Option<(f64, f64)
         && tilewire <= &tilewire::GfxTileWireId::TILE_WIRE_NEIGH_OP_TOP_7
     {
         let idx = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_NEIGH_OP_BNL_0;
-        let y = consts::main_swbox_y2 - (0.0025 * (idx + 10) as f64 + 0.01 * (idx as f64 / 8.0));
+        let y = consts::main_swbox_y2 - (0.0025 * (idx + 10) as f64 + 0.01 * (idx / 8) as f64);
         let x = consts::main_swbox_x1;
         return Some((x, y));
     }
@@ -939,7 +939,7 @@ pub fn get_wire_xy_main(tilewire: &tilewire::GfxTileWireId) -> Option<(f64, f64)
         let idx = tilewire - &tilewire::GfxTileWireId::TILE_WIRE_LOCAL_G0_0;
         let yoff = (consts::local_swbox_y1 + consts::local_swbox_y2) / 2.0 - 0.005 * 16.0 - 0.075;
         let x = consts::main_swbox_x2;
-        let y = yoff + 0.005 * idx as f64 + 0.05 * (idx as f64 / 8.0);
+        let y = yoff + 0.005 * idx as f64 + 0.05 * (idx / 8) as f64;
         return Some((x, y));
     }
 
@@ -1033,19 +1033,13 @@ pub fn pip(
     if (x1 - swx1).abs() < 0.001 && (x2 - swx1).abs() < 0.001 {
         tx = swx1 + 0.25 * (y1 - y2).abs();
         edge_pip = true;
-    }
-
-    if (x1 - swx2).abs() < 0.001 && (x2 - swx2).abs() < 0.001 {
+    } else if (x1 - swx2).abs() < 0.001 && (x2 - swx2).abs() < 0.001 {
         tx = swx2 - 0.25 * (y1 - y2).abs();
         edge_pip = true;
-    }
-
-    if (y1 - swy1).abs() < 0.001 && (y2 - swy1).abs() < 0.001 {
+    } else if (y1 - swy1).abs() < 0.001 && (y2 - swy1).abs() < 0.001 {
         ty = swy1 + 0.25 * (x1 - x2).abs();
         edge_pip = true;
-    }
-
-    if (y1 - swy2).abs() < 0.001 && (y2 - swy2).abs() < 0.001 {
+    } else if (y1 - swy2).abs() < 0.001 && (y2 - swy2).abs() < 0.001 {
         ty = swy2 - 0.25 * (x1 - x2).abs();
         edge_pip = true;
     }
@@ -1114,8 +1108,6 @@ pub fn tile_pip(
         );
         return;
     }
-
-    let mut g: Vec<gfx::GraphicElement> = vec![];
 
     if &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_0_IN_0_LUT <= src_id
         && src_id <= &tilewire::GfxTileWireId::TILE_WIRE_LUTFF_7_IN_3_LUT

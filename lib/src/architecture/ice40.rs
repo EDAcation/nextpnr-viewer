@@ -254,8 +254,7 @@ impl Architecture<DecalID> for ICE40Arch {
     }
 
     fn get_bel_decals(&self) -> Vec<Decal> {
-        self
-            .chipdb
+        self.chipdb
             .bel_data
             .iter()
             .enumerate()
@@ -271,8 +270,7 @@ impl Architecture<DecalID> for ICE40Arch {
     }
 
     fn get_wire_decals(&self) -> Vec<Decal> {
-        self
-            .chipdb
+        self.chipdb
             .wire_data
             .iter()
             .enumerate()
@@ -288,8 +286,7 @@ impl Architecture<DecalID> for ICE40Arch {
     }
 
     fn get_pip_decals(&self) -> Vec<Decal> {
-        self
-            .chipdb
+        self.chipdb
             .pip_data
             .iter()
             .enumerate()

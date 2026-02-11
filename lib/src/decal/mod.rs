@@ -1,7 +1,10 @@
+use serde::{Deserialize, Serialize};
+
 mod ecp5;
 mod ice40;
 
 #[allow(dead_code)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct DecalXY<DecalID> {
     pub decal: DecalID,
     pub x: f64,

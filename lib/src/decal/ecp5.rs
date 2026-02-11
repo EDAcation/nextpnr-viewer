@@ -1,5 +1,8 @@
+use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
+
 #[allow(non_camel_case_types)]
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ECP5DecalType {
     TYPE_NONE,
     TYPE_BEL,
@@ -8,11 +11,14 @@ pub enum ECP5DecalType {
     TYPE_GROUP,
 }
 
+#[derive(Clone, Copy, Serialize, Deserialize)]
+#[wasm_bindgen]
 pub struct ECP5DecalLocation {
     pub x: f64,
     pub y: f64,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ECP5DecalID {
     pub r#type: ECP5DecalType,
     pub location: ECP5DecalLocation,

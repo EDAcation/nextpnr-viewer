@@ -2,12 +2,13 @@ use crate::{
     architecture::{ECP5Arch, ICE40Arch},
     chipdb,
     decal::{ECP5DecalID, ICE40DecalID},
-    pnrjson::{Chip, INextpnrJSON},
+    pnrjson::{Chip, INextpnrJSON, IReportJSON, PnrInfo},
     renderer::{CellColorConfig, ColorConfig, Renderer},
+    webgl::ElementType,
 };
 
 use wasm_bindgen::prelude::*;
-use web_sys::HtmlCanvasElement;
+use web_sys::{js_sys, HtmlCanvasElement};
 
 #[wasm_bindgen(typescript_custom_section)]
 const ICOLOR_CONFIG: &'static str = r#"
@@ -22,6 +23,9 @@ interface ColorConfig {
     inactive: Color,
     frame: Color,
     background: Color,
+    critical: Color,
+    highlight: Color,
+    selected: Color,
 }
 
 type CellColorConfig = Record<string, Color>;
@@ -76,31 +80,84 @@ impl ViewerECP5 {
     }
 
     #[wasm_bindgen]
-    pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        let _ = self.renderer.render(force_first.unwrap_or(true));
-
-        Ok(())
+    pub fn render(&mut self) -> Result<(), JsError> {
+        self.renderer.render().map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
-    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
-        let _ = self.renderer.show_json(obj, Chip::ECP5);
-
-        Ok(())
+    pub fn show_json(
+        &mut self,
+        obj: INextpnrJSON,
+        report: Option<IReportJSON>,
+    ) -> Result<(), JsError> {
+        let pnr_info = PnrInfo::from_jsobj(Chip::ECP5, obj, report)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        self.renderer
+            .show_json(pnr_info)
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen]
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.zoom(amt, x, y);
-
-        Ok(())
+        self.renderer
+            .zoom(amt, x, y)
+            .map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.pan(x, y);
+        self.renderer.pan(x, y).map_err(|e| JsError::from(&*e))
+    }
 
-        Ok(())
+    #[wasm_bindgen]
+    pub fn select_at_coords(
+        &mut self,
+        x: f32,
+        y: f32,
+        only_highlight: bool,
+    ) -> Result<JsValue, JsError> {
+        let selection = self
+            .renderer
+            .select_decal_at_canvas(x, y, only_highlight)
+            .map_err(|e| JsError::from(&*e))?;
+
+        Ok(selection
+            .map(|(_, et, s)| {
+                let arr = js_sys::Array::new();
+                arr.push(&JsValue::from_f64(et as u8 as f64));
+                arr.push(&JsValue::from_str(&s));
+                arr.into()
+            })
+            .unwrap_or(JsValue::NULL))
+    }
+
+    #[wasm_bindgen]
+    pub fn select(&mut self, element_type: ElementType, decal_id: &str) -> Result<(), JsError> {
+        self.renderer
+            .select_decal(element_type, decal_id, true, false)
+            .map_err(|e| JsError::from(&*e))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decal_ids(&mut self, decal_type: ElementType) -> Result<Vec<String>, JsError> {
+        Ok(self.renderer.get_decal_ids(decal_type))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decals(
+        &mut self,
+        decal_type: ElementType,
+        decal_ids: Vec<String>,
+    ) -> Result<js_sys::Map, JsError> {
+        let decal_info = self.renderer.get_decal_info(decal_type, &decal_ids);
+        let map = js_sys::Map::new();
+        for (id, info) in decal_info {
+            map.set(
+                &JsValue::from_str(&id),
+                &serde_wasm_bindgen::to_value(&info).map_err(|e| JsError::new(&e.to_string()))?,
+            );
+        }
+        Ok(map)
     }
 }
 
@@ -144,30 +201,83 @@ impl ViewerICE40 {
     }
 
     #[wasm_bindgen]
-    pub fn render(&mut self, force_first: Option<bool>) -> Result<(), JsError> {
-        let _ = self.renderer.render(force_first.unwrap_or(true));
-
-        Ok(())
+    pub fn render(&mut self) -> Result<(), JsError> {
+        self.renderer.render().map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
-    pub fn show_json(&mut self, obj: INextpnrJSON) -> Result<(), JsError> {
-        let _ = self.renderer.show_json(obj, Chip::ICE40);
-
-        Ok(())
+    pub fn show_json(
+        &mut self,
+        obj: INextpnrJSON,
+        report: Option<IReportJSON>,
+    ) -> Result<(), JsError> {
+        let pnr_info = PnrInfo::from_jsobj(Chip::ICE40, obj, report)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        self.renderer
+            .show_json(pnr_info)
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen]
     pub fn zoom(&mut self, amt: f32, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.zoom(amt, x, y);
-
-        Ok(())
+        self.renderer
+            .zoom(amt, x, y)
+            .map_err(|e| JsError::from(&*e))
     }
 
     #[wasm_bindgen]
     pub fn pan(&mut self, x: f32, y: f32) -> Result<(), JsError> {
-        let _ = self.renderer.pan(x, y);
+        self.renderer.pan(x, y).map_err(|e| JsError::from(&*e))
+    }
 
-        Ok(())
+    #[wasm_bindgen]
+    pub fn select_at_coords(
+        &mut self,
+        x: f32,
+        y: f32,
+        only_highlight: bool,
+    ) -> Result<JsValue, JsError> {
+        let selection = self
+            .renderer
+            .select_decal_at_canvas(x, y, only_highlight)
+            .map_err(|e| JsError::from(&*e))?;
+
+        Ok(selection
+            .map(|(_, et, s)| {
+                let arr = js_sys::Array::new();
+                arr.push(&JsValue::from_f64(et as u8 as f64));
+                arr.push(&JsValue::from_str(&s));
+                arr.into()
+            })
+            .unwrap_or(JsValue::NULL))
+    }
+
+    #[wasm_bindgen]
+    pub fn select(&mut self, element_type: ElementType, decal_id: &str) -> Result<(), JsError> {
+        self.renderer
+            .select_decal(element_type, decal_id, true, false)
+            .map_err(|e| JsError::from(&*e))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decal_ids(&mut self, decal_type: ElementType) -> Result<Vec<String>, JsError> {
+        Ok(self.renderer.get_decal_ids(decal_type))
+    }
+
+    #[wasm_bindgen]
+    pub fn get_decals(
+        &mut self,
+        decal_type: ElementType,
+        decal_ids: Vec<String>,
+    ) -> Result<js_sys::Map, JsError> {
+        let decal_info = self.renderer.get_decal_info(decal_type, &decal_ids);
+        let map = js_sys::Map::new();
+        for (id, info) in decal_info {
+            map.set(
+                &JsValue::from_str(&id),
+                &serde_wasm_bindgen::to_value(&info).map_err(|e| JsError::new(&e.to_string()))?,
+            );
+        }
+        Ok(map)
     }
 }

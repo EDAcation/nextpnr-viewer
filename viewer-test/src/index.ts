@@ -22,22 +22,28 @@ window.onload = () => {
         }
     }
 
-    const nextpnrViewer = new NextPNRViewer(container, {
-        width: 1920,
-        height: 1080,
-        chip: {
-            family: 'ecp5',
-            device: '25k'
-        },
-        cellColors: cellColors
-    });
-    nextpnrViewer.render();
+    let nextpnrViewer: NextPNRViewer | undefined = undefined;
 
     file_upload.addEventListener('change', (e) => {
         if (e.target !== file_upload || file_upload.files === null) {
             return;
         }
 
-        file_upload.files[0].text().then((t) => nextpnrViewer.showJson(JSON.parse(t)));
+        file_upload.files[0].text().then((t) => {
+            const data = JSON.parse(t);
+
+            if (!nextpnrViewer) {
+                nextpnrViewer = new NextPNRViewer(container, {
+                    width: 1620, // 300px for sidebar
+                    height: 1080,
+                    chip: data.chip,
+                    cellColors: cellColors,
+                    sidebarWidth: 300
+                });
+                nextpnrViewer.render();
+            }
+
+            nextpnrViewer.showJson(data['data'], data['report']);
+        });
     });
 };
