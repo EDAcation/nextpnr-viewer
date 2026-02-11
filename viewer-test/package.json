@@ -23,7 +23,7 @@
   },
   "version": "1.0.0",
   "dependencies": {
-    "edacation": "^0.3.0",
+    "edacation": "^0.6.2",
     "nextpnr-viewer": "../lib"
   }
 }

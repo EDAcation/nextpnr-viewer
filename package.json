@@ -7,12 +7,12 @@
         "viewer-test"
     ],
     "devDependencies": {
-        "@rollup/plugin-commonjs": "28.0.6",
+        "@rollup/plugin-commonjs": "^29.0.0",
         "@rollup/plugin-node-resolve": "^16.0.1",
         "@rollup/plugin-typescript": "^12.1.1",
-        "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+        "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/node": "^20.19.9",
-        "@web/rollup-plugin-html": "^2.3.0",
+        "@web/rollup-plugin-html": "^3.1.0",
         "@web/rollup-plugin-import-meta-assets": "^2.2.1",
         "prettier": "^3.3.3",
         "rollup": "^4.28.0",
