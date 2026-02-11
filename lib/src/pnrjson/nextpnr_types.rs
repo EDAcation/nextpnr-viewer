@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 
-use std::collections::HashMap;
-
+use rustc_hash::FxHashMap;
 use serde::Deserialize;
 use wasm_bindgen::prelude::*;
 
@@ -30,8 +29,8 @@ pub struct Netname {
 
 #[derive(Deserialize)]
 pub struct Top {
-    pub cells: HashMap<String, Cell>,
-    pub netnames: HashMap<String, Netname>,
+    pub cells: FxHashMap<String, Cell>,
+    pub netnames: FxHashMap<String, Netname>,
 }
 
 #[derive(Deserialize)]

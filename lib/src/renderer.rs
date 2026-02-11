@@ -1,11 +1,10 @@
-use std::collections::{HashMap, HashSet};
-
 use anyhow::{bail, Result};
 use itertools::{sorted_unstable, Itertools};
 use rstar::{
     primitives::{GeomWithData, Rectangle as RTreeRect},
     RTree,
 };
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
@@ -17,8 +16,8 @@ use crate::webgl::{
 };
 use crate::{architecture::Architecture, decal::DecalXY};
 
-type GraphicElementCollection = HashMap<String, Vec<GraphicElement>>;
-type GraphicElements = HashMap<ElementType, GraphicElementCollection>;
+type GraphicElementCollection = FxHashMap<String, Vec<GraphicElement>>;
+type GraphicElements = FxHashMap<ElementType, GraphicElementCollection>;
 
 type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
 type RTreeElementData = (ElementType, String);
@@ -39,7 +38,7 @@ pub struct ColorConfig {
     selected: Color,
 }
 
-pub type CellColorConfig = HashMap<String, Color>;
+pub type CellColorConfig = FxHashMap<String, Color>;
 
 #[derive(Serialize, Deserialize)]
 pub struct DecalInfo<DecalID> {
@@ -56,7 +55,7 @@ pub struct Renderer<'a, DecalID> {
 
     pnr_info: Option<PnrInfo>,
 
-    decals: HashMap<ElementType, HashMap<String, DecalXY<DecalID>>>,
+    decals: FxHashMap<ElementType, FxHashMap<String, DecalXY<DecalID>>>,
     graphic_elements: GraphicElements,
     graphic_elements_dirty: bool,
     webgl_elements: WebGlElements<'a>,
@@ -101,8 +100,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
             pnr_info: None,
 
-            decals: HashMap::new(),
-            graphic_elements: HashMap::new(),
+            decals: FxHashMap::default(),
+            graphic_elements: FxHashMap::default(),
             graphic_elements_dirty: true,
             webgl_elements: vec![],
             webgl_elements_dirty: true,
@@ -183,10 +182,10 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         let elems = pnr_info.get_elements();
 
         let crit_routings = pnr_info.get_critical_netnames();
-        let crit_wires: HashSet<&String> =
-            HashSet::from_iter(crit_routings.iter().map(|r| &r.wire_id));
-        let crit_pips: HashSet<&String> =
-            HashSet::from_iter(crit_routings.iter().map(|r| &r.pip.name));
+        let crit_wires: FxHashSet<&String> =
+            FxHashSet::from_iter(crit_routings.iter().map(|r| &r.wire_id));
+        let crit_pips: FxHashSet<&String> =
+            FxHashSet::from_iter(crit_routings.iter().map(|r| &r.pip.name));
 
         let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
         for wire in elems.wires {
@@ -377,7 +376,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         type Key = (Style, Type, Option<Color>);
 
         // Group elements by final draw state (style, type, resolved color).
-        let mut groups: HashMap<Key, Vec<(&ElementType, &str, &GraphicElement)>> = HashMap::new();
+        let mut groups: FxHashMap<Key, Vec<(&ElementType, &str, &GraphicElement)>> =
+            FxHashMap::default();
         for (etype, decal_id, elem) in ges {
             // Skip hidden or invalid early and compute resolved color once.
             let resolved = self.get_elem_color(&elem.style, &elem.color, color_override);
@@ -389,7 +389,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             groups.entry(key).or_default().push((etype, decal_id, elem));
         }
 
-        let mut elems: HashMap<Key, WebGlElements> = HashMap::new();
+        let mut elems: FxHashMap<Key, WebGlElements> = FxHashMap::default();
         let mut pick_entries: Vec<RTreeData> = Vec::new();
 
         for (key, group) in groups.into_iter() {
@@ -531,7 +531,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         &mut self,
         element_type: ElementType,
         decal_ids: &[String],
-    ) -> HashMap<String, DecalInfo<DecalID>> {
+    ) -> FxHashMap<String, DecalInfo<DecalID>> {
         self.ensure_graphic_elements();
 
         let crit_routings = self
@@ -539,8 +539,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             .as_ref()
             .map(|p| p.get_critical_netnames())
             .unwrap_or(vec![]);
-        let crit_decals: HashMap<ElementType, HashSet<&String>> = {
-            let mut map: HashMap<ElementType, HashSet<&String>> = HashMap::new();
+        let crit_decals: FxHashMap<ElementType, FxHashSet<&String>> = {
+            let mut map: FxHashMap<ElementType, FxHashSet<&String>> = FxHashMap::default();
             for r in crit_routings.iter() {
                 map.entry(ElementType::Wire).or_default().insert(&r.wire_id);
                 map.entry(ElementType::Pip).or_default().insert(&r.pip.name);
@@ -550,7 +550,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
         let decal_map = self.decals.entry(element_type).or_default();
 
-        HashMap::from_iter(decal_ids.iter().filter_map(|decal_id| {
+        FxHashMap::from_iter(decal_ids.iter().filter_map(|decal_id| {
             let decal = decal_map.get(decal_id.as_str())?;
 
             let is_critical = crit_decals
