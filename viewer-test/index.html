@@ -1,11 +1,509 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>nextpnr Viewer — EDAcation</title>
         <script src="./src/index.ts" type="module"></script>
-    </head>
-    <body">
-        <input id="json-file" type="file"/>
+        <style>
+            /* ── Reset & base ─────────────────────────────────────── */
+            *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        <div id='viewer' style="width: 100%; height: 100%;"></div>
+            :root {
+                --bg:        #282A36;
+                --surface:   #1e2030;
+                --surface2:  #343746;
+                --border:    #44475A;
+                --text:      #F8F8F2;
+                --muted:     #6272A4;
+                --accent:    #BD93F9;
+                --accent2:   #FF79C6;
+                --green:     #50FA7B;
+                --red:       #FF5555;
+                --yellow:    #F1FA8C;
+                --radius:    8px;
+                --font:      'Segoe UI', system-ui, -apple-system, sans-serif;
+                --mono:      'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            }
+
+            html, body {
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--font);
+                font-size: 15px;
+                line-height: 1.6;
+            }
+
+            /* ── Layout ───────────────────────────────────────────── */
+            #app {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* ── Header ───────────────────────────────────────────── */
+            header {
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 24px;
+                height: 52px;
+                background: var(--surface);
+                border-bottom: 1px solid var(--border);
+                z-index: 100;
+            }
+
+            .header-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+                color: var(--text);
+                font-weight: 700;
+                font-size: 16px;
+                letter-spacing: -0.2px;
+            }
+            .header-brand svg { flex-shrink: 0; }
+            .header-brand span { color: var(--accent); }
+
+            .header-links {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .header-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 12px;
+                border-radius: var(--radius);
+                text-decoration: none;
+                color: var(--muted);
+                font-size: 13px;
+                transition: background 0.15s, color 0.15s;
+            }
+            .header-link:hover { background: var(--surface2); color: var(--text); }
+
+            /* ── Setup page ───────────────────────────────────────── */
+            #setup-page {
+                flex: 1;
+                overflow-y: auto;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                padding: 40px 24px;
+            }
+
+            .setup-inner {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 32px;
+                width: 100%;
+                max-width: 1000px;
+            }
+
+            @media (max-width: 720px) {
+                .setup-inner { grid-template-columns: 1fr; }
+            }
+
+            /* ── Info column ─────────────────────────────────────── */
+            .info-col h1 {
+                font-size: 28px;
+                font-weight: 800;
+                letter-spacing: -0.5px;
+                color: var(--text);
+                margin-bottom: 4px;
+            }
+            .info-col h1 span { color: var(--accent); }
+
+            .badge {
+                display: inline-block;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                padding: 2px 10px;
+                font-size: 12px;
+                color: var(--muted);
+                margin-bottom: 16px;
+            }
+
+            .info-col p { color: var(--muted); margin-bottom: 16px; }
+            .info-col p a { color: var(--accent); text-decoration: none; }
+            .info-col p a:hover { text-decoration: underline; }
+
+            .section-label {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: var(--muted);
+                margin-bottom: 10px;
+                margin-top: 24px;
+            }
+
+            /* Code block */
+            .code-block {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 14px 16px;
+                font-family: var(--mono);
+                font-size: 12.5px;
+                color: var(--text);
+                line-height: 1.7;
+                white-space: pre;
+                overflow-x: auto;
+            }
+            .code-block .comment { color: var(--muted); }
+            .code-block .cmd     { color: var(--green); }
+            .code-block .flag    { color: var(--accent); }
+            .code-block .arg     { color: var(--yellow); }
+
+            /* ── Controls column ─────────────────────────────────── */
+            .controls-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 28px;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .controls-card h2 {
+                font-size: 16px;
+                font-weight: 700;
+                color: var(--text);
+            }
+
+            .form-row {
+                display: flex;
+                gap: 12px;
+            }
+            .form-row .form-group { flex: 1; }
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .form-group label {
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+            }
+
+            .form-group select,
+            .form-group input[type="file"] {
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                color: var(--text);
+                padding: 9px 12px;
+                font-size: 13px;
+                font-family: var(--font);
+                transition: border-color 0.15s, box-shadow 0.15s;
+                width: 100%;
+            }
+            .form-group select:focus,
+            .form-group input[type="file"]:focus {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(189, 147, 249, 0.15);
+            }
+            .form-group select:disabled,
+            .form-group input[type="file"]:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .form-group select option { background: var(--surface2); }
+
+            /* File upload button */
+            .file-label {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: var(--surface2);
+                border: 1px dashed var(--border);
+                border-radius: var(--radius);
+                padding: 10px 14px;
+                cursor: pointer;
+                transition: border-color 0.15s, background 0.15s;
+                font-size: 13px;
+                color: var(--muted);
+                user-select: none;
+                min-height: 42px;
+            }
+            .file-label:not(.disabled):hover {
+                border-color: var(--accent);
+                background: rgba(189, 147, 249, 0.05);
+                color: var(--text);
+            }
+            .file-label.has-file {
+                border-color: var(--green);
+                border-style: solid;
+                color: var(--green);
+            }
+            .file-label.disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .file-label svg { flex-shrink: 0; }
+            .file-label .file-name {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .hidden-input { display: none; }
+
+            /* Buttons */
+            .btn-row {
+                display: flex;
+                gap: 10px;
+                margin-top: 4px;
+            }
+
+            .btn {
+                flex: 1;
+                padding: 10px 20px;
+                border: none;
+                border-radius: var(--radius);
+                font-size: 14px;
+                font-weight: 600;
+                font-family: var(--font);
+                cursor: pointer;
+                transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+            }
+            .btn:active:not(:disabled) { transform: scale(0.98); }
+            .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+            .btn-primary {
+                background: var(--accent);
+                color: #1a1a2e;
+            }
+            .btn-primary:not(:disabled):hover {
+                opacity: 0.9;
+                box-shadow: 0 4px 16px rgba(189, 147, 249, 0.35);
+            }
+
+            .btn-secondary {
+                background: var(--surface2);
+                color: var(--text);
+                border: 1px solid var(--border);
+            }
+            .btn-secondary:not(:disabled):hover {
+                background: var(--border);
+            }
+
+            /* Example select option group hint */
+            .example-hint {
+                font-size: 11px;
+                color: var(--muted);
+                font-style: italic;
+            }
+
+            .divider {
+                height: 1px;
+                background: var(--border);
+                border: none;
+                margin: 0;
+            }
+
+            /* ── Viewer page ─────────────────────────────────────── */
+            #viewer-page {
+                flex: 1;
+                position: relative;
+                overflow: hidden;
+                min-height: 0;
+                display: none;
+            }
+
+            #viewer-container {
+                width: 100%;
+                height: 100%;
+            }
+
+            .viewer-toolbar {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                z-index: 50;
+            }
+
+            .btn-reset-overlay {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                color: var(--text);
+                border-radius: var(--radius);
+                padding: 7px 16px;
+                font-size: 13px;
+                font-weight: 600;
+                font-family: var(--font);
+                cursor: pointer;
+                transition: background 0.15s, border-color 0.15s;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            }
+            .btn-reset-overlay:hover {
+                background: var(--surface2);
+                border-color: var(--accent);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+
+            <!-- ── Header ──────────────────────────────────────────── -->
+            <header>
+                <a class="header-brand" href="https://edacation.github.io" target="_blank" rel="noopener">
+                    <!-- EDAcation wordmark -->
+                    <svg width="38" height="22" viewBox="0 0 38 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="38" height="22" rx="5" fill="#BD93F9"/>
+                        <text x="19" y="15" font-family="monospace" font-size="11" font-weight="bold" fill="#1a1a2e" text-anchor="middle">EDA</text>
+                    </svg>
+                    EDAcation <span>&nbsp;/ nextpnr Viewer</span>
+                </a>
+                <nav class="header-links">
+                    <a class="header-link" href="https://edacation.github.io" target="_blank" rel="noopener">
+                        <!-- Globe icon -->
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        Website
+                    </a>
+                    <a class="header-link" href="https://github.com/EDAcation/nextpnr-viewer" target="_blank" rel="noopener">
+                        <!-- GitHub icon -->
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.165c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                        </svg>
+                        GitHub
+                    </a>
+                </nav>
+            </header>
+
+            <!-- ── Setup page ──────────────────────────────────────── -->
+            <div id="setup-page">
+                <div class="setup-inner">
+
+                    <!-- Left: Info -->
+                    <div class="info-col">
+                        <div class="badge">Part of the EDAcation family</div>
+                        <h1><span>nextpnr</span> Viewer</h1>
+                        <p>
+                            An interactive, browser-based visualiser for
+                            <a href="https://github.com/YosysHQ/nextpnr" target="_blank" rel="noopener">nextpnr</a>
+                            place-and-route results. Inspect the placement and routing of your FPGA design
+                            directly in the browser — no installation required.
+                            Part of the <a href="https://edacation.github.io" target="_blank" rel="noopener">EDAcation</a>
+                            open-source FPGA toolchain education platform.
+                        </p>
+
+                        <div class="section-label">How to use</div>
+                        <p>
+                            Run nextpnr with the <code style="color:var(--accent);font-family:var(--mono)">--write</code> and
+                            optional <code style="color:var(--accent);font-family:var(--mono)">--report</code> flags to produce the
+                            JSON files, then load them here.
+                        </p>
+
+                        <div class="section-label">Example commands</div>
+                        <div class="code-block"><span class="comment"># iCE40</span>
+<span class="cmd">nextpnr-ice40</span> <span class="flag">--hx1k</span> <span class="flag">--package</span> <span class="arg">tq144</span> \
+  <span class="flag">--json</span> <span class="arg">design.json</span> \
+  <span class="flag">--write</span> <span class="arg">place.json</span> \
+  <span class="flag">--report</span> <span class="arg">report.json</span>
+
+<span class="comment"># ECP5</span>
+<span class="cmd">nextpnr-ecp5</span> <span class="flag">--25k</span> <span class="flag">--package</span> <span class="arg">CABGA256</span> \
+  <span class="flag">--json</span> <span class="arg">design.json</span> \
+  <span class="flag">--write</span> <span class="arg">place.json</span> \
+  <span class="flag">--report</span> <span class="arg">report.json</span></div>
+                    </div>
+
+                    <!-- Right: Controls -->
+                    <div class="controls-card">
+                        <h2>Open a design</h2>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="chip-family">Family</label>
+                                <select id="chip-family">
+                                    <option value="ice40">iCE40</option>
+                                    <option value="ecp5">ECP5</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="chip-device">Device</label>
+                                <select id="chip-device"></select>
+                            </div>
+                        </div>
+
+                        <hr class="divider" />
+
+                        <div class="form-group">
+                            <label>Example design</label>
+                            <select id="example-select">
+                                <option value="">— Load from file —</option>
+                                <option value="ice40-lp8k">iCE40 LP8K example</option>
+                                <option value="ecp5-12k">ECP5 12K example</option>
+                            </select>
+                            <span class="example-hint">Select an example to auto-fill the fields above.</span>
+                        </div>
+
+                        <hr class="divider" />
+
+                        <div class="form-group">
+                            <label>Placement JSON <span style="color:var(--accent2);">*</span></label>
+                            <label class="file-label" id="place-label" for="place-json-input">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span class="file-name" id="place-name">Choose place.json…</span>
+                            </label>
+                            <input class="hidden-input" id="place-json-input" type="file" accept=".json,application/json" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Report JSON <span style="color:var(--muted);font-size:11px;">(optional)</span></label>
+                            <label class="file-label" id="report-label" for="report-json-input">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span class="file-name" id="report-name">Choose report.json…</span>
+                            </label>
+                            <input class="hidden-input" id="report-json-input" type="file" accept=".json,application/json" />
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" id="submit-btn" disabled>Render</button>
+                            <button class="btn btn-secondary" id="reset-btn">Reset</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── Viewer page ─────────────────────────────────────── -->
+            <div id="viewer-page">
+                <div id="viewer-container"></div>
+                <div class="viewer-toolbar">
+                    <button class="btn-reset-overlay" id="viewer-reset-btn">← Back</button>
+                </div>
+            </div>
+
+        </div>
     </body>
 </html>
