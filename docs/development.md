@@ -1,45 +1,144 @@
-# Development
+# Development Environment
 
-## Setup
+This document describes how to set up a local development environment for `nextpnr-viewer`.
 
-```shell
-git clone git@github.com:EDAcation/nextpnr-viewer.git
-cd nextpnr-viewer
-npm install
+## Prerequisites
+
+The project has two main build components:
+
+- **Rust + wasm-pack** — compiles the core rendering logic to WebAssembly.
+- **Node.js (≥ 20) + npm** — bundles the TypeScript wrapper and ships the final library.
+
+### Option A: Nix / direnv (recommended)
+
+A `shell.nix` is provided at the repository root that provisions all required tools:
+
+```nix
+{ pkgs ? import <nixpkgs> {}}:
+
+pkgs.mkShell {
+  packages = with pkgs; [
+    nodejs_20
+    rustup
+    wasm-pack
+    coz
+  ];
+}
 ```
 
-## Building
+Enter the shell with:
 
-```shell
-npm run -w lib build
+```sh
+nix-shell
 ```
 
-## Publishing
+If you use [direnv](https://direnv.net/) with [nix-direnv](https://github.com/nix-community/nix-direnv), add a `.envrc` to the root of the repo:
 
-```shell
+```sh
+use nix
+```
+
+Then run `direnv allow`. From this point on, every time you `cd` into the project directory the correct toolchain will be activated automatically.
+
+### Option B: Manual installation
+
+Install the following tools manually:
+
+| Tool         | Notes                                                             |
+| ------------ | ----------------------------------------------------------------- |
+| Node.js ≥ 20 | e.g. via [nvm](https://github.com/nvm-sh/nvm)                     |
+| Rust stable  | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| wasm-pack    | `cargo install wasm-pack`                                         |
+
+## Installing JavaScript dependencies
+
+Both the library and the test viewer need their `node_modules` populated. Run `npm i` in each:
+
+```sh
+# Library (contains the actual viewer code)
 cd lib
-npm -w lib publish
+npm i
+
+# Test viewer (development harness)
+cd ../viewer-test
+npm i
 ```
+
+## Running the development workflow
+
+Development requires two long-running processes running **simultaneously**, each in its own terminal.
+
+### 1. Build the library in watch mode
+
+In the `lib/` directory:
+
+```sh
+npm run build-dev
+```
+
+This command:
+
+1. Compiles Rust to a WASM module using `wasm-pack build --debug --target web`, generating JavaScript/TypeScript bindings under `lib/pkg/`.
+2. Invokes `rollup -c`, which bundles `src/index.ts` together with the WASM artifact and the chipdb binary assets into `lib/dist/`.
+
+> **Note:** `build-dev` does _not_ invoke the chipdb minimizer (that step is part of the release `build` script only). Pre-minimized chipdb files committed to the repository under `lib/static/chipdb/{ecp5,ice40}/` are used directly. See [build.md](build.md) for details on how those files are produced.
+
+### 2. Serve the test viewer
+
+In the `viewer-test/` directory:
+
+```sh
+npm run serve
+```
+
+This starts a local HTTP server (default port **10001**) using `rollup --watch`. Rollup watches `viewer-test/src/index.ts` and `index.html` and rebuilds automatically when either changes. Because `nextpnr-viewer` is declared as a local path dependency (`"nextpnr-viewer": "../lib"`), any rebuild of `lib/dist/` caused by step 1 will also trigger a rebuild here.
+
+Open `http://localhost:10001` in your browser to interact with the viewer.
+
+## Typical workflow
+
+```
+Terminal A (lib/)          Terminal B (viewer-test/)
+──────────────────         ─────────────────────────
+npm run build-dev          npm run serve
+  → WASM compiled            → dev server starts on :10001
+  → rollup bundles lib
+  [edit Rust / TS]
+  → wasm recompiled
+  → rollup re-bundles      → rollup picks up new lib/dist/
+                             → browser reloads automatically
+```
+
+Make changes to Rust source files under `lib/src/` or the TypeScript wrapper at `lib/src/index.ts`, and the toolchain will recompile automatically. The test viewer reflects the result in real time.
 
 ## Obtaining chip databases
 
-1. Clone and compile [nextpnr](https://github.com/YosysHQ/nextpnr) according to the instructions. You can skip the actual installation part (`make install`).
-2. Navigate to the build directory containing chipdbs (example: `./build/ice40` relative to nextpnr root)
-3. The chipdb-*.cc files in this directory contain C arrays with the data that we need
+The raw chipdb binary files (e.g. `1k.bin`, `25k.bin`) must be generated from a built copy of [nextpnr](https://github.com/YosysHQ/nextpnr) and placed under `lib/static/chipdb/<arch>/` before building.
 
-The data can be extracted in several ways, but one of them is as follows:
-1. Modify each chipdb file and only keep the array definition + contents (`const uint8_t chipdb_blob_xxx[1234] = ...`)
-2. Write a program to write said array to a file, example:
-```cpp
-#include <fstream>
-#include <cstdint>
+1. Clone and compile nextpnr following its own instructions. You can skip `make install`.
+2. Navigate to the build directory containing chipdbs (e.g. `./build/ice40/`).
+3. The `chipdb-*.cc` files contain C arrays with the binary chip data.
 
-#include "chipdb-u4k.bin.cc"
+The data can be extracted as follows:
 
-int main() {
-    std::ofstream out("chipdb-u4k.bin", std::ios::binary);
-    out.write(reinterpret_cast<const char*>(chipdb_blob_u4k), sizeof(chipdb_blob_u4k));
-    return 0;
-}
-```
-3. Run the program to get the binary chipdb file. Put it under `lib/static/chipdb/<arch>/` and commit it to this repository.
+1. Modify each chipdb file to keep only the array definition:
+    ```c
+    const uint8_t chipdb_blob_xxx[1234] = { ... };
+    ```
+2. Write a small program to dump the array to a binary file:
+
+    ```cpp
+    #include <fstream>
+    #include <cstdint>
+    #include "chipdb-u4k.bin.cc"
+
+    int main() {
+        std::ofstream out("chipdb-u4k.bin", std::ios::binary);
+        out.write(reinterpret_cast<const char*>(chipdb_blob_u4k), sizeof(chipdb_blob_u4k));
+        return 0;
+    }
+    ```
+
+3. Run the program and place the resulting `.bin` file under `lib/static/chipdb/<arch>/`.
+
+The release build will then minimize these files automatically (see [build.md](build.md)).
