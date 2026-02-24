@@ -1,0 +1,45 @@
+name: Publish GitHub Pages
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+jobs:
+    website:
+        name: Publish Website
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - name: Checkout source
+              uses: actions/checkout@v4
+            - name: Setup Node 20
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  registry-url: 'https://registry.npmjs.org'
+            - name: Install dependencies
+              run: |
+                  cargo install wasm-pack
+                  npm ci
+            - name: Build
+              run: |
+                  npm -w lib run build
+                  npm -w viewer-test run build
+            - name: Setup Pages
+              uses: actions/configure-pages@v5
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: viewer-test/dist/
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
