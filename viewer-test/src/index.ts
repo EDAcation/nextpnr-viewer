@@ -161,6 +161,11 @@ function setFileLabelState(
 
 placeInput.addEventListener('change', () => {
     state.placeFile = placeInput.files?.[0] ?? null;
+    // If place is cleared, report must be cleared too
+    if (!state.placeFile) {
+        state.reportFile = null;
+        reportInput.value = '';
+    }
     updateUI();
 });
 
@@ -171,45 +176,39 @@ reportInput.addEventListener('change', () => {
 
 // ── UI state machine ──────────────────────────────────────────────────────────
 
-type ViewState = 'idle' | 'ready' | 'rendering';
+type ViewState = 'ready' | 'rendering';
 
 function getViewState(): ViewState {
     if (state.viewer !== null) return 'rendering';
-    if (state.placeFile !== null) return 'ready';
-    return 'idle';
+    return 'ready';
 }
 
 function updateUI() {
     const vs = getViewState();
     const isRendering = vs === 'rendering';
-    const canSubmit = vs === 'ready';
+    const reportDisabled = isRendering || state.placeFile === null;
 
     // Controls enabled/disabled
     familySelect.disabled = isRendering;
     deviceSelect.disabled = isRendering;
     exampleSelect.disabled = isRendering;
     placeInput.disabled = isRendering;
-    reportInput.disabled = isRendering;
-    submitBtn.disabled = !canSubmit;
+    reportInput.disabled = reportDisabled;
+    submitBtn.disabled = isRendering;
     resetBtn.disabled = isRendering; // show reset only in viewer
 
     setFileLabelState(placeLabel, placeNameEl, state.placeFile, 'Choose place.json\u2026', isRendering);
-    setFileLabelState(reportLabel, reportNameEl, state.reportFile, 'Choose report.json\u2026', isRendering);
+    setFileLabelState(reportLabel, reportNameEl, state.reportFile, 'Choose report.json\u2026', reportDisabled);
 }
 
 // ── Submit / Reset ────────────────────────────────────────────────────────────
 
 submitBtn.addEventListener('click', async () => {
-    if (!state.placeFile) return;
-
     // Disable everything while we load
     submitBtn.disabled = true;
 
-    const placeText = await state.placeFile.text();
-    const reportText = state.reportFile ? await state.reportFile.text() : undefined;
-
-    const placeJson = JSON.parse(placeText);
-    const reportJson = reportText ? JSON.parse(reportText) : undefined;
+    const placeJson = state.placeFile ? JSON.parse(await state.placeFile.text()) : undefined;
+    const reportJson = state.reportFile ? JSON.parse(await state.reportFile.text()) : undefined;
 
     // Switch to viewer view
     setupPage.style.display = 'none';
@@ -227,7 +226,9 @@ submitBtn.addEventListener('click', async () => {
     });
 
     await state.viewer.render();
-    await state.viewer.showJson(placeJson, reportJson);
+    if (placeJson) {
+        await state.viewer.showJson(placeJson, reportJson);
+    }
     updateUI();
 });
 
