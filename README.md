@@ -2,6 +2,8 @@
 
 Interactive web-based FGPA viewer for [Nextpnr](https://github.com/YosysHQ/nextpnr).
 
+Try it our for yourself: https://edacation.github.io/nextpnr-viewer/
+
 ![](assets/viewer.png)
 
 ## Features
