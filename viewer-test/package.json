@@ -19,6 +19,7 @@
     "url": "https://github.com/EDAcation/nextpnr-viewer.git"
   },
   "scripts": {
+    "build": "rollup -c",
     "serve": "rollup -c --watch"
   },
   "version": "1.0.0",
