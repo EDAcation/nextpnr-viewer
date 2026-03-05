@@ -295,27 +295,117 @@
                 box-shadow: 0 4px 16px rgba(189, 147, 249, 0.35);
             }
 
-            .btn-secondary {
+            /* ── Mode tabs ───────────────────────────────────────── */
+            .mode-tabs {
+                display: flex;
+                gap: 0;
                 background: var(--surface2);
-                color: var(--text);
                 border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 3px;
             }
-            .btn-secondary:not(:disabled):hover {
-                background: var(--border);
-            }
-
-            /* Example select option group hint */
-            .example-hint {
-                font-size: 11px;
-                color: var(--muted);
-                font-style: italic;
-            }
-
-            .divider {
-                height: 1px;
-                background: var(--border);
+            .mode-tab {
+                flex: 1;
+                padding: 7px 12px;
                 border: none;
-                margin: 0;
+                border-radius: calc(var(--radius) - 2px);
+                font-size: 13px;
+                font-weight: 600;
+                font-family: var(--font);
+                cursor: pointer;
+                background: transparent;
+                color: var(--muted);
+                transition: background 0.15s, color 0.15s;
+            }
+            .mode-tab:hover:not(.active) {
+                background: rgba(255,255,255,0.05);
+                color: var(--text);
+            }
+            .mode-tab.active {
+                background: var(--surface);
+                color: var(--text);
+                box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            }
+
+            /* ── File row (label + remove btn) ───────────────────── */
+            .file-row {
+                display: flex;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .file-row .file-label {
+                flex: 1;
+                min-width: 0;
+            }
+            .btn-remove {
+                flex-shrink: 0;
+                align-self: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 30px;
+                height: 30px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                background: var(--surface2);
+                color: var(--muted);
+                cursor: pointer;
+                font-size: 16px;
+                line-height: 1;
+                transition: background 0.15s, color 0.15s, border-color 0.15s;
+                padding: 0;
+                font-family: var(--font);
+            }
+            .btn-remove:hover:not(:disabled) {
+                background: rgba(255, 85, 85, 0.15);
+                border-color: var(--red);
+                color: var(--red);
+            }
+            .btn-remove:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+
+            /* ── Panel content spacing ─────────────────────────── */
+            #panel-example,
+            #panel-nextpnr,
+            #panel-edacation {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            /* ── Chip info badge ─────────────────────────────────── */
+            .chip-info {
+                display: none;
+                align-items: center;
+                gap: 8px;
+                padding: 9px 12px;
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .chip-info.visible {
+                display: flex;
+            }
+            .chip-info-value {
+                color: var(--green);
+                font-weight: 600;
+            }
+            .chip-error {
+                display: none;
+                align-items: center;
+                gap: 8px;
+                padding: 9px 12px;
+                background: rgba(255, 85, 85, 0.08);
+                border: 1px solid var(--red);
+                border-radius: var(--radius);
+                font-size: 13px;
+                color: var(--red);
+            }
+            .chip-error.visible {
+                display: flex;
             }
 
             /* ── Viewer page ─────────────────────────────────────── */
@@ -408,14 +498,13 @@
                             open-source FPGA toolchain education platform.
                         </p>
 
-                        <div class="section-label">How to use</div>
+                        <div class="section-label">nextpnr mode</div>
                         <p>
                             Run nextpnr with the <code style="color:var(--accent);font-family:var(--mono)">--write</code> and
                             optional <code style="color:var(--accent);font-family:var(--mono)">--report</code> flags to produce the
                             JSON files, then load them here.
                         </p>
 
-                        <div class="section-label">Example commands</div>
                         <div class="code-block"><span class="comment"># iCE40</span>
 <span class="cmd">nextpnr-ice40</span> <span class="flag">--hx1k</span> <span class="flag">--package</span> <span class="arg">tq144</span> \
   <span class="flag">--json</span> <span class="arg">design.json</span> \
@@ -427,69 +516,138 @@
   <span class="flag">--json</span> <span class="arg">design.json</span> \
   <span class="flag">--write</span> <span class="arg">place.json</span> \
   <span class="flag">--report</span> <span class="arg">report.json</span></div>
+
+                        <div class="section-label">EDAcation mode</div>
+                        <p>
+                            Use the <code style="color:var(--accent);font-family:var(--mono)">routed.nextpnr.json</code> file
+                            produced by the
+                            <a href="#" target="_blank" rel="noopener">EDAcation VS Code extension</a>.
+                            This single file already contains the chip family, device, placement data and
+                            timing report — no extra steps needed.
+                        </p>
                     </div>
 
                     <!-- Right: Controls -->
                     <div class="controls-card">
                         <h2>Open a design</h2>
 
-                        <div class="form-row">
+                        <!-- Mode tabs -->
+                        <div class="mode-tabs" id="mode-tabs">
+                            <button class="mode-tab active" data-mode="browse">Browse</button>
+                            <button class="mode-tab" data-mode="example">Example</button>
+                            <button class="mode-tab" data-mode="nextpnr">nextpnr</button>
+                            <button class="mode-tab" data-mode="edacation">EDAcation</button>
+                        </div>
+
+                        <!-- ── Chip selector (Browse + nextpnr) ── -->
+                        <div id="chip-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="chip-family">Family</label>
+                                    <select id="chip-family">
+                                        <option value="ice40">iCE40</option>
+                                        <option value="ecp5">ECP5</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="chip-device">Device</label>
+                                    <select id="chip-device"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Example panel ── -->
+                        <div id="panel-example" style="display:none;">
                             <div class="form-group">
-                                <label for="chip-family">Family</label>
-                                <select id="chip-family">
-                                    <option value="ice40">iCE40</option>
-                                    <option value="ecp5">ECP5</option>
+                                <label>Example design</label>
+                                <select id="example-select">
+                                    <option value="">— Choose an example —</option>
+                                    <option value="ice40-lp8k">iCE40 LP8K example</option>
+                                    <option value="ecp5-12k">ECP5 12K example</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="chip-device">Device</label>
-                                <select id="chip-device"></select>
+                            <div class="chip-info" id="example-chip-info">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="2" width="20" height="20" rx="3"/>
+                                    <path d="M8 2v4M16 2v4M8 18v4M16 18v4M2 8h4M2 16h4M18 8h4M18 16h4"/>
+                                </svg>
+                                <span>Chip:&nbsp;</span>
+                                <span class="chip-info-value" id="example-chip-value">—</span>
                             </div>
                         </div>
 
-                        <hr class="divider" />
+                        <!-- ── nextpnr panel ── -->
+                        <div id="panel-nextpnr" style="display:none;">
+                            <div class="form-group">
+                                <label>Placement JSON</label>
+                                <div class="file-row">
+                                    <label class="file-label" id="place-label" for="place-json-input">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="17 8 12 3 7 8"/>
+                                            <line x1="12" y1="3" x2="12" y2="15"/>
+                                        </svg>
+                                        <span class="file-name" id="place-name">Choose place.json…</span>
+                                    </label>
+                                    <button class="btn-remove" id="place-remove-btn" title="Remove file" disabled>✕</button>
+                                </div>
+                                <input class="hidden-input" id="place-json-input" type="file" accept=".json,application/json" />
+                            </div>
 
-                        <div class="form-group">
-                            <label>Example design</label>
-                            <select id="example-select">
-                                <option value="">— Load from file —</option>
-                                <option value="ice40-lp8k">iCE40 LP8K example</option>
-                                <option value="ecp5-12k">ECP5 12K example</option>
-                            </select>
-                            <span class="example-hint">Select an example to auto-fill the fields above.</span>
+                            <div class="form-group">
+                                <label>Report JSON <span style="color:var(--muted);font-size:11px;">optional</span></label>
+                                <div class="file-row">
+                                    <label class="file-label" id="report-label" for="report-json-input">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="17 8 12 3 7 8"/>
+                                            <line x1="12" y1="3" x2="12" y2="15"/>
+                                        </svg>
+                                        <span class="file-name" id="report-name">Choose report.json…</span>
+                                    </label>
+                                    <button class="btn-remove" id="report-remove-btn" title="Remove file" disabled>✕</button>
+                                </div>
+                                <input class="hidden-input" id="report-json-input" type="file" accept=".json,application/json" />
+                            </div>
                         </div>
 
-                        <hr class="divider" />
-
-                        <div class="form-group">
-                            <label>Placement JSON <span style="color:var(--muted);font-size:11px;">(optional)</span></label>
-                            <label class="file-label" id="place-label" for="place-json-input">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                        <!-- ── EDAcation panel ── -->
+                        <div id="panel-edacation" style="display:none;">
+                            <div class="form-group">
+                                <label>EDAcation JSON</label>
+                                <div class="file-row">
+                                    <label class="file-label" id="eda-label" for="eda-json-input">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="17 8 12 3 7 8"/>
+                                            <line x1="12" y1="3" x2="12" y2="15"/>
+                                        </svg>
+                                        <span class="file-name" id="eda-name">Choose routed.nextpnr.json…</span>
+                                    </label>
+                                    <button class="btn-remove" id="eda-remove-btn" title="Remove file" disabled>✕</button>
+                                </div>
+                                <input class="hidden-input" id="eda-json-input" type="file" accept=".json,application/json" />
+                            </div>
+                            <div class="chip-info" id="eda-chip-info">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="2" width="20" height="20" rx="3"/>
+                                    <path d="M8 2v4M16 2v4M8 18v4M16 18v4M2 8h4M2 16h4M18 8h4M18 16h4"/>
                                 </svg>
-                                <span class="file-name" id="place-name">Choose place.json…</span>
-                            </label>
-                            <input class="hidden-input" id="place-json-input" type="file" accept=".json,application/json" />
-                        </div>
-
-                        <div class="form-group">
-                            <label>Report JSON <span style="color:var(--muted);font-size:11px;">(optional)</span></label>
-                            <label class="file-label" id="report-label" for="report-json-input">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                <span>Detected chip:&nbsp;</span>
+                                <span class="chip-info-value" id="eda-chip-value">—</span>
+                            </div>
+                            <div class="chip-error" id="eda-chip-error">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
                                 </svg>
-                                <span class="file-name" id="report-name">Choose report.json…</span>
-                            </label>
-                            <input class="hidden-input" id="report-json-input" type="file" accept=".json,application/json" />
+                                <span id="eda-chip-error-msg">Could not detect chip information.</span>
+                            </div>
                         </div>
 
                         <div class="btn-row">
                             <button class="btn btn-primary" id="submit-btn" disabled>Render</button>
-                            <button class="btn btn-secondary" id="reset-btn">Reset</button>
                         </div>
                     </div>
 

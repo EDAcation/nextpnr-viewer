@@ -1,5 +1,5 @@
 import {getElementGroups} from 'edacation/dist/project/groups';
-import {NextPNRViewer, SUPPORTED_DEVICES, SupportedFamily} from 'nextpnr-viewer';
+import {NextPNRViewer, NextpnrJson, ReportJson, SUPPORTED_DEVICES, SupportedFamily} from 'nextpnr-viewer';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -13,26 +13,45 @@ function getCellColors(): Record<string, string> {
     return colors;
 }
 
-/** Returns the devices list for a given family, capitalised for display. */
 function devicesForFamily(family: SupportedFamily): string[] {
     return Object.keys(SUPPORTED_DEVICES[family]);
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
+type Mode = 'browse' | 'example' | 'nextpnr' | 'edacation';
+
 interface AppState {
+    mode: Mode;
     family: SupportedFamily;
     device: string;
+    // example mode – pre-fetched example data
+    examplePlace: File | null;
+    exampleReport: File | null;
+    exampleChip: {family: SupportedFamily; device: string} | null;
+    // nextpnr mode – user-supplied files
     placeFile: File | null;
     reportFile: File | null;
+    // EDAcation mode
+    edaFile: File | null;
+    edaChip: {family: SupportedFamily; device: string} | null;
+    edaError: string | null;
+    // viewer
     viewer: NextPNRViewer | null;
 }
 
 const state: AppState = {
+    mode: 'browse',
     family: 'ice40',
     device: 'hx1k',
+    examplePlace: null,
+    exampleReport: null,
+    exampleChip: null,
     placeFile: null,
     reportFile: null,
+    edaFile: null,
+    edaChip: null,
+    edaError: null,
     viewer: null
 };
 
@@ -42,20 +61,72 @@ const setupPage = document.getElementById('setup-page')! as HTMLDivElement;
 const viewerPage = document.getElementById('viewer-page')! as HTMLDivElement;
 const viewerContainer = document.getElementById('viewer-container')! as HTMLDivElement;
 
+// Mode tabs
+const modeTabs = document.getElementById('mode-tabs')! as HTMLDivElement;
+const chipSection = document.getElementById('chip-section')! as HTMLDivElement;
+const panelExample = document.getElementById('panel-example')! as HTMLDivElement;
+const panelNextpnr = document.getElementById('panel-nextpnr')! as HTMLDivElement;
+const panelEdacation = document.getElementById('panel-edacation')! as HTMLDivElement;
+
+// Chip selectors
 const familySelect = document.getElementById('chip-family')! as HTMLSelectElement;
 const deviceSelect = document.getElementById('chip-device')! as HTMLSelectElement;
+
+// Browse panel
 const exampleSelect = document.getElementById('example-select')! as HTMLSelectElement;
 
+// nextpnr panel
 const placeInput = document.getElementById('place-json-input')! as HTMLInputElement;
 const reportInput = document.getElementById('report-json-input')! as HTMLInputElement;
 const placeLabel = document.getElementById('place-label')! as HTMLLabelElement;
 const reportLabel = document.getElementById('report-label')! as HTMLLabelElement;
 const placeNameEl = document.getElementById('place-name')! as HTMLSpanElement;
 const reportNameEl = document.getElementById('report-name')! as HTMLSpanElement;
+const placeRemoveBtn = document.getElementById('place-remove-btn')! as HTMLButtonElement;
+const reportRemoveBtn = document.getElementById('report-remove-btn')! as HTMLButtonElement;
 
+// EDAcation panel
+const edaInput = document.getElementById('eda-json-input')! as HTMLInputElement;
+const edaLabel = document.getElementById('eda-label')! as HTMLLabelElement;
+const edaNameEl = document.getElementById('eda-name')! as HTMLSpanElement;
+const edaRemoveBtn = document.getElementById('eda-remove-btn')! as HTMLButtonElement;
+const edaChipInfo = document.getElementById('eda-chip-info')! as HTMLDivElement;
+const edaChipValue = document.getElementById('eda-chip-value')! as HTMLSpanElement;
+const edaChipError = document.getElementById('eda-chip-error')! as HTMLDivElement;
+const edaChipErrorMsg = document.getElementById('eda-chip-error-msg')! as HTMLSpanElement;
+
+// Example panel
+const exampleChipInfo = document.getElementById('example-chip-info')! as HTMLDivElement;
+const exampleChipValue = document.getElementById('example-chip-value')! as HTMLSpanElement;
+
+// Buttons
 const submitBtn = document.getElementById('submit-btn')! as HTMLButtonElement;
-const resetBtn = document.getElementById('reset-btn')! as HTMLButtonElement;
 const viewerResetBtn = document.getElementById('viewer-reset-btn')! as HTMLButtonElement;
+
+// ── Mode switching ────────────────────────────────────────────────────────────
+
+function switchMode(mode: Mode) {
+    state.mode = mode;
+
+    for (const tab of modeTabs.querySelectorAll<HTMLButtonElement>('.mode-tab')) {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+    }
+
+    // Hide chip selector for modes where chip comes from file/example
+    chipSection.style.display = mode === 'edacation' || mode === 'example' ? 'none' : '';
+
+    panelExample.style.display = mode === 'example' ? 'flex' : 'none';
+    panelNextpnr.style.display = mode === 'nextpnr' ? 'flex' : 'none';
+    panelEdacation.style.display = mode === 'edacation' ? 'flex' : 'none';
+
+    updateUI();
+}
+
+modeTabs.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.mode-tab');
+    if (!btn || state.viewer) return;
+    switchMode(btn.dataset.mode as Mode);
+});
 
 // ── Chip selector ─────────────────────────────────────────────────────────────
 
@@ -67,7 +138,6 @@ function populateDevices(family: SupportedFamily) {
         opt.textContent = dev;
         deviceSelect.appendChild(opt);
     }
-    // Try to keep the previous device selected if it exists in the new family
     if (devicesForFamily(family).includes(state.device)) {
         deviceSelect.value = state.device;
     } else {
@@ -85,11 +155,10 @@ deviceSelect.addEventListener('change', () => {
     state.device = deviceSelect.value;
 });
 
-// Initialise device list on load
 populateDevices(state.family);
 familySelect.value = state.family;
 
-// ── Examples ──────────────────────────────────────────────────────────────────
+// ── Examples (Example mode) ────────────────────────────────────────────────────
 
 interface Example {
     label: string;
@@ -118,7 +187,14 @@ const EXAMPLES: Record<string, Example> = {
 
 exampleSelect.addEventListener('change', async () => {
     const value = exampleSelect.value;
-    if (!value) return;
+
+    if (!value) {
+        state.examplePlace = null;
+        state.exampleReport = null;
+        state.exampleChip = null;
+        updateUI();
+        return;
+    }
 
     const example = EXAMPLES[value];
     if (!example) return;
@@ -130,25 +206,22 @@ exampleSelect.addEventListener('change', async () => {
             fetch(example.reportUrl).then((r) => r.text())
         ]);
 
-        state.family = example.family;
-        state.device = example.device;
-        familySelect.value = example.family;
-        populateDevices(example.family);
-        deviceSelect.value = example.device;
-
-        state.placeFile = new File([placeText], `${example.label} — place.json`, {type: 'application/json'});
-        state.reportFile = new File([reportText], `${example.label} — report.json`, {type: 'application/json'});
+        // Intentionally do NOT update the family/device dropdowns — chip comes from the example.
+        state.exampleChip = {family: example.family, device: example.device};
+        state.examplePlace = new File([placeText], `${example.label} — place.json`, {type: 'application/json'});
+        state.exampleReport = new File([reportText], `${example.label} — report.json`, {type: 'application/json'});
     } finally {
         exampleSelect.disabled = false;
         updateUI();
     }
 });
 
-// ── File pickers ──────────────────────────────────────────────────────────────
+// ── nextpnr file pickers ──────────────────────────────────────────────────────
 
 function setFileLabelState(
     label: HTMLLabelElement,
     nameEl: HTMLSpanElement,
+    removeBtn: HTMLButtonElement,
     file: File | null,
     placeholder: string,
     disabled: boolean
@@ -156,12 +229,11 @@ function setFileLabelState(
     label.classList.toggle('disabled', disabled);
     label.classList.toggle('has-file', file !== null);
     nameEl.textContent = file ? file.name : placeholder;
-    // When disabled the underlying <input> is also disabled so the label click does nothing.
+    removeBtn.disabled = disabled || file === null;
 }
 
 placeInput.addEventListener('change', () => {
     state.placeFile = placeInput.files?.[0] ?? null;
-    // If place is cleared, report must be cleared too
     if (!state.placeFile) {
         state.reportFile = null;
         reportInput.value = '';
@@ -174,43 +246,175 @@ reportInput.addEventListener('change', () => {
     updateUI();
 });
 
+placeRemoveBtn.addEventListener('click', () => {
+    state.placeFile = null;
+    state.reportFile = null;
+    placeInput.value = '';
+    reportInput.value = '';
+    updateUI();
+});
+
+reportRemoveBtn.addEventListener('click', () => {
+    state.reportFile = null;
+    reportInput.value = '';
+    updateUI();
+});
+
+// ── EDAcation file picker ─────────────────────────────────────────────────────
+
+edaInput.addEventListener('change', async () => {
+    const file = edaInput.files?.[0] ?? null;
+    state.edaFile = file;
+    state.edaChip = null;
+    state.edaError = null;
+
+    if (file) {
+        try {
+            const parsed = JSON.parse(await file.text());
+            if (
+                parsed &&
+                typeof parsed === 'object' &&
+                parsed.chip &&
+                typeof parsed.chip.family === 'string' &&
+                typeof parsed.chip.device === 'string'
+            ) {
+                state.edaChip = {
+                    family: parsed.chip.family as SupportedFamily,
+                    device: parsed.chip.device
+                };
+            } else {
+                state.edaError = 'Missing or invalid “chip” field in JSON.';
+            }
+        } catch {
+            state.edaError = 'File is not valid JSON.';
+        }
+    }
+
+    updateUI();
+});
+
+edaRemoveBtn.addEventListener('click', () => {
+    state.edaFile = null;
+    state.edaChip = null;
+    state.edaError = null;
+    edaInput.value = '';
+    updateUI();
+});
+
 // ── UI state machine ──────────────────────────────────────────────────────────
 
-type ViewState = 'ready' | 'rendering';
-
-function getViewState(): ViewState {
-    if (state.viewer !== null) return 'rendering';
-    return 'ready';
-}
-
 function updateUI() {
-    const vs = getViewState();
-    const isRendering = vs === 'rendering';
-    const reportDisabled = isRendering || state.placeFile === null;
+    const isRendering = state.viewer !== null;
 
-    // Controls enabled/disabled
-    familySelect.disabled = isRendering;
-    deviceSelect.disabled = isRendering;
-    exampleSelect.disabled = isRendering;
-    placeInput.disabled = isRendering;
-    reportInput.disabled = reportDisabled;
-    submitBtn.disabled = isRendering;
-    resetBtn.disabled = isRendering; // show reset only in viewer
+    for (const tab of modeTabs.querySelectorAll<HTMLButtonElement>('.mode-tab')) {
+        tab.disabled = isRendering;
+    }
 
-    setFileLabelState(placeLabel, placeNameEl, state.placeFile, 'Choose place.json\u2026', isRendering);
-    setFileLabelState(reportLabel, reportNameEl, state.reportFile, 'Choose report.json\u2026', reportDisabled);
+    if (state.mode === 'browse') {
+        familySelect.disabled = isRendering;
+        deviceSelect.disabled = isRendering;
+        submitBtn.disabled = isRendering;
+    } else if (state.mode === 'example') {
+        exampleSelect.disabled = isRendering;
+
+        if (state.exampleChip) {
+            exampleChipInfo.classList.add('visible');
+            exampleChipValue.textContent = `${state.exampleChip.family.toUpperCase()} ${state.exampleChip.device}`;
+        } else {
+            exampleChipInfo.classList.remove('visible');
+        }
+
+        submitBtn.disabled = isRendering || state.exampleChip === null;
+    } else if (state.mode === 'nextpnr') {
+        familySelect.disabled = isRendering;
+        deviceSelect.disabled = isRendering;
+
+        const reportDisabled = isRendering || state.placeFile === null;
+
+        placeInput.disabled = isRendering;
+        reportInput.disabled = reportDisabled;
+
+        setFileLabelState(
+            placeLabel,
+            placeNameEl,
+            placeRemoveBtn,
+            state.placeFile,
+            'Choose place.json\u2026',
+            isRendering
+        );
+        setFileLabelState(
+            reportLabel,
+            reportNameEl,
+            reportRemoveBtn,
+            state.reportFile,
+            'Choose report.json\u2026',
+            reportDisabled
+        );
+
+        submitBtn.disabled = isRendering || state.placeFile === null;
+    } else {
+        // EDAcation mode
+        edaInput.disabled = isRendering;
+
+        setFileLabelState(
+            edaLabel,
+            edaNameEl,
+            edaRemoveBtn,
+            state.edaFile,
+            'Choose routed.nextpnr.json\u2026',
+            isRendering
+        );
+
+        if (state.edaFile && state.edaChip) {
+            // valid file
+            edaChipInfo.classList.add('visible');
+            edaChipValue.textContent = `${state.edaChip.family.toUpperCase()} ${state.edaChip.device}`;
+            edaChipError.classList.remove('visible');
+        } else if (state.edaFile && state.edaError) {
+            // file loaded but chip detection failed
+            edaChipInfo.classList.remove('visible');
+            edaChipError.classList.add('visible');
+            edaChipErrorMsg.textContent = state.edaError;
+        } else {
+            edaChipInfo.classList.remove('visible');
+            edaChipError.classList.remove('visible');
+        }
+
+        submitBtn.disabled = isRendering || state.edaChip === null;
+    }
 }
 
-// ── Submit / Reset ────────────────────────────────────────────────────────────
+// ── Submit ────────────────────────────────────────────────────────────────────
 
 submitBtn.addEventListener('click', async () => {
-    // Disable everything while we load
     submitBtn.disabled = true;
 
-    const placeJson = state.placeFile ? JSON.parse(await state.placeFile.text()) : undefined;
-    const reportJson = state.reportFile ? JSON.parse(await state.reportFile.text()) : undefined;
+    let family = state.family;
+    let device = state.device;
+    let placeJson: NextpnrJson | undefined;
+    let reportJson: ReportJson | undefined;
 
-    // Switch to viewer view
+    if (state.mode === 'browse') {
+        // bare-chip render: use family/device from dropdowns, no design files
+        placeJson = undefined;
+        reportJson = undefined;
+    } else if (state.mode === 'example') {
+        family = state.exampleChip!.family;
+        device = state.exampleChip!.device;
+        placeJson = state.examplePlace ? JSON.parse(await state.examplePlace.text()) : undefined;
+        reportJson = state.exampleReport ? JSON.parse(await state.exampleReport.text()) : undefined;
+    } else if (state.mode === 'nextpnr') {
+        placeJson = state.placeFile ? JSON.parse(await state.placeFile.text()) : undefined;
+        reportJson = state.reportFile ? JSON.parse(await state.reportFile.text()) : undefined;
+    } else {
+        // EDAcation mode
+        const parsed = JSON.parse(await state.edaFile!.text());
+        family = state.edaChip!.family;
+        device = state.edaChip!.device;
+        placeJson = parsed.data;
+        reportJson = parsed.report;
+    }
+
     setupPage.style.display = 'none';
     viewerPage.style.display = 'block';
 
@@ -220,7 +424,7 @@ submitBtn.addEventListener('click', async () => {
     state.viewer = new NextPNRViewer(viewerContainer, {
         width: w,
         height: h,
-        chip: {family: state.family, device: state.device as any},
+        chip: {family, device: device as any},
         cellColors: getCellColors(),
         sidebarWidth: 300
     });
@@ -232,25 +436,18 @@ submitBtn.addEventListener('click', async () => {
     updateUI();
 });
 
+// ── Back ──────────────────────────────────────────────────────────────────────
+
 function doReset() {
-    // Tear down the viewer
     state.viewer = null;
     viewerContainer.innerHTML = '';
 
-    // Clear file state
-    state.placeFile = null;
-    state.reportFile = null;
-    placeInput.value = '';
-    reportInput.value = '';
-
-    // Switch back to setup
     viewerPage.style.display = 'none';
     setupPage.style.display = '';
 
     updateUI();
 }
 
-resetBtn.addEventListener('click', doReset);
 viewerResetBtn.addEventListener('click', doReset);
 
 // ── Resize handling ───────────────────────────────────────────────────────────
@@ -267,4 +464,4 @@ window.addEventListener('resize', () => {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
-updateUI();
+switchMode('browse');
