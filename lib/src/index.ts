@@ -150,17 +150,6 @@ function fromCssColor(colorStr: string): Color {
     return {r: parseInt(rstr, 16), g: parseInt(gstr, 16), b: parseInt(bstr, 16)};
 }
 
-let animFrameId: number | null = null;
-function doInAnimFrame(f: () => void) {
-    if (animFrameId != null) window.cancelAnimationFrame(animFrameId);
-
-    animFrameId = window.requestAnimationFrame(() => {
-        f();
-
-        animFrameId = null;
-    })
-}
-
 type Viewer = ViewerECP5 | ViewerICE40;
 const VIEWERS = <const> {
     'ecp5': ViewerECP5,
@@ -212,6 +201,9 @@ export class NextPNRViewer {
     private tabButtons: Map<ElementType, HTMLButtonElement> = new Map();
     private loadMoreButtons: Map<number, HTMLButtonElement> = new Map();
     private decalListElement: HTMLDivElement | null = null;
+
+    private viewerDead = false;
+    private animFrameId: number | null = null;
 
     constructor(container: HTMLDivElement, config?: Partial<ViewerConfig>) {
         this.config = {...defaultConfig, ...config};
@@ -392,6 +384,74 @@ export class NextPNRViewer {
         }
     }
 
+    private _doInAnimFrame(f: () => void) {
+        if (this.animFrameId != null) window.cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = window.requestAnimationFrame(() => {
+            f();
+            this.animFrameId = null;
+        });
+    }
+
+    /**
+     * Permanently disable the viewer and cancel any pending animation-frame work.
+     * Call this when removing the viewer from the page so that stale animation-frame
+     * callbacks cannot fire against a partially-collected wasm object.
+     */
+    destroy() {
+        this._markViewerDead(new Error('destroy() called'));
+    }
+
+    private _markViewerDead(error: unknown) {
+        if (this.viewerDead) return;
+        this.viewerDead = true;
+
+        // Cancel any pending animation frame immediately so that no further wasm
+        // calls can be issued after this point (even before the GC can run).
+        if (this.animFrameId != null) {
+            window.cancelAnimationFrame(this.animFrameId);
+            this.animFrameId = null;
+        }
+
+        if (!(error instanceof Error && error.message === 'destroy() called')) {
+            console.error('nextpnr-viewer: unrecoverable renderer error, viewer has been disabled.', error);
+        }
+
+        // Show an error overlay on the canvas so the user knows something went wrong.
+        const canvasContainer = this.canvas.parentElement;
+        if (canvasContainer) {
+            const overlay = document.createElement('div');
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.display = 'flex';
+            overlay.style.flexDirection = 'column';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.backgroundColor = 'rgba(40, 42, 54, 0.92)';
+            overlay.style.zIndex = '2000';
+            overlay.style.gap = '12px';
+            overlay.style.pointerEvents = 'none';
+
+            const icon = document.createElement('div');
+            icon.textContent = '⚠';
+            icon.style.color = this.config.colors.critical;
+            icon.style.fontSize = '32px';
+
+            const msg = document.createElement('div');
+            msg.textContent = 'Renderer error — please reload the page.';
+            msg.style.color = this.config.colors.frame;
+            msg.style.fontFamily = 'monospace';
+            msg.style.fontSize = '13px';
+
+            overlay.appendChild(icon);
+            overlay.appendChild(msg);
+            canvasContainer.style.position = 'relative';
+            canvasContainer.appendChild(overlay);
+        }
+    }
+
     private async _addEventListeners(canvas: HTMLCanvasElement) {
         const viewer = await this.viewer;
 
@@ -401,15 +461,31 @@ export class NextPNRViewer {
         let oldx = 0;
         let oldy = 0;
 
+        // Handle WebGL context loss: once the context is lost the wasm renderer is
+        // permanently broken (all subsequent &mut self calls will fail), so we mark the
+        // viewer as dead immediately and avoid any further calls.
+        canvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            this._markViewerDead(new Error('WebGL context lost'));
+        });
+
         // Zoom
         canvas.addEventListener('wheel', (e) => {
+            if (this.viewerDead) return;
             e.preventDefault();
             if (e.deltaY === 0) return;
-            doInAnimFrame(() => viewer.zoom(
-                e.deltaY > 0 ? 0.05 : -0.05,
-                e.offsetX,
-                e.offsetY
-            ));
+            this._doInAnimFrame(() => {
+                if (this.viewerDead) return;
+                try {
+                    viewer.zoom(
+                        e.deltaY > 0 ? 0.05 : -0.05,
+                        e.offsetX,
+                        e.offsetY
+                    );
+                } catch (error) {
+                    this._markViewerDead(error);
+                }
+            });
         });
 
         // Pan
@@ -423,23 +499,40 @@ export class NextPNRViewer {
 
             // If the mouse was moved, we consider this a pan action and do not trigger selection
             if (hasMoved) return;
+            if (this.viewerDead) return;
 
-            const selection = viewer.select_at_coords(e.offsetX, e.offsetY, false);
-            if (!selection || !Array.isArray(selection) || selection.length < 2) return;
-            
-            const elementType = selection[0] as ElementType;
-            const decalId = selection[1] as string;
-            
-            await this._handleCanvasSelection(elementType, decalId);
+            try {
+                const selection = viewer.select_at_coords(e.offsetX, e.offsetY, false);
+                if (!selection || !Array.isArray(selection) || selection.length < 2) return;
+
+                const elementType = selection[0] as ElementType;
+                const decalId = selection[1] as string;
+
+                await this._handleCanvasSelection(elementType, decalId);
+            } catch (error) {
+                this._markViewerDead(error);
+            }
         });
-        canvas.addEventListener('mousemove', (e) => doInAnimFrame(() => {
-            viewer.select_at_coords(e.offsetX, e.offsetY, true);
+        canvas.addEventListener('mousemove', (e) => this._doInAnimFrame(() => {
+            if (this.viewerDead) return;
+
+            try {
+                viewer.select_at_coords(e.offsetX, e.offsetY, true);
+            } catch (error) {
+                this._markViewerDead(error);
+                return;
+            }
 
             if (down) {
                 hasMoved = true;
 
                 if (!firstEvent) {
-                    viewer.pan(e.offsetX - oldx, e.offsetY - oldy);
+                    try {
+                        viewer.pan(e.offsetX - oldx, e.offsetY - oldy);
+                    } catch (error) {
+                        this._markViewerDead(error);
+                        return;
+                    }
                 }
 
                 firstEvent = false;

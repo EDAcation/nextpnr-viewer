@@ -439,7 +439,13 @@ submitBtn.addEventListener('click', async () => {
 // ── Back ──────────────────────────────────────────────────────────────────────
 
 function doReset() {
-    state.viewer = null;
+    // Call destroy() BEFORE clearing the DOM. This cancels any pending
+    // animation-frame callbacks so they cannot fire against a torn-down
+    // wasm object after the canvas has been removed.
+    if (state.viewer) {
+        state.viewer.destroy();
+        state.viewer = null;
+    }
     viewerContainer.innerHTML = '';
 
     viewerPage.style.display = 'none';
