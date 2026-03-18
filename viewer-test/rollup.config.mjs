@@ -9,7 +9,8 @@ export default {
   input: 'index.html',
   output: {
     dir: 'dist',
-    format: 'es'
+    format: 'es',
+    assetFileNames: 'assets/[name][extname]',
   },
   plugins: [
     nodeResolve(),
