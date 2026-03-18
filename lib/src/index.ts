@@ -1,4 +1,6 @@
-import wasmInit, { CellColorConfig, Color, ElementType, NextpnrJson, ColorConfig as RendererColorConfig, ReportJson, ViewerECP5, ViewerICE40 } from '../pkg';
+import { CellColorConfig, Color, ElementType, NextpnrJson, ColorConfig as RendererColorConfig, ReportJson } from '../pkg';
+import { getChipDbUrl } from './types';
+import { WorkerViewerAdapter } from './worker';
 
 export { NextpnrJson, ReportJson };
 
@@ -96,7 +98,7 @@ export const defaultConfig: ViewerConfig = {
         background: '#282A36',
         critical: '#FF0000',
         highlight: '#81ff81',
-        selected: '#00FF00',
+        selected: '#00FF00'
     },
     cellColors: {},
     chip: {
@@ -106,31 +108,7 @@ export const defaultConfig: ViewerConfig = {
     sidebarWidth: 300
 };
 
-
 // **** Internal functions ****
-function listGetters(instance: object) {
-    // Utility function to peek into an object returned from rust_bindgen
-    // https://stackoverflow.com/questions/60400066/how-to-enumerate-discover-getters-and-setters-in-javascript
-    return Object.entries(
-        Object.getOwnPropertyDescriptors(
-        Reflect.getPrototypeOf(instance)
-        )
-    )
-    .filter(e => typeof e[1].get === 'function' && e[0] !== '__proto__')
-    .map(e => e[0]);
-}
-
-function getChipDbUrl(chip: SupportedChip): URL {
-    const { family, device } = chip;
-    const familyDb = SUPPORTED_DEVICES[family];
-
-    return familyDb[device as keyof typeof familyDb];
-}
-
-async function getChipDb(url: URL): Promise<Uint8Array> {
-    let chipdb = await fetch(url).then((resp) => resp.arrayBuffer());
-    return new Uint8Array(chipdb);
-}
 
 let colCanvas: CanvasRenderingContext2D | null;
 function fromCssColor(colorStr: string): Color {
@@ -138,7 +116,6 @@ function fromCssColor(colorStr: string): Color {
         colCanvas = document.createElement('canvas').getContext('2d');
     }
     if (!colCanvas) throw new Error('Could not create canvas to convert color');
-    
 
     colCanvas.fillStyle = colorStr;
     const col = colCanvas.fillStyle.replace('#', '');
@@ -150,30 +127,9 @@ function fromCssColor(colorStr: string): Color {
     return {r: parseInt(rstr, 16), g: parseInt(gstr, 16), b: parseInt(bstr, 16)};
 }
 
-type Viewer = ViewerECP5 | ViewerICE40;
-const VIEWERS = <const> {
-    'ecp5': ViewerECP5,
-    'ice40': ViewerICE40,
-}
-function getViewer<Family extends SupportedFamily>(family: Family): typeof VIEWERS[Family] {
-    let viewer = VIEWERS[family];
-    if (viewer === undefined) {
-        throw new Error(`Could not find suitable viewer for ${family}`);
-    }
-
-    return viewer;
-}
-
-let initialized = false;
-async function init() {
-    if (!initialized) {
-        await wasmInit();
-        initialized = true;
-    }
-}
 
 // **** External API ****
-export function isSupported(chip: {family: string, device: string}): chip is SupportedChip {
+export function isSupported(chip: {family: string; device: string}): chip is SupportedChip {
     const family = chip.family as SupportedFamily;
     if (!(family in SUPPORTED_DEVICES)) return false;
 
@@ -185,7 +141,7 @@ export class NextPNRViewer {
     private static readonly BATCH_SIZE = 100;
 
     private config: ViewerConfig;
-    private viewer: Promise<Viewer>;
+    private viewer: Promise<WorkerViewerAdapter>;
 
     private container: HTMLDivElement;
     private canvas: HTMLCanvasElement;
@@ -210,7 +166,6 @@ export class NextPNRViewer {
 
         // Separate functions so we can throw an error prematurely instead of in the promise
         const url = getChipDbUrl(this.config.chip);
-        const viewer = getViewer(this.config.chip.family);
         const colors: RendererColorConfig = {
             active: fromCssColor(this.config.colors.active),
             inactive: fromCssColor(this.config.colors.inactive),
@@ -221,57 +176,70 @@ export class NextPNRViewer {
             selected: fromCssColor(this.config.colors.selected),
         };
         const cellColors: CellColorConfig = Object.fromEntries(
-            Object.entries(this.config.cellColors).map(
-                ([cell, colorStr]) => [cell, fromCssColor(colorStr)]
-            )
+            Object.entries(this.config.cellColors).map(([cell, colorStr]) => [cell, fromCssColor(colorStr)])
         );
 
         this.container = container;
-        const { canvasContainer, sidebar } = this._createLayout(container);
+        const {canvasContainer, sidebar} = this._createLayout(container);
         this.sidebar = sidebar;
         this.canvas = this._createCanvas(canvasContainer);
         this.loadingElement = this._createLoadingIndicator(canvasContainer);
         this._doResize(this.config.width, this.config.height);
 
-        this.viewer = Promise.all([
-            init(),
-            getChipDb(url),
-        ]).then(([_, db]) => new viewer(this.canvas, db, colors, cellColors));
-        this.viewer.then(() => {
-            this._hideLoadingIndicator();
-            this._addEventListeners(this.canvas);
-            this._setupSidebar();
-        });
-    };
+        const offscreen = this.canvas.transferControlToOffscreen();
+        this.viewer = WorkerViewerAdapter.create(
+            this.config.chip.family,
+            url,
+            offscreen,
+            this.canvas.clientWidth,
+            this.canvas.clientHeight,
+            colors,
+            cellColors
+        );
+        this.viewer
+            .then(async () => {
+                this._addEventListeners(this.canvas);
+                await this._setupSidebar();
+                this._hideLoadingIndicator();
+            })
+            .catch((error) => {
+                this._hideLoadingIndicator();
+                this._markViewerDead(error);
+            });
+    }
 
     async render() {
-        (await this.viewer).render();
+        await (await this.viewer).render();
     }
 
     async showJson(nextpnrJson: NextpnrJson, reportJson?: ReportJson) {
-        nextpnrJson = (typeof nextpnrJson === 'string') ? JSON.parse(nextpnrJson) : nextpnrJson;
-        reportJson = (typeof reportJson === 'string') ? JSON.parse(reportJson) : reportJson;
+        nextpnrJson = typeof nextpnrJson === 'string' ? JSON.parse(nextpnrJson) : nextpnrJson;
+        reportJson = typeof reportJson === 'string' ? JSON.parse(reportJson) : reportJson;
 
         const viewer = await this.viewer;
 
-        viewer.show_json(nextpnrJson, reportJson);
+        await viewer.show_json(nextpnrJson, reportJson);
     }
 
     async resize(width: number, height: number) {
         this._doResize(width, height);
 
-        (await this.viewer).render();
+        const viewer = await this.viewer;
+        await viewer.resize_canvas(this.canvas.clientWidth, this.canvas.clientHeight);
+        await viewer.render();
     }
 
     private _doResize(width: number, height: number) {
         this.container.style.width = `${width}px`;
         this.container.style.height = `${height}px`;
 
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+        // if (!this.usingWorkerCanvas) {
+        //     this.canvas.width = this.canvas.clientWidth;
+        //     this.canvas.height = this.canvas.clientHeight;
+        // }
     }
 
-    private _createLayout(container: HTMLDivElement): { canvasContainer: HTMLDivElement, sidebar: HTMLDivElement } {
+    private _createLayout(container: HTMLDivElement): {canvasContainer: HTMLDivElement; sidebar: HTMLDivElement} {
         container.innerHTML = '';
         container.style.display = 'flex';
         container.style.flexDirection = 'row';
@@ -295,7 +263,7 @@ export class NextPNRViewer {
         container.appendChild(canvasContainer);
         container.appendChild(sidebar);
 
-        return { canvasContainer, sidebar };
+        return {canvasContainer, sidebar};
     }
 
     private _createCanvas(container: HTMLDivElement): HTMLCanvasElement {
@@ -305,7 +273,7 @@ export class NextPNRViewer {
         elem.style.height = '100%';
         container.innerHTML = '';
         container.appendChild(elem);
-    
+
         return elem;
     }
 
@@ -404,6 +372,7 @@ export class NextPNRViewer {
     private _markViewerDead(error: unknown) {
         if (this.viewerDead) return;
         this.viewerDead = true;
+        void this._destroyViewer();
 
         // Cancel any pending animation frame immediately so that no further wasm
         // calls can be issued after this point (even before the GC can run).
@@ -440,7 +409,7 @@ export class NextPNRViewer {
             icon.style.fontSize = '32px';
 
             const msg = document.createElement('div');
-            msg.textContent = 'Renderer error — please reload the page.';
+            msg.textContent = `Renderer error — please reload the page. (${error instanceof Error ? error.message : String(error)})`;
             msg.style.color = this.config.colors.frame;
             msg.style.fontFamily = 'monospace';
             msg.style.fontSize = '13px';
@@ -476,15 +445,9 @@ export class NextPNRViewer {
             if (e.deltaY === 0) return;
             this._doInAnimFrame(() => {
                 if (this.viewerDead) return;
-                try {
-                    viewer.zoom(
-                        e.deltaY > 0 ? 0.05 : -0.05,
-                        e.offsetX,
-                        e.offsetY
-                    );
-                } catch (error) {
+                viewer.zoom(e.deltaY > 0 ? 0.05 : -0.05, e.offsetX, e.offsetY).catch((error) => {
                     this._markViewerDead(error);
-                }
+                });
             });
         });
 
@@ -502,7 +465,7 @@ export class NextPNRViewer {
             if (this.viewerDead) return;
 
             try {
-                const selection = viewer.select_at_coords(e.offsetX, e.offsetY, false);
+                const selection = await viewer.select_at_coords(e.offsetX, e.offsetY, false);
                 if (!selection || !Array.isArray(selection) || selection.length < 2) return;
 
                 const elementType = selection[0] as ElementType;
@@ -513,33 +476,29 @@ export class NextPNRViewer {
                 this._markViewerDead(error);
             }
         });
-        canvas.addEventListener('mousemove', (e) => this._doInAnimFrame(() => {
-            if (this.viewerDead) return;
+        canvas.addEventListener('mousemove', (e) =>
+            this._doInAnimFrame(() => {
+                if (this.viewerDead) return;
 
-            try {
-                viewer.select_at_coords(e.offsetX, e.offsetY, true);
-            } catch (error) {
-                this._markViewerDead(error);
-                return;
-            }
+                viewer.select_at_coords(e.offsetX, e.offsetY, true).catch((error) => {
+                    this._markViewerDead(error);
+                });
 
-            if (down) {
-                hasMoved = true;
+                if (down) {
+                    hasMoved = true;
 
-                if (!firstEvent) {
-                    try {
-                        viewer.pan(e.offsetX - oldx, e.offsetY - oldy);
-                    } catch (error) {
-                        this._markViewerDead(error);
-                        return;
+                    if (!firstEvent) {
+                        viewer.pan(e.offsetX - oldx, e.offsetY - oldy).catch((error) => {
+                            this._markViewerDead(error);
+                        });
                     }
-                }
 
-                firstEvent = false;
-                oldx = e.offsetX;
-                oldy = e.offsetY;
-            }
-        }));
+                    firstEvent = false;
+                    oldx = e.offsetX;
+                    oldy = e.offsetY;
+                }
+            })
+        );
     }
 
     private async _getDecalInfo(elementType: ElementType, decalId: string): Promise<DecalInfo | null> {
@@ -558,7 +517,7 @@ export class NextPNRViewer {
         const endIndex = Math.min(startIndex + NextPNRViewer.BATCH_SIZE, decals.length);
         const batchIds = decals.slice(startIndex, endIndex);
 
-        const decalInfos = (await this.viewer).get_decals(elementType, batchIds);
+        const decalInfos = await (await this.viewer).get_decals(elementType, batchIds);
         for (const [id, info] of decalInfos.entries()) {
             this.decalInfoCache.set(id, info);
         }
@@ -585,16 +544,26 @@ export class NextPNRViewer {
         this.sidebar.appendChild(contentContainer);
 
         const elementTypes = [
-            { type: ElementType.Wire, label: 'Wires' },
-            { type: ElementType.Pip, label: 'Pips' },
-            { type: ElementType.Bel, label: 'Bels' },
-            { type: ElementType.Group, label: 'Groups' },
+            {type: ElementType.Wire, label: 'Wires'},
+            {type: ElementType.Pip, label: 'Pips'},
+            {type: ElementType.Bel, label: 'Bels'},
+            {type: ElementType.Group, label: 'Groups'}
         ];
 
         const tabs: HTMLButtonElement[] = [];
+        const activateTab = async (tab: HTMLButtonElement, type: ElementType) => {
+            tabs.forEach((t) => {
+                t.style.backgroundColor = '#252526';
+                t.style.borderBottom = 'none';
+            });
+            tab.style.backgroundColor = '#1e1e1e';
+            tab.style.borderBottom = '2px solid #007acc';
+
+            await this._loadDecalList(viewer, type, contentContainer);
+        };
 
         // Create tabs
-        elementTypes.forEach(({ type, label }) => {
+        elementTypes.forEach(({type, label}) => {
             const tab = document.createElement('button');
             tab.textContent = label;
             tab.style.flex = '1';
@@ -606,16 +575,7 @@ export class NextPNRViewer {
             tab.style.outline = 'none';
 
             tab.addEventListener('click', async () => {
-                // Update active tab styling
-                tabs.forEach(t => {
-                    t.style.backgroundColor = '#252526';
-                    t.style.borderBottom = 'none';
-                });
-                tab.style.backgroundColor = '#1e1e1e';
-                tab.style.borderBottom = '2px solid #007acc';
-
-                // Load decal IDs for this element type
-                await this._loadDecalList(viewer, type, contentContainer);
+                await activateTab(tab, type);
             });
 
             tabs.push(tab);
@@ -625,11 +585,11 @@ export class NextPNRViewer {
 
         // Activate first tab by default
         if (tabs.length > 0) {
-            tabs[0].click();
+            await activateTab(tabs[0], elementTypes[0].type);
         }
     }
 
-    private async _loadDecalList(viewer: Viewer, elementType: ElementType, container: HTMLDivElement) {
+    private async _loadDecalList(viewer: WorkerViewerAdapter, elementType: ElementType, container: HTMLDivElement) {
         container.innerHTML = '<div style="color: #888;">Loading...</div>';
 
         try {
@@ -642,7 +602,7 @@ export class NextPNRViewer {
 
             // Fetch and cache all decal IDs if not already cached
             if (!this.decalsCache.has(elementType)) {
-                const decals = viewer.get_decal_ids(elementType);
+                const decals = await viewer.get_decal_ids(elementType);
                 this.decalsCache.set(elementType, decals);
             }
 
@@ -673,13 +633,13 @@ export class NextPNRViewer {
             container.appendChild(this.decalListElement);
 
             // Render first batch
-            this._renderDecalBatch(viewer, elementType, 0);
+            await this._renderDecalBatch(viewer, elementType, 0);
         } catch (error) {
             container.innerHTML = `<div style="color: #f44747;">Error: ${error}</div>`;
         }
     }
 
-    private async _renderDecalBatch(viewer: Viewer, elementType: ElementType, batchIndex: number) {
+    private async _renderDecalBatch(viewer: WorkerViewerAdapter, elementType: ElementType, batchIndex: number) {
         // Check if already rendered
         if (this.renderedBatches.has(batchIndex)) {
             return;
@@ -698,7 +658,9 @@ export class NextPNRViewer {
             }
         }
 
-        const newElements: HTMLElement[] = await Promise.all(decalsToRender.map(decal => this._createDecalItem(viewer, elementType, decal)));
+        const newElements: HTMLElement[] = await Promise.all(
+            decalsToRender.map((decal) => this._createDecalItem(viewer, elementType, decal))
+        );
         // Add button above batch if necessary and none exist yet
         if (startIndex > 0 && !this.renderedBatches.has(batchIndex - 1) && !this.loadMoreButtons.has(batchIndex - 1)) {
             const batchRange = `${Math.max(0, startIndex - NextPNRViewer.BATCH_SIZE + 1)} - ${startIndex}`;
@@ -706,7 +668,11 @@ export class NextPNRViewer {
             newElements.unshift(btn);
         }
         // Add button below batch if necessary and none exist yet
-        if (endIndex < decals.length && !this.renderedBatches.has(batchIndex + 1) && !this.loadMoreButtons.has(batchIndex + 1)) {
+        if (
+            endIndex < decals.length &&
+            !this.renderedBatches.has(batchIndex + 1) &&
+            !this.loadMoreButtons.has(batchIndex + 1)
+        ) {
             const batchRange = `${endIndex + 1} - ${Math.min(endIndex + NextPNRViewer.BATCH_SIZE, decals.length)}`;
             const btn = this._createLoadMoreButton(viewer, elementType, batchIndex + 1, `Load More (${batchRange})`);
             newElements.push(btn);
@@ -730,7 +696,11 @@ export class NextPNRViewer {
         this.renderedBatches.add(batchIndex);
     }
 
-    private async _createDecalItem(viewer: Viewer, elementType: ElementType, decalId: string): Promise<HTMLDivElement> {
+    private async _createDecalItem(
+        viewer: WorkerViewerAdapter,
+        elementType: ElementType,
+        decalId: string
+    ): Promise<HTMLDivElement> {
         const decal = await this._getDecalInfo(elementType, decalId);
 
         const itemContainer = document.createElement('div');
@@ -791,7 +761,7 @@ export class NextPNRViewer {
         header.addEventListener('click', async (_e) => {
             // Select on canvas
             try {
-                viewer.select(elementType, decalId);
+                await viewer.select(elementType, decalId);
                 await this._updateSelection(elementType, decalId);
             } catch (error) {
                 console.error('Error selecting decal:', error);
@@ -820,7 +790,8 @@ export class NextPNRViewer {
                     detailsContainer.innerHTML = '';
                     this._renderDecalDetails(decal, detailsContainer);
                 } else {
-                    detailsContainer.innerHTML = '<div style="color: #888; font-size: 11px;">No details available</div>';
+                    detailsContainer.innerHTML =
+                        '<div style="color: #888; font-size: 11px;">No details available</div>';
                 }
 
                 detailsLoaded = true;
@@ -913,7 +884,7 @@ export class NextPNRViewer {
         }
 
         // Update selected element
-        this.selectedElement = { type: elementType, id: decalId };
+        this.selectedElement = {type: elementType, id: decalId};
 
         // Highlight new selection
         const itemKey = `${elementType}_${decalId}`;
@@ -922,9 +893,9 @@ export class NextPNRViewer {
             const header = item.children[0] as HTMLDivElement;
             header.style.backgroundColor = '#094771';
             header.style.borderLeft = '3px solid #007acc';
-            
+
             // Scroll into view
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            item.scrollIntoView({behavior: 'smooth', block: 'nearest'});
         }
     }
 
@@ -937,7 +908,7 @@ export class NextPNRViewer {
             if (tab) {
                 tab.click();
                 // Wait for tab switch to complete
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 100));
             }
         }
 
@@ -948,9 +919,9 @@ export class NextPNRViewer {
         await this._updateSelection(elementType, decalId);
     }
 
-    private async _ensureDecalRendered(viewer: Viewer, elementType: ElementType, decalId: string) {
+    private async _ensureDecalRendered(viewer: WorkerViewerAdapter, elementType: ElementType, decalId: string) {
         const itemKey = `${elementType}_${decalId}`;
-        
+
         // Already rendered
         if (this.renderedDecalItems.has(itemKey)) {
             return;
@@ -961,7 +932,7 @@ export class NextPNRViewer {
         // Get all decal IDs and find the index of the selected one
         const allDecalIds = this.decalsCache.get(elementType);
         if (!allDecalIds) return;
-        
+
         const selectedIndex = allDecalIds.indexOf(decalId);
         if (selectedIndex === -1) return;
 
@@ -971,7 +942,7 @@ export class NextPNRViewer {
     }
 
     private _createLoadMoreButton(
-        viewer: Viewer,
+        viewer: WorkerViewerAdapter,
         elementType: ElementType,
         batchIndex: number,
         label: string
@@ -1003,5 +974,13 @@ export class NextPNRViewer {
         this.loadMoreButtons.set(batchIndex, loadMoreBtn);
 
         return loadMoreBtn;
+    }
+
+    private async _destroyViewer() {
+        try {
+            (await this.viewer).destroy();
+        } catch {
+            // ignore errors during teardown
+        }
     }
 }

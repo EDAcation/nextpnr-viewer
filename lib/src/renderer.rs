@@ -7,7 +7,7 @@ use rstar::{
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
+use web_sys::{OffscreenCanvas, WebGl2RenderingContext};
 
 use crate::gfx::{Color, GraphicElement, Style, Type};
 use crate::pnrjson::PnrInfo;
@@ -51,7 +51,7 @@ pub struct DecalInfo<DecalID> {
 pub struct Renderer<'a, DecalID> {
     architecture: Box<dyn Architecture<DecalID>>,
     program: RenderingProgram,
-    canvas: HtmlCanvasElement,
+    canvas: OffscreenCanvas,
 
     pnr_info: Option<PnrInfo>,
 
@@ -72,7 +72,7 @@ pub struct Renderer<'a, DecalID> {
     selection: Option<DecalSelection>,
 }
 
-fn create_rendering_context(canvas: &HtmlCanvasElement) -> Result<WebGl2RenderingContext> {
+fn create_rendering_context(canvas: &OffscreenCanvas) -> Result<WebGl2RenderingContext> {
     let Ok(Some(context_obj)) = canvas.get_context("webgl2") else {
         bail!("Could not get canvas context");
     };
@@ -85,7 +85,7 @@ fn create_rendering_context(canvas: &HtmlCanvasElement) -> Result<WebGl2Renderin
 
 impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
     pub fn new(
-        canvas: HtmlCanvasElement,
+        canvas: OffscreenCanvas,
         architecture: impl Architecture<DecalID> + 'static,
         colors: ColorConfig,
         cell_colors: CellColorConfig,

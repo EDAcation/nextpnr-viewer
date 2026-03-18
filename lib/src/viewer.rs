@@ -8,7 +8,7 @@ use crate::{
 };
 
 use wasm_bindgen::prelude::*;
-use web_sys::{js_sys, HtmlCanvasElement};
+use web_sys::{js_sys, OffscreenCanvas};
 
 #[wasm_bindgen(typescript_custom_section)]
 const ICOLOR_CONFIG: &'static str = r#"
@@ -49,7 +49,7 @@ pub struct ViewerECP5 {
 impl ViewerECP5 {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        canvas: HtmlCanvasElement,
+        canvas: OffscreenCanvas,
         chipdata: &[u8],
         colors: IColorConfig,
         cell_colors: ICellColorConfig,
@@ -170,7 +170,7 @@ pub struct ViewerICE40 {
 impl ViewerICE40 {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        canvas: HtmlCanvasElement,
+        canvas: OffscreenCanvas,
         chipdata: &[u8],
         colors: IColorConfig,
         cell_colors: ICellColorConfig,
