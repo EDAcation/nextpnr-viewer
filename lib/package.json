@@ -1,38 +1,38 @@
 {
-  "name": "nextpnr-viewer",
-  "description": "A HTML 5 Canvas based viewer for nextpnr place and route visualizations.",
-  "version": "0.9.0",
-  "license": "MIT",
-  "contributors": [
-    "Bram Wesselink <wesselinkbram@gmail.com>",
-    "Mike Almeloo <git@mikealmel.ooo>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/EDAcation/nextpnr-viewer.git"
-  },
-  "keywords": [
-    "nextpnr",
-    "viewer",
-    "place",
-    "route",
-    "visualization"
-  ],
-  "source": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "package.json"
-  ],
-  "scripts": {
-    "check": "tsc --noEmit",
-    "build-minifier": "cargo build --release",
-    "build-wasm": "wasm-pack build --release --target web",
-    "build-wasm-dev": "wasm-pack build --debug --target web",
-    "build": "npm run-script build-minifier && npm run-script build-wasm && npm exec rollup -- -c",
-    "build-dev": "npm run-script build-wasm-dev && npm exec rollup -- -c",
-    "prepare": "npm run build"
-  }
+    "name": "nextpnr-viewer",
+    "description": "A HTML 5 Canvas based viewer for nextpnr place and route visualizations.",
+    "version": "0.9.1",
+    "license": "MIT",
+    "contributors": [
+        "Bram Wesselink <wesselinkbram@gmail.com>",
+        "Mike Almeloo <git@mikealmel.ooo>"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/EDAcation/nextpnr-viewer.git"
+    },
+    "keywords": [
+        "nextpnr",
+        "viewer",
+        "place",
+        "route",
+        "visualization"
+    ],
+    "source": "src/index.ts",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "package.json"
+    ],
+    "scripts": {
+        "check": "tsc --noEmit",
+        "build-minifier": "cargo build --release",
+        "build-wasm": "wasm-pack build --release --target web",
+        "build-wasm-dev": "wasm-pack build --debug --target web",
+        "build": "npm run-script build-minifier && npm run-script build-wasm && npm exec rollup -- -c",
+        "build-dev": "npm run-script build-wasm-dev && npm exec rollup -- -c",
+        "prepare": "npm run build"
+    }
 }
