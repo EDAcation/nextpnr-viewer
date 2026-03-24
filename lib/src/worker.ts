@@ -1,6 +1,6 @@
-import {SupportedFamily} from '.';
-
 import type {CellColorConfig, ColorConfig, ElementType, NextpnrJson, ReportJson} from '../pkg/nextpnr_renderer';
+
+import {SupportedFamily, VIEWERS} from './types';
 
 type WorkerRequest = {id: number; method: string; args: any[]};
 type WorkerResponse = {id: number; result?: any; error?: string};
@@ -38,7 +38,7 @@ async function initWasm() {
     await pkg.default({module_or_path: wasmBytes});
 }
 
-async function initViewer(family, chipdbUrl, canvas, width, height, colors, cellColors) {
+async function initViewer(viewerCtorName, chipdbUrl, canvas, width, height, colors, cellColors) {
     await initWasm();
 
     offscreenCanvas = canvas;
@@ -46,13 +46,13 @@ async function initViewer(family, chipdbUrl, canvas, width, height, colors, cell
     offscreenCanvas.height = height;
 
     const pkg = await getPkgModule();
-    const ViewerCtor = family === 'ecp5' ? pkg.ViewerECP5 : family === 'ice40' ? pkg.ViewerICE40 : null;
-    if (!ViewerCtor) {
-        throw new Error('Could not find suitable viewer for ' + family);
+    const viewerCtor = pkg[viewerCtorName];
+    if (!viewerCtor) {
+        throw new Error('Could not find viewer ctor for ' + viewerCtorName);
     }
 
     const chipdb = await fetch(chipdbUrl).then((resp) => resp.arrayBuffer());
-    viewer = new ViewerCtor(canvas, new Uint8Array(chipdb), colors, cellColors);
+    viewer = new viewerCtor(canvas, new Uint8Array(chipdb), colors, cellColors);
     return null;
 }
 
@@ -135,6 +135,8 @@ export class WorkerViewerAdapter {
         colors: ColorConfig,
         cellColors: CellColorConfig
     ): Promise<WorkerViewerAdapter> {
+        const viewerClass = VIEWERS[family];
+
         const pkgModuleUrl = new URL('../pkg/nextpnr_renderer.js', import.meta.url).href;
         const wasmUrl = new URL('../pkg/nextpnr_renderer_bg.wasm', import.meta.url).href;
         const workerSource = createWorkerSource(pkgModuleUrl, wasmUrl);
@@ -144,7 +146,7 @@ export class WorkerViewerAdapter {
         const adapter = new WorkerViewerAdapter(worker, workerScriptUrl);
         await adapter._rpc(
             '__init__',
-            [family, chipdbUrl.href, offscreenCanvas, width, height, colors, cellColors],
+            [viewerClass.name, chipdbUrl.href, offscreenCanvas, width, height, colors, cellColors],
             [offscreenCanvas]
         );
 

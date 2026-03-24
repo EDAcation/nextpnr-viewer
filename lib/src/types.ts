@@ -1,25 +1,27 @@
 import { ViewerECP5, ViewerICE40 } from "../pkg/nextpnr_renderer";
 
-export type Viewer = ViewerECP5 | ViewerICE40;
-const VIEWERS = <const> {
-    'ecp5': ViewerECP5,
-    'ice40': ViewerICE40,
-}
+export const VIEWERS = <const> {
+    ecp5: ViewerECP5,
+    ice40: ViewerICE40,
+};
+
+export type SupportedFamily = keyof typeof VIEWERS;
+export type Viewer = typeof VIEWERS[keyof typeof VIEWERS];
 
 const CHIP_DBS = <const> {
-    "ecp5": {
+    ecp5: {
         "25k": new URL(`../static/chipdb/ecp5/25k-min.bin`, import.meta.url),
         "45k": new URL(`../static/chipdb/ecp5/45k-min.bin`, import.meta.url),
         "85k": new URL(`../static/chipdb/ecp5/85k-min.bin`, import.meta.url),
     },
-    "ice40": {
+    ice40: {
         "384": new URL(`../static/chipdb/ice40/384-min.bin`, import.meta.url),
         "1k": new URL(`../static/chipdb/ice40/1k-min.bin`, import.meta.url),
         "u4k": new URL(`../static/chipdb/ice40/u4k-min.bin`, import.meta.url),
         "5k": new URL(`../static/chipdb/ice40/5k-min.bin`, import.meta.url),
         "8k": new URL(`../static/chipdb/ice40/8k-min.bin`, import.meta.url),
     },
-}
+} satisfies Record<SupportedFamily, Record<string, URL>>;
 
 // **** Auxiliary types ****
 export const SUPPORTED_DEVICES = <const> {
@@ -49,8 +51,7 @@ export const SUPPORTED_DEVICES = <const> {
         lp4k: CHIP_DBS['ice40']['8k'],
         hx4k: CHIP_DBS['ice40']['8k'],
     },
-};
-export type SupportedFamily = keyof typeof SUPPORTED_DEVICES;
+} satisfies Record<SupportedFamily, Record<string, URL>>;
 
 interface Chip<Family extends SupportedFamily> {
     family: Family;
@@ -61,15 +62,6 @@ export type SupportedChip = {
 }[SupportedFamily];
 
 // **** Functions ****
-export function getViewer<Family extends SupportedFamily>(family: Family): typeof VIEWERS[Family] {
-    let viewer = VIEWERS[family];
-    if (viewer === undefined) {
-        throw new Error(`Could not find suitable viewer for ${family}`);
-    }
-
-    return viewer;
-}
-
 export function getChipDbUrl(chip: SupportedChip): URL {
     const {family, device} = chip;
     const familyDb = SUPPORTED_DEVICES[family];

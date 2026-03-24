@@ -1,62 +1,9 @@
-import { CellColorConfig, Color, ElementType, NextpnrJson, ColorConfig as RendererColorConfig, ReportJson } from '../pkg';
-import { getChipDbUrl } from './types';
-import { WorkerViewerAdapter } from './worker';
+import {CellColorConfig, Color, ElementType, NextpnrJson, ColorConfig as RendererColorConfig, ReportJson} from '../pkg';
 
-export { NextpnrJson, ReportJson };
+import {SUPPORTED_DEVICES, SupportedChip, SupportedFamily, getChipDbUrl} from './types';
+import {WorkerViewerAdapter} from './worker';
 
-const CHIP_DBS = <const> {
-    "ecp5": {
-        "25k": new URL(`../static/chipdb/ecp5/25k-min.bin`, import.meta.url),
-        "45k": new URL(`../static/chipdb/ecp5/45k-min.bin`, import.meta.url),
-        "85k": new URL(`../static/chipdb/ecp5/85k-min.bin`, import.meta.url),
-    },
-    "ice40": {
-        "384": new URL(`../static/chipdb/ice40/384-min.bin`, import.meta.url),
-        "1k": new URL(`../static/chipdb/ice40/1k-min.bin`, import.meta.url),
-        "u4k": new URL(`../static/chipdb/ice40/u4k-min.bin`, import.meta.url),
-        "5k": new URL(`../static/chipdb/ice40/5k-min.bin`, import.meta.url),
-        "8k": new URL(`../static/chipdb/ice40/8k-min.bin`, import.meta.url),
-    },
-}
-
-// **** Auxiliary types ****
-export const SUPPORTED_DEVICES = <const> {
-    ecp5: {
-        "12k": CHIP_DBS['ecp5']['25k'],
-        "25k": CHIP_DBS['ecp5']['25k'],
-        "um-25k": CHIP_DBS['ecp5']['25k'],
-        "um5g-25k": CHIP_DBS['ecp5']['25k'],
-        "45k": CHIP_DBS['ecp5']['45k'],
-        "um-45k": CHIP_DBS['ecp5']['45k'],
-        "um5g-45k": CHIP_DBS['ecp5']['45k'],
-        "85k": CHIP_DBS['ecp5']['85k'],
-        "um-85k": CHIP_DBS['ecp5']['85k'],
-        "um5g-85k": CHIP_DBS['ecp5']['85k'],
-    },
-    ice40: {
-        lp384: CHIP_DBS['ice40']['384'],
-        lp1k: CHIP_DBS['ice40']['1k'],
-        hx1k: CHIP_DBS['ice40']['1k'],
-        u1k: CHIP_DBS['ice40']['u4k'],
-        u2k: CHIP_DBS['ice40']['u4k'],
-        u4k: CHIP_DBS['ice40']['u4k'],
-        up3k: CHIP_DBS['ice40']['5k'],
-        up5k: CHIP_DBS['ice40']['5k'],
-        lp8k: CHIP_DBS['ice40']['8k'],
-        hx8k: CHIP_DBS['ice40']['8k'],
-        lp4k: CHIP_DBS['ice40']['8k'],
-        hx4k: CHIP_DBS['ice40']['8k'],
-    },
-};
-export type SupportedFamily = keyof typeof SUPPORTED_DEVICES;
-
-interface Chip<Family extends SupportedFamily> {
-    family: Family;
-    device: keyof typeof SUPPORTED_DEVICES[Family];
-}
-export type SupportedChip = {
-    [F in SupportedFamily]: Chip<F>
-}[SupportedFamily];
+export {NextpnrJson, ReportJson, SUPPORTED_DEVICES, SupportedChip, SupportedFamily};
 
 interface DecalInfo {
     id: string;
@@ -65,17 +12,8 @@ interface DecalInfo {
     internal: any;
 }
 
-
 // **** Config ****
-type ColorConfig = {
-    active: string;
-    inactive: string;
-    frame: string;
-    background: string;
-    critical: string;
-    highlight: string;
-    selected: string;
-};
+type ColorConfig = {[key in keyof RendererColorConfig]: string};
 
 export type ViewerConfig = {
     width: number;
@@ -120,13 +58,12 @@ function fromCssColor(colorStr: string): Color {
     colCanvas.fillStyle = colorStr;
     const col = colCanvas.fillStyle.replace('#', '');
 
-    const rstr = col.slice(0,2);
-    const gstr = col.slice(2,4);
-    const bstr = col.slice(4,6);
+    const rstr = col.slice(0, 2);
+    const gstr = col.slice(2, 4);
+    const bstr = col.slice(4, 6);
 
     return {r: parseInt(rstr, 16), g: parseInt(gstr, 16), b: parseInt(bstr, 16)};
 }
-
 
 // **** External API ****
 export function isSupported(chip: {family: string; device: string}): chip is SupportedChip {
@@ -151,7 +88,7 @@ export class NextPNRViewer {
     private decalsCache: Map<ElementType, string[]> = new Map();
     private decalInfoCache: Map<string, DecalInfo> = new Map();
     private renderedDecalItems: Map<string, HTMLDivElement> = new Map();
-    private selectedElement: { type: ElementType, id: string } | null = null;
+    private selectedElement: {type: ElementType; id: string} | null = null;
     private currentElementType: ElementType | null = null;
     private renderedBatches: Set<number> = new Set();
     private tabButtons: Map<ElementType, HTMLButtonElement> = new Map();
@@ -173,7 +110,7 @@ export class NextPNRViewer {
             background: fromCssColor(this.config.colors.background),
             critical: fromCssColor(this.config.colors.critical),
             highlight: fromCssColor(this.config.colors.highlight),
-            selected: fromCssColor(this.config.colors.selected),
+            selected: fromCssColor(this.config.colors.selected)
         };
         const cellColors: CellColorConfig = Object.fromEntries(
             Object.entries(this.config.cellColors).map(([cell, colorStr]) => [cell, fromCssColor(colorStr)])
