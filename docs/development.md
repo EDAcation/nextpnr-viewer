@@ -52,17 +52,7 @@ Install the following tools manually:
 
 ## Installing JavaScript dependencies
 
-Both the library and the test viewer need their `node_modules` populated. Run `npm i` in each:
-
-```sh
-# Library (contains the actual viewer code)
-cd lib
-npm i
-
-# Test viewer (development harness)
-cd ../viewer-test
-npm i
-```
+Both the library and the test viewer are situated in separate workspaces, but share one `package.json` for dependencies. Install them using a single `npm i` in the root of the repository.
 
 ## Running the development workflow
 
@@ -79,9 +69,9 @@ npm run build-dev
 This command:
 
 1. Compiles Rust to a WASM module using `wasm-pack build --debug --target web`, generating JavaScript/TypeScript bindings under `lib/pkg/`.
-2. Invokes `rollup -c`, which bundles `src/index.ts` together with the WASM artifact and the chipdb binary assets into `lib/dist/`.
+2. Invokes `rollup -c`, which minimizes the FPGA chipdb files and then bundles `src/index.ts` together with the WASM artifact and binary assets into `lib/dist/`.
 
-> **Note:** `build-dev` does _not_ invoke the chipdb minimizer (that step is part of the release `build` script only). Pre-minimized chipdb files committed to the repository under `lib/static/chipdb/{ecp5,ice40}/` are used directly. See [build.md](build.md) for details on how those files are produced.
+> **Note:** `build-dev` does _not_ build the chipdb minimizer (that step is part of the release `build` script only). If you have not compiled a release build of the viewer before, you may need to build the minifier once using `npm run build-minifier`. It is generally not necessary to do this again unless you modify which fields of the chipdb are used.
 
 ### 2. Serve the test viewer
 
@@ -106,14 +96,13 @@ npm run build-dev          npm run serve
   [edit Rust / TS]
   → wasm recompiled
   → rollup re-bundles      → rollup picks up new lib/dist/
-                             → browser reloads automatically
 ```
 
 Make changes to Rust source files under `lib/src/` or the TypeScript wrapper at `lib/src/index.ts`, and the toolchain will recompile automatically. The test viewer reflects the result in real time.
 
 ## Obtaining chip databases
 
-The raw chipdb binary files (e.g. `1k.bin`, `25k.bin`) must be generated from a built copy of [nextpnr](https://github.com/YosysHQ/nextpnr) and placed under `lib/static/chipdb/<arch>/` before building.
+The raw chipdb binary files (e.g. `1k.bin`, `25k.bin`) must be generated from a built copy of [nextpnr](https://github.com/YosysHQ/nextpnr) and placed under `lib/static/chipdb/<arch>/` before building. These are committed to git, so these steps are only necessary to implement chips that are currently unsupported by the viewer.
 
 1. Clone and compile nextpnr following its own instructions. You can skip `make install`.
 2. Navigate to the build directory containing chipdbs (e.g. `./build/ice40/`).

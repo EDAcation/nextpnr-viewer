@@ -31,7 +31,7 @@ rustc-hash = "2.1.1"
 [dependencies.web-sys]
 version = "0.3.72"
 features = [
-    "HtmlCanvasElement",
+    "OffscreenCanvas",
     "WebGl2RenderingContext",
     "WebGlProgram",
     "WebGlShader",
