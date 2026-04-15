@@ -402,7 +402,7 @@ export class NextPNRViewer {
             if (this.viewerDead) return;
 
             try {
-                const selection = await viewer.select_at_coords(e.offsetX, e.offsetY, false);
+                const selection = await viewer.select_at_coords(e.offsetX, e.offsetY, true);
                 if (!selection || !Array.isArray(selection) || selection.length < 2) return;
 
                 const elementType = selection[0] as ElementType;
@@ -417,7 +417,7 @@ export class NextPNRViewer {
             this._doInAnimFrame(() => {
                 if (this.viewerDead) return;
 
-                viewer.select_at_coords(e.offsetX, e.offsetY, true).catch((error) => {
+                viewer.select_at_coords(e.offsetX, e.offsetY, false).catch((error) => {
                     this._markViewerDead(error);
                 });
 
