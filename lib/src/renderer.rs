@@ -34,7 +34,7 @@ struct DecalSelection {
     highlighted: Option<DecalPointer>,
 }
 
-const PICK_EPSILON: f32 = 0.005;
+const PICK_EPSILON: f32 = 0.0025;
 
 #[derive(Serialize, Deserialize)]
 pub struct ColorConfig {
@@ -428,15 +428,15 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                 }
                 new_elem = Box::new(Line::new(&self.program, ls, color)?);
 
-                // One pick rectangle per underlying box (inflate for easier picking).
+                // One pick rectangle per underlying box
                 for (etype, decal_id, e) in group {
                     let (minx, maxx) = (
-                        (e.x1 as f32).min(e.x2 as f32) - PICK_EPSILON,
-                        (e.x1 as f32).max(e.x2 as f32) + PICK_EPSILON,
+                        (e.x1 as f32).min(e.x2 as f32),
+                        (e.x1 as f32).max(e.x2 as f32),
                     );
                     let (miny, maxy) = (
-                        (e.y1 as f32).min(e.y2 as f32) - PICK_EPSILON,
-                        (e.y1 as f32).max(e.y2 as f32) + PICK_EPSILON,
+                        (e.y1 as f32).min(e.y2 as f32),
+                        (e.y1 as f32).max(e.y2 as f32),
                     );
                     pick_entries.push(GeomWithData::new(
                         RTreeRect::from_corners([minx, miny], [maxx, maxy]),
@@ -710,6 +710,26 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                 + (point[1] - closest[1]) * (point[1] - closest[1]))
                 .sqrt()
         };
+        let score = |tree_elem: &RTreeData| -> (u8, f32) {
+            match tree_elem.data.2 {
+                // Prefer near lines, then rectangles, then far lines.
+                RTreeElementContext::Line(p1, p2) => {
+                    let d = line_dist(&p1, &p2, [x, y]);
+                    if d <= PICK_EPSILON {
+                        (0, d)
+                    } else {
+                        (2, d)
+                    }
+                }
+                // Among rectangles, prefer the one with smallest area
+                RTreeElementContext::Rectangle => {
+                    let x_diff = (tree_elem.geom().upper()[0] - tree_elem.geom().lower()[0]).abs();
+                    let y_diff = (tree_elem.geom().upper()[1] - tree_elem.geom().lower()[1]).abs();
+
+                    (1, x_diff * y_diff)
+                }
+            }
+        };
 
         // If multiple elements are found at the point, we need to determine which one is actually under the cursor.
         // We can use the RTreeElementContext to check if the point is within the rectangle or near the line.
@@ -717,23 +737,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         let selection = rtree
             .locate_all_at_point(&[x, y])
             .min_by(|a, b| {
-                let score = |ctx: &RTreeElementContext| -> (u8, f32) {
-                    match ctx {
-                        RTreeElementContext::Line(p1, p2) => {
-                            let d = line_dist(p1, p2, [x, y]);
-                            // Prefer near lines, then rectangles, then far lines.
-                            if d <= PICK_EPSILON {
-                                (0, d)
-                            } else {
-                                (2, d)
-                            }
-                        }
-                        RTreeElementContext::Rectangle => (1, 0.0),
-                    }
-                };
-
-                let sa = score(&a.data.2);
-                let sb = score(&b.data.2);
+                let sa = score(a);
+                let sb = score(b);
 
                 sa.0.cmp(&sb.0).then_with(|| sa.1.total_cmp(&sb.1))
             })
