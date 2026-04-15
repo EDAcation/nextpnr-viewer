@@ -122,7 +122,7 @@ impl ViewerECP5 {
             .map_err(|e| JsError::from(&*e))?;
 
         Ok(selection
-            .map(|(_, et, s)| {
+            .map(|(et, s)| {
                 let arr = js_sys::Array::new();
                 arr.push(&JsValue::from_f64(et as u8 as f64));
                 arr.push(&JsValue::from_str(&s));
@@ -243,7 +243,7 @@ impl ViewerICE40 {
             .map_err(|e| JsError::from(&*e))?;
 
         Ok(selection
-            .map(|(_, et, s)| {
+            .map(|(et, s)| {
                 let arr = js_sys::Array::new();
                 arr.push(&JsValue::from_f64(et as u8 as f64));
                 arr.push(&JsValue::from_str(&s));

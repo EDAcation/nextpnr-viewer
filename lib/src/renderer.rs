@@ -23,7 +23,11 @@ type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
 type RTreeElementData = (ElementType, String);
 type RTreeData = GeomWithData<RTreeRect<[f32; 2]>, RTreeElementData>;
 
-type DecalSelection = (bool, ElementType, String);
+type DecalPointer = (ElementType, String);
+struct DecalSelection {
+    selected: Option<DecalPointer>,
+    highlighted: Option<DecalPointer>,
+}
 
 const PICK_EPSILON: f32 = 0.0005;
 
@@ -69,7 +73,7 @@ pub struct Renderer<'a, DecalID> {
     offset: (f32, f32),
     scale: f32,
 
-    selection: Option<DecalSelection>,
+    selection: DecalSelection,
 }
 
 fn create_rendering_context(canvas: &OffscreenCanvas) -> Result<WebGl2RenderingContext> {
@@ -113,7 +117,10 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
             scale: 15.0,
             offset: (-10.25, -25.1),
-            selection: None,
+            selection: DecalSelection {
+                selected: None,
+                highlighted: None,
+            },
         })
     }
 
@@ -150,27 +157,29 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             draw(elem)?
         }
 
-        // If we have a selection, draw only the selected elements over our previously rendered content
-        // This avoids having to regenerate all webgl elements, which is very slow.
-        if let Some((only_highlight, etype, decal_id)) = &self.selection {
+        // Draw over selected/highlighted decal with highlight color
+        let draw_decal = |decal_id: &str, etype: &ElementType, color: Color| -> Result<()> {
             if let Some(ge_vec) = self
                 .graphic_elements
                 .get(etype)
                 .and_then(|m| m.get(decal_id))
             {
-                let items = ge_vec.iter().map(|g| (etype, decal_id.as_str(), g));
+                let items = ge_vec.iter().map(|g| (etype, decal_id, g));
 
-                let color = if *only_highlight {
-                    Some(self.colors.highlight)
-                } else {
-                    Some(self.colors.selected)
-                };
-                let (selection_elems, _) = self.to_webgl_elements(items, color)?;
+                let (selection_elems, _) = self.to_webgl_elements(items, Some(color))?;
 
                 for elem in selection_elems {
                     draw(&elem)?
                 }
             }
+            Ok(())
+        };
+
+        if let Some((etype, decal_id)) = &self.selection.highlighted {
+            draw_decal(decal_id, etype, self.colors.highlight)?;
+        }
+        if let Some((etype, decal_id)) = &self.selection.selected {
+            draw_decal(decal_id, etype, self.colors.selected)?;
         }
 
         Ok(())
@@ -583,9 +592,13 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         element_type: ElementType,
         decal_id: &str,
         do_zoom: bool,
-        only_highlight: bool,
+        is_full_select: bool,
     ) -> Result<()> {
-        self.selection = Some((only_highlight, element_type, decal_id.to_string()));
+        if is_full_select {
+            self.selection.selected = Some((element_type, decal_id.to_string()));
+        } else {
+            self.selection.highlighted = Some((element_type, decal_id.to_string()));
+        }
 
         if do_zoom {
             // Calculate the bounding box of the selected decal from its graphic elements
@@ -639,8 +652,12 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         Ok(())
     }
 
-    pub fn cancel_selection(&mut self) -> Result<()> {
-        self.selection = None;
+    pub fn cancel_selection(&mut self, is_full_select: bool) -> Result<()> {
+        if is_full_select {
+            self.selection.selected = None;
+        } else {
+            self.selection.highlighted = None;
+        }
 
         self.render()?;
 
@@ -658,39 +675,34 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         &mut self,
         x: f32,
         y: f32,
-        only_highlight: bool,
-    ) -> Result<Option<DecalSelection>> {
+        is_full_select: bool,
+    ) -> Result<Option<DecalPointer>> {
         let Some(rtree) = &self.rtree else {
             return Ok(None);
         };
 
-        // If our active selection is not 'only_highlight' (so a proper 'click' selection) but our current
-        // instruction is an only_highlight, we ignore the request because we don't want a hover
-        // to override a click selection.
-        if let Some((current_only_highlight, _, _)) = &self.selection {
-            if !*current_only_highlight && only_highlight {
-                return Ok(None);
-            }
-        }
-
         let selection = rtree.locate_at_point(&[x, y]).map(|f| f.data.clone());
 
         if let Some((etype, decal_id)) = selection {
-            self.select_decal(etype, &decal_id, false, only_highlight)?;
+            self.select_decal(etype, &decal_id, false, is_full_select)?;
         } else {
-            self.cancel_selection()?;
+            self.cancel_selection(is_full_select)?;
         }
 
-        Ok(self.selection.clone())
+        if is_full_select {
+            Ok(self.selection.selected.clone())
+        } else {
+            Ok(self.selection.highlighted.clone())
+        }
     }
 
     pub fn select_decal_at_canvas(
         &mut self,
         x: f32,
         y: f32,
-        only_highlight: bool,
-    ) -> Result<Option<DecalSelection>> {
+        is_full_select: bool,
+    ) -> Result<Option<DecalPointer>> {
         let (wx, wy) = self.canvas_to_world(x, y);
-        self.select_decal_at_world(wx, wy, only_highlight)
+        self.select_decal_at_world(wx, wy, is_full_select)
     }
 }
