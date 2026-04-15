@@ -90,11 +90,12 @@ pub fn tile_bel(
         el.x1 = x + consts::slice_x1 - consts::wire_length_lut;
         el.x2 = x + consts::slice_x1 - consts::wire_length;
         let start_wire =
-            tilewire::GfxTileWireId::TILE_WIRE_D7 as i32 + 24 * (lc / 2) + 4 * (lc % 2);
+            tilewire::GfxTileWireId::TILE_WIRE_D7 as i32 + 24 * ((7 - lc) / 2) + 4 * ((7 - lc) % 2);
         el.y2 = y + consts::slice_y2
             - consts::wire_distance
-                * (start_wire - tilewire::GfxTileWireId::TILE_WIRE_FCO as i32 + 1 + (lc / 2) * 2)
-                    as f64
+                * (start_wire - tilewire::GfxTileWireId::TILE_WIRE_FCO as i32
+                    + 1
+                    + ((7 - lc) / 2) * 2) as f64
             + 3.0 * consts::slice_pitch
             + 0.25 * consts::wire_distance;
         el.y1 = el.y2 - 3.5 * consts::wire_distance;
