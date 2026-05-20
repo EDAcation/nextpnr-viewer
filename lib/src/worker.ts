@@ -5,11 +5,37 @@ import {SupportedFamily, VIEWERS} from './types';
 type WorkerRequest = {id: number; method: string; args: any[]};
 type WorkerResponse = {id: number; result?: any; error?: string};
 
-function createWorkerSource(pkgModuleUrl: string, wasmUrl: string): string {
-    return `
-const PKG_MODULE_URL = ${JSON.stringify(pkgModuleUrl)};
-const WASM_URL = ${JSON.stringify(wasmUrl)};
+const PKG_MODULE_URL = new URL('../pkg/nextpnr_renderer.js', import.meta.url).href;
+const WASM_URL = new URL('../pkg/nextpnr_renderer_bg.wasm', import.meta.url).href;
 
+async function getWasm(): Promise<ArrayBuffer> {
+    const wasmResponse = await fetch(WASM_URL);
+    if (!wasmResponse.ok) {
+        throw new Error(`Failed to fetch WASM (${wasmResponse.status} ${wasmResponse.statusText})`);
+    }
+    return await wasmResponse.arrayBuffer();
+}
+
+async function getPkgModuleUrl(): Promise<string> {
+    const response = await fetch(PKG_MODULE_URL);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch pkg module (${response.status} ${response.statusText})`);
+    }
+    const buffer = await response.arrayBuffer();
+    const blob = new Blob([buffer], {type: 'application/javascript'});
+    return URL.createObjectURL(blob);
+}
+
+async function getChipdb(url: URL): Promise<ArrayBuffer> {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch chipdb (${response.status} ${response.statusText})`);
+    }
+    return await response.arrayBuffer();
+}
+
+function createWorker(): Worker {
+    const src = `
 let viewer = null;
 let offscreenCanvas = null;
 let pkgModulePromise = null;
@@ -19,39 +45,19 @@ function serializeError(error) {
     return String(error);
 }
 
-async function getPkgModule() {
-    if (!pkgModulePromise) {
-        pkgModulePromise = import(PKG_MODULE_URL);
-    }
-
-    return pkgModulePromise;
-}
-
-async function initWasm() {
-    const wasmResponse = await fetch(WASM_URL);
-    if (!wasmResponse.ok) {
-        throw new Error('Failed to fetch WASM (' + wasmResponse.status + ' ' + wasmResponse.statusText + ')');
-    }
-
-    const wasmBytes = await wasmResponse.arrayBuffer();
-    const pkg = await getPkgModule();
+async function initViewer(pkgModuleUrl, wasmBytes, chipdb, viewerCtorName, canvas, width, height, colors, cellColors) {
+    const pkg = await import(pkgModuleUrl);
     await pkg.default({module_or_path: wasmBytes});
-}
-
-async function initViewer(viewerCtorName, chipdbUrl, canvas, width, height, colors, cellColors) {
-    await initWasm();
 
     offscreenCanvas = canvas;
     offscreenCanvas.width = width;
     offscreenCanvas.height = height;
 
-    const pkg = await getPkgModule();
     const viewerCtor = pkg[viewerCtorName];
     if (!viewerCtor) {
         throw new Error('Could not find viewer ctor for ' + viewerCtorName);
     }
 
-    const chipdb = await fetch(chipdbUrl).then((resp) => resp.arrayBuffer());
     viewer = new viewerCtor(canvas, new Uint8Array(chipdb), colors, cellColors);
     return null;
 }
@@ -95,18 +101,19 @@ self.onmessage = async (event) => {
     }
 };
 `;
+    const blob = new Blob([src], {type: 'text/javascript'});
+    const url = URL.createObjectURL(blob);
+    return new Worker(url, {type: 'module'});
 }
 
 export class WorkerViewerAdapter {
     private worker: Worker;
-    private workerScriptUrl: string;
     private msgId = 0;
     private pending = new Map<number, {resolve: (value: any) => void; reject: (reason?: any) => void}>();
     private destroyed = false;
 
-    private constructor(worker: Worker, workerScriptUrl: string) {
+    private constructor(worker: Worker) {
         this.worker = worker;
-        this.workerScriptUrl = workerScriptUrl;
         this.worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
             const message = event.data;
             if (!message || typeof message.id !== 'number') return;
@@ -137,16 +144,15 @@ export class WorkerViewerAdapter {
     ): Promise<WorkerViewerAdapter> {
         const viewerClass = VIEWERS[family];
 
-        const pkgModuleUrl = new URL('../pkg/nextpnr_renderer.js', import.meta.url).href;
-        const wasmUrl = new URL('../pkg/nextpnr_renderer_bg.wasm', import.meta.url).href;
-        const workerSource = createWorkerSource(pkgModuleUrl, wasmUrl);
-        const workerScriptUrl = URL.createObjectURL(new Blob([workerSource], {type: 'text/javascript'}));
-        const worker = new Worker(workerScriptUrl, {type: 'module'});
+        const wasm = await getWasm();
+        const pkgModuleUrl = await getPkgModuleUrl();
+        const chipdb = await getChipdb(chipdbUrl);
 
-        const adapter = new WorkerViewerAdapter(worker, workerScriptUrl);
+        const worker = createWorker();
+        const adapter = new WorkerViewerAdapter(worker);
         await adapter._rpc(
             '__init__',
-            [viewerClass.name, chipdbUrl.href, offscreenCanvas, width, height, colors, cellColors],
+            [pkgModuleUrl, wasm, chipdb, viewerClass.name, offscreenCanvas, width, height, colors, cellColors],
             [offscreenCanvas]
         );
 
@@ -220,7 +226,6 @@ export class WorkerViewerAdapter {
             .finally(() => {
                 this.destroyed = true;
                 this.worker.terminate();
-                URL.revokeObjectURL(this.workerScriptUrl);
                 this._rejectAllPending(new Error('Viewer worker terminated'));
             });
     }
