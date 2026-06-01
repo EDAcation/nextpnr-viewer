@@ -20,12 +20,7 @@ type GraphicElementCollection = FxHashMap<String, Vec<GraphicElement>>;
 type GraphicElements = FxHashMap<ElementType, GraphicElementCollection>;
 
 type WebGlElements<'a> = Vec<Box<dyn WebGlElement<'a> + 'a>>;
-#[derive(Clone, PartialEq, PartialOrd)]
-enum RTreeElementContext {
-    Rectangle,
-    Line([f32; 2], [f32; 2]),
-}
-type RTreeElementData = (ElementType, String, RTreeElementContext);
+type RTreeElementData = (ElementType, String);
 type RTreeData = GeomWithData<RTreeRect<[f32; 2]>, RTreeElementData>;
 
 type DecalPointer = (ElementType, String);
@@ -440,7 +435,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                     );
                     pick_entries.push(GeomWithData::new(
                         RTreeRect::from_corners([minx, miny], [maxx, maxy]),
-                        (*etype, decal_id.to_string(), RTreeElementContext::Rectangle),
+                        (*etype, decal_id.to_string()),
                     ));
                 }
             } else if key.1 == Type::FilledBox {
@@ -466,7 +461,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                     );
                     pick_entries.push(GeomWithData::new(
                         RTreeRect::from_corners([minx, miny], [maxx, maxy]),
-                        (*etype, decal_id.to_string(), RTreeElementContext::Rectangle),
+                        (*etype, decal_id.to_string()),
                     ));
                 }
             } else {
@@ -493,14 +488,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                     );
                     pick_entries.push(GeomWithData::new(
                         RTreeRect::from_corners([minx, miny], [maxx, maxy]),
-                        (
-                            *etype,
-                            decal_id.to_string(),
-                            RTreeElementContext::Line(
-                                [e.x1 as f32, e.y1 as f32],
-                                [e.x2 as f32, e.y2 as f32],
-                            ),
-                        ),
+                        (*etype, decal_id.to_string()),
                     ));
                 }
             }
@@ -693,58 +681,87 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             return Ok(None);
         };
 
-        let line_dist = |p1: &[f32; 2], p2: &[f32; 2], point: [f32; 2]| {
-            let line_vec = [p2[0] - p1[0], p2[1] - p1[1]];
-            let line_len_2 = line_vec[0] * line_vec[0] + line_vec[1] * line_vec[1];
-            let t = if line_len_2 > 0.0 {
-                ((point[0] - p1[0]) * line_vec[0] + (point[1] - p1[1]) * line_vec[1]) / line_len_2
-            } else {
-                0.0
+        let selection = {
+            let ge_map = &self.graphic_elements;
+            let line_dist = |p1: [f32; 2], p2: [f32; 2], point: [f32; 2]| {
+                let line_vec = [p2[0] - p1[0], p2[1] - p1[1]];
+                let line_len_2 = line_vec[0] * line_vec[0] + line_vec[1] * line_vec[1];
+                let t = if line_len_2 > 0.0 {
+                    ((point[0] - p1[0]) * line_vec[0] + (point[1] - p1[1]) * line_vec[1])
+                        / line_len_2
+                } else {
+                    0.0
+                };
+                let t_clamped = t.clamp(0.0, 1.0);
+                let closest = [
+                    p1[0] + t_clamped * line_vec[0],
+                    p1[1] + t_clamped * line_vec[1],
+                ];
+                ((point[0] - closest[0]) * (point[0] - closest[0])
+                    + (point[1] - closest[1]) * (point[1] - closest[1]))
+                    .sqrt()
             };
-            let t_clamped = t.clamp(0.0, 1.0);
-            let closest = [
-                p1[0] + t_clamped * line_vec[0],
-                p1[1] + t_clamped * line_vec[1],
-            ];
-            ((point[0] - closest[0]) * (point[0] - closest[0])
-                + (point[1] - closest[1]) * (point[1] - closest[1]))
-                .sqrt()
-        };
-        let score = |tree_elem: &RTreeData| -> (u8, f32) {
-            match tree_elem.data.2 {
-                // Prefer near lines, then rectangles, then far lines.
-                RTreeElementContext::Line(p1, p2) => {
-                    let d = line_dist(&p1, &p2, [x, y]);
-                    if d <= PICK_EPSILON {
-                        (0, d)
-                    } else {
-                        (2, d)
+            let score = |etype: ElementType, decal_id: &str| -> (u8, f32) {
+                let mut best_line: Option<f32> = None;
+                let mut best_rect: Option<f32> = None;
+
+                if let Some(ge_vec) = ge_map.get(&etype).and_then(|m| m.get(decal_id)) {
+                    for ge in ge_vec {
+                        match ge.r#type {
+                            Type::Line | Type::Arrow | Type::LocalLine | Type::LocalArrow => {
+                                let d = line_dist(
+                                    [ge.x1 as f32, ge.y1 as f32],
+                                    [ge.x2 as f32, ge.y2 as f32],
+                                    [x, y],
+                                );
+                                best_line = Some(best_line.map_or(d, |best| best.min(d)));
+                            }
+                            Type::Box | Type::FilledBox => {
+                                let (minx, maxx) = (
+                                    (ge.x1 as f32).min(ge.x2 as f32),
+                                    (ge.x1 as f32).max(ge.x2 as f32),
+                                );
+                                let (miny, maxy) = (
+                                    (ge.y1 as f32).min(ge.y2 as f32),
+                                    (ge.y1 as f32).max(ge.y2 as f32),
+                                );
+                                let area = (maxx - minx).abs() * (maxy - miny).abs();
+                                best_rect = Some(best_rect.map_or(area, |best| best.min(area)));
+                            }
+                            _ => {}
+                        }
                     }
                 }
-                // Among rectangles, prefer the one with smallest area
-                RTreeElementContext::Rectangle => {
-                    let x_diff = (tree_elem.geom().upper()[0] - tree_elem.geom().lower()[0]).abs();
-                    let y_diff = (tree_elem.geom().upper()[1] - tree_elem.geom().lower()[1]).abs();
 
-                    (1, x_diff * y_diff)
+                if let Some(d) = best_line {
+                    if d <= PICK_EPSILON {
+                        return (0, d);
+                    }
+                    if let Some(area) = best_rect {
+                        return (1, area);
+                    }
+                    return (2, d);
                 }
-            }
+
+                if let Some(area) = best_rect {
+                    return (1, area);
+                }
+
+                (3, 0.0)
+            };
+
+            rtree
+                .locate_all_at_point(&[x, y])
+                .min_by(|a, b| {
+                    let sa = score(a.data.0, &a.data.1);
+                    let sb = score(b.data.0, &b.data.1);
+
+                    sa.0.cmp(&sb.0).then_with(|| sa.1.total_cmp(&sb.1))
+                })
+                .map(|f| f.data.clone())
         };
 
-        // If multiple elements are found at the point, we need to determine which one is actually under the cursor.
-        // We can use the RTreeElementContext to check if the point is within the rectangle or near the line.
-        // We prioritize the closest line, but if the distance is greater than PICK_EPSILON, we fall back to selecting the rectangle (if any).
-        let selection = rtree
-            .locate_all_at_point(&[x, y])
-            .min_by(|a, b| {
-                let sa = score(a);
-                let sb = score(b);
-
-                sa.0.cmp(&sb.0).then_with(|| sa.1.total_cmp(&sb.1))
-            })
-            .map(|f| f.data.clone());
-
-        if let Some((etype, decal_id, _)) = selection {
+        if let Some((etype, decal_id)) = selection {
             self.select_decal(etype, &decal_id, false, is_full_select)?;
         } else {
             self.cancel_selection(is_full_select)?;
