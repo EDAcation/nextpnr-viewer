@@ -429,10 +429,10 @@ submitBtn.addEventListener('click', async () => {
         sidebarWidth: 300
     });
 
-    await state.viewer.render();
     if (placeJson) {
         await state.viewer.showJson(placeJson, reportJson);
     }
+    await state.viewer.render();
     updateUI();
 });
 

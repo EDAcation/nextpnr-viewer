@@ -95,6 +95,7 @@ export class NextPNRViewer {
     private loadMoreButtons: Map<number, HTMLButtonElement> = new Map();
     private decalListElement: HTMLDivElement | null = null;
 
+    private startedRendering = false;
     private viewerDead = false;
     private animFrameId: number | null = null;
 
@@ -146,6 +147,7 @@ export class NextPNRViewer {
     }
 
     async render() {
+        this.startedRendering = true;
         await (await this.viewer).render();
     }
 
@@ -155,7 +157,8 @@ export class NextPNRViewer {
 
         const viewer = await this.viewer;
 
-        await viewer.show_json(nextpnrJson, reportJson);
+        // only auto-render if we haven't started rendering yet
+        await viewer.show_json(nextpnrJson, reportJson, this.startedRendering);
     }
 
     async resize(width: number, height: number) {

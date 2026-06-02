@@ -216,7 +216,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         Ok(())
     }
 
-    pub fn show_json(&mut self, pnr_info: PnrInfo) -> Result<()> {
+    pub fn show_json(&mut self, pnr_info: PnrInfo, auto_render: bool) -> Result<()> {
         self.ensure_graphic_elements();
 
         let elems = pnr_info.get_elements();
@@ -311,7 +311,10 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
         self.pnr_info = Some(pnr_info);
 
-        self.render()?;
+        if auto_render {
+            self.render()?;
+        }
+
         debug_log("show_json:done".to_string());
         Ok(())
     }
@@ -436,9 +439,9 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             })
         });
 
-        let (webgl, rtree, rtree_data) = self.to_webgl_elements(iter, None)?;
+        let (webgl, rtree_elems, rtree_data) = self.to_webgl_elements(iter, None)?;
         self.webgl_elements = webgl;
-        self.rtree = Some(rtree);
+        self.rtree = Some(RTree::bulk_load(rtree_elems));
         self.rtree_data = rtree_data;
 
         self.webgl_elements_dirty = false;
@@ -473,7 +476,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         color_override: Option<Color>,
     ) -> Result<(
         WebGlElements<'a>,
-        RTree<RTreeData>,
+        Vec<RTreeData>,
         FxHashMap<RTreeElementIndex, RTreeElementData>,
     )> {
         type Key = (Style, Type, Option<Color>);
@@ -634,16 +637,13 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             .flat_map(|(_, vec)| vec)
             .collect();
 
-        // Bulk-load for performance.
-        let rtree = RTree::bulk_load(pick_entries);
-
         debug_log(format!(
             "to_webgl_elements: output webgl_elems={} rtree_size={}",
             res.len(),
-            rtree.size()
+            pick_entries.len()
         ));
 
-        Ok((res, rtree, rtree_data))
+        Ok((res, pick_entries, rtree_data))
     }
 
     pub fn get_decal_ids(&mut self, element_type: ElementType) -> Vec<String> {

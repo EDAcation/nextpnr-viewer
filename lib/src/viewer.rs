@@ -94,12 +94,13 @@ impl ViewerECP5 {
         &mut self,
         obj: INextpnrJSON,
         report: Option<IReportJSON>,
+        do_render: Option<bool>,
     ) -> Result<(), JsError> {
         debug_log("ViewerECP5::show_json".to_string());
         let pnr_info = PnrInfo::from_jsobj(Chip::ECP5, obj, report)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.renderer
-            .show_json(pnr_info)
+            .show_json(pnr_info, do_render.unwrap_or(true))
             .map_err(|e| JsError::new(&e.to_string()))
     }
 
@@ -220,12 +221,13 @@ impl ViewerICE40 {
         &mut self,
         obj: INextpnrJSON,
         report: Option<IReportJSON>,
+        do_render: Option<bool>,
     ) -> Result<(), JsError> {
         debug_log("ViewerICE40::show_json".to_string());
         let pnr_info = PnrInfo::from_jsobj(Chip::ICE40, obj, report)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.renderer
-            .show_json(pnr_info)
+            .show_json(pnr_info, do_render.unwrap_or(true))
             .map_err(|e| JsError::new(&e.to_string()))
     }
 
