@@ -392,52 +392,63 @@ export class NextPNRViewer {
         });
 
         // Pan
-        canvas.addEventListener('mousedown', (_) => {
-            down = true;
-            firstEvent = true;
-            hasMoved = false;
-        });
-        canvas.addEventListener('mouseup', async (e) => {
-            down = false;
+        canvas.addEventListener(
+            'mousedown',
+            (_) => {
+                down = true;
+                firstEvent = true;
+                hasMoved = false;
+            },
+            {passive: true}
+        );
+        canvas.addEventListener(
+            'mouseup',
+            async (e) => {
+                down = false;
 
-            // If the mouse was moved, we consider this a pan action and do not trigger selection
-            if (hasMoved) return;
-            if (this.viewerDead) return;
-
-            try {
-                const selection = await viewer.select_at_coords(e.offsetX, e.offsetY, true);
-                if (!selection || !Array.isArray(selection) || selection.length < 2) return;
-
-                const elementType = selection[0] as ElementType;
-                const decalId = selection[1] as string;
-
-                await this._handleCanvasSelection(elementType, decalId);
-            } catch (error) {
-                this._markViewerDead(error);
-            }
-        });
-        canvas.addEventListener('mousemove', (e) =>
-            this._doInAnimFrame(() => {
+                // If the mouse was moved, we consider this a pan action and do not trigger selection
+                if (hasMoved) return;
                 if (this.viewerDead) return;
 
-                viewer.select_at_coords(e.offsetX, e.offsetY, false).catch((error) => {
+                try {
+                    const selection = await viewer.select_at_coords(e.offsetX, e.offsetY, true);
+                    if (!selection || !Array.isArray(selection) || selection.length < 2) return;
+
+                    const elementType = selection[0] as ElementType;
+                    const decalId = selection[1] as string;
+
+                    await this._handleCanvasSelection(elementType, decalId);
+                } catch (error) {
                     this._markViewerDead(error);
-                });
-
-                if (down) {
-                    hasMoved = true;
-
-                    if (!firstEvent) {
-                        viewer.pan(e.offsetX - oldx, e.offsetY - oldy).catch((error) => {
-                            this._markViewerDead(error);
-                        });
-                    }
-
-                    firstEvent = false;
-                    oldx = e.offsetX;
-                    oldy = e.offsetY;
                 }
-            })
+            },
+            {passive: true}
+        );
+        canvas.addEventListener(
+            'mousemove',
+            (e) =>
+                this._doInAnimFrame(() => {
+                    if (this.viewerDead) return;
+
+                    viewer.select_at_coords(e.offsetX, e.offsetY, false).catch((error) => {
+                        this._markViewerDead(error);
+                    });
+
+                    if (down) {
+                        hasMoved = true;
+
+                        if (!firstEvent) {
+                            viewer.pan(e.offsetX - oldx, e.offsetY - oldy).catch((error) => {
+                                this._markViewerDead(error);
+                            });
+                        }
+
+                        firstEvent = false;
+                        oldx = e.offsetX;
+                        oldy = e.offsetY;
+                    }
+                }),
+            {passive: true}
         );
     }
 
