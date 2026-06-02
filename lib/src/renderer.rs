@@ -718,6 +718,10 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         do_zoom: bool,
         is_full_select: bool,
     ) -> Result<()> {
+        debug_log(format!(
+            "select_decal: type={:?} id={} zoom={} full_select={}",
+            element_type, decal_id, do_zoom, is_full_select
+        ));
         if is_full_select {
             self.selection.selected = Some((element_type, decal_id.to_string()));
         } else {
