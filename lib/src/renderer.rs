@@ -6,7 +6,8 @@ use rstar::{
 };
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::JsCast;
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::js_sys::{Object, Reflect};
 use web_sys::{OffscreenCanvas, WebGl2RenderingContext};
 
 use crate::gfx::{Color, GraphicElement, Style, Type};
@@ -77,7 +78,20 @@ pub struct Renderer<'a, DecalID> {
 }
 
 fn create_rendering_context(canvas: &OffscreenCanvas) -> Result<WebGl2RenderingContext> {
-    let Ok(Some(context_obj)) = canvas.get_context("webgl2") else {
+    let context_options = Object::new();
+    if Reflect::set(
+        &context_options,
+        &JsValue::from_str("powerPreference"),
+        &JsValue::from_str("high-performance"),
+    )
+    .is_err()
+    {
+        bail!("Could not set powerPreference");
+    }
+
+    let Ok(Some(context_obj)) =
+        canvas.get_context_with_context_options("webgl2", &JsValue::from(context_options))
+    else {
         bail!("Could not get canvas context");
     };
     let Ok(context) = context_obj.dyn_into::<WebGl2RenderingContext>() else {
