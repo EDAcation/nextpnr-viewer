@@ -12,6 +12,7 @@ use web_sys::{OffscreenCanvas, WebGl2RenderingContext};
 
 use crate::gfx::{Color, GraphicElement, Style, Type};
 use crate::pnrjson::PnrInfo;
+use crate::utils::debug_log;
 use crate::webgl::{
     ElementType, Line, LineCoords, Rectangle, RectangleCoords, RenderingProgram, WebGlElement,
 };
@@ -113,6 +114,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         let gl = create_rendering_context(&canvas)?;
         let program = RenderingProgram::new(gl)?;
 
+        debug_log("Renderer::new: created WebGL program".to_string());
+
         Ok(Self {
             architecture: Box::new(architecture),
             program,
@@ -142,6 +145,15 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
     }
 
     pub fn render(&mut self) -> Result<()> {
+        debug_log(format!(
+            "render:start webgl_elems={} scale={:.3} offset=({:.3},{:.3}) canvas={}x{}",
+            self.webgl_elements.len(),
+            self.scale,
+            self.offset.0,
+            self.offset.1,
+            self.canvas.width(),
+            self.canvas.height()
+        ));
         self.ensure_webgl_elements()?;
 
         let gl = self.program.get_gl();
@@ -199,6 +211,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             draw_decal(decal_id, etype, self.colors.selected)?;
         }
 
+        debug_log("render:done".to_string());
+
         Ok(())
     }
 
@@ -207,6 +221,14 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
         let elems = pnr_info.get_elements();
 
+        debug_log(format!(
+            "show_json:start wires={} bels={} pips={} groups={}",
+            elems.wires.len(),
+            elems.bels.len(),
+            elems.pips.len(),
+            elems.groups.len()
+        ));
+
         let crit_routings = pnr_info.get_critical_netnames();
         let crit_wires: FxHashSet<&String> =
             FxHashSet::from_iter(crit_routings.iter().map(|r| &r.wire_id));
@@ -214,6 +236,7 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             FxHashSet::from_iter(crit_routings.iter().map(|r| &r.pip.name));
 
         let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
+        let mut wires_updated = 0usize;
         for wire in elems.wires {
             let Some(ge) = wire_map.get_mut(&wire) else {
                 continue;
@@ -226,9 +249,12 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                     Style::Active
                 };
             }
+            wires_updated += 1;
         }
+        debug_log(format!("show_json:wires updated={}", wires_updated));
 
         let bel_map = self.graphic_elements.entry(ElementType::Bel).or_default();
+        let mut bels_updated = 0usize;
         for bel in elems.bels {
             let Some(ge) = bel_map.get_mut(bel.nextpnr_bel) else {
                 continue;
@@ -249,12 +275,15 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                     g.r#type = Type::FilledBox;
                 }
             }
+            bels_updated += 1;
         }
+        debug_log(format!("show_json:bels updated={}", bels_updated));
 
         let pip_map = self.graphic_elements.entry(ElementType::Pip).or_default();
         pip_map.clear();
         let pip_decal_map = self.decals.entry(ElementType::Pip).or_default();
         pip_decal_map.clear();
+        let mut pips_updated = 0usize;
         for pip in elems.pips {
             let Some(decal) =
                 self.architecture
@@ -274,13 +303,16 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
                 };
             }
             pip_map.insert(decal.id, ge);
+            pips_updated += 1;
         }
+        debug_log(format!("show_json:pips updated={}", pips_updated));
 
         self.webgl_elements_dirty = true;
 
         self.pnr_info = Some(pnr_info);
 
         self.render()?;
+        debug_log("show_json:done".to_string());
         Ok(())
     }
 
@@ -320,6 +352,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             return;
         }
 
+        debug_log("ensure_graphic_elements: start".to_string());
+
         // Wires
         let wire_decals = self.architecture.get_wire_decals();
         let wire_map = self.graphic_elements.entry(ElementType::Wire).or_default();
@@ -350,6 +384,29 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             group_decal_map.insert(decal.id.clone(), decal);
         }
 
+        let count_graphics =
+            |m: &GraphicElementCollection| -> usize { m.values().map(|v| v.len()).sum() };
+        let wire_count = self
+            .graphic_elements
+            .get(&ElementType::Wire)
+            .map(count_graphics)
+            .unwrap_or(0);
+        let bel_count = self
+            .graphic_elements
+            .get(&ElementType::Bel)
+            .map(count_graphics)
+            .unwrap_or(0);
+        let group_count = self
+            .graphic_elements
+            .get(&ElementType::Group)
+            .map(count_graphics)
+            .unwrap_or(0);
+
+        debug_log(format!(
+            "ensure_graphic_elements: wires={} bels={} groups={}",
+            wire_count, bel_count, group_count
+        ));
+
         self.graphic_elements_dirty = false;
     }
 
@@ -360,6 +417,17 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         if !self.webgl_elements_dirty {
             return Ok(());
         }
+
+        let total_graphic_elems: usize = self
+            .graphic_elements
+            .values()
+            .flat_map(|m| m.values())
+            .map(|v| v.len())
+            .sum();
+        debug_log(format!(
+            "ensure_webgl_elements: rebuilding from {} graphic elements",
+            total_graphic_elems
+        ));
 
         // Preserve decal IDs while iterating the nested maps.
         let iter = self.graphic_elements.iter().flat_map(|(etype, id_map)| {
@@ -374,6 +442,10 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         self.rtree_data = rtree_data;
 
         self.webgl_elements_dirty = false;
+        debug_log(format!(
+            "ensure_webgl_elements: done webgl_elems={}",
+            self.webgl_elements.len()
+        ));
         Ok(())
     }
 
@@ -409,7 +481,9 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         // Group elements by final draw state (style, type, resolved color).
         let mut groups: FxHashMap<Key, Vec<(&ElementType, &str, &GraphicElement)>> =
             FxHashMap::default();
+        let mut total_in = 0usize;
         for (etype, decal_id, elem) in ges {
+            total_in += 1;
             // Skip hidden or invalid early and compute resolved color once.
             let resolved = self.get_elem_color(&elem.style, &elem.color, color_override);
             if elem.style == Style::Hidden || resolved.is_none() {
@@ -419,6 +493,12 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             let key: Key = (elem.style, elem.r#type, resolved);
             groups.entry(key).or_default().push((etype, decal_id, elem));
         }
+
+        debug_log(format!(
+            "to_webgl_elements: input={} groups={}",
+            total_in,
+            groups.len()
+        ));
 
         let mut elems: FxHashMap<Key, WebGlElements> = FxHashMap::default();
         let mut rtree_data: FxHashMap<RTreeElementIndex, RTreeElementData> = FxHashMap::default();
@@ -556,6 +636,12 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
         // Bulk-load for performance.
         let rtree = RTree::bulk_load(pick_entries);
+
+        debug_log(format!(
+            "to_webgl_elements: output webgl_elems={} rtree_size={}",
+            res.len(),
+            rtree.size()
+        ));
 
         Ok((res, rtree, rtree_data))
     }

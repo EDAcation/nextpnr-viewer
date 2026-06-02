@@ -4,6 +4,7 @@ use crate::{
     decal::{ECP5DecalID, ICE40DecalID},
     pnrjson::{Chip, INextpnrJSON, IReportJSON, PnrInfo},
     renderer::{CellColorConfig, ColorConfig, Renderer},
+    utils::debug_log,
     webgl::ElementType,
 };
 
@@ -54,6 +55,7 @@ impl ViewerECP5 {
         colors: IColorConfig,
         cell_colors: ICellColorConfig,
     ) -> Result<Self, JsError> {
+        debug_log("ViewerECP5::new: start".to_string());
         let colors_conf: ColorConfig = match serde_wasm_bindgen::from_value(colors.obj) {
             Ok(colors_conf) => colors_conf,
             Err(e) => return Err(JsError::from(e)),
@@ -76,11 +78,14 @@ impl ViewerECP5 {
             Err(e) => return Err(JsError::from(&*e)),
         };
 
+        debug_log("ViewerECP5::new: renderer ready".to_string());
+
         Ok(Self { renderer })
     }
 
     #[wasm_bindgen]
     pub fn render(&mut self) -> Result<(), JsError> {
+        debug_log("ViewerECP5::render".to_string());
         self.renderer.render().map_err(|e| JsError::from(&*e))
     }
 
@@ -90,6 +95,7 @@ impl ViewerECP5 {
         obj: INextpnrJSON,
         report: Option<IReportJSON>,
     ) -> Result<(), JsError> {
+        debug_log("ViewerECP5::show_json".to_string());
         let pnr_info = PnrInfo::from_jsobj(Chip::ECP5, obj, report)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.renderer
@@ -175,6 +181,7 @@ impl ViewerICE40 {
         colors: IColorConfig,
         cell_colors: ICellColorConfig,
     ) -> Result<Self, JsError> {
+        debug_log("ViewerICE40::new: start".to_string());
         let colors_conf: ColorConfig = match serde_wasm_bindgen::from_value(colors.obj) {
             Ok(colors_conf) => colors_conf,
             Err(e) => return Err(JsError::from(e)),
@@ -197,11 +204,14 @@ impl ViewerICE40 {
             Err(e) => return Err(JsError::from(&*e)),
         };
 
+        debug_log("ViewerICE40::new: renderer ready".to_string());
+
         Ok(Self { renderer })
     }
 
     #[wasm_bindgen]
     pub fn render(&mut self) -> Result<(), JsError> {
+        debug_log("ViewerICE40::render".to_string());
         self.renderer.render().map_err(|e| JsError::from(&*e))
     }
 
@@ -211,6 +221,7 @@ impl ViewerICE40 {
         obj: INextpnrJSON,
         report: Option<IReportJSON>,
     ) -> Result<(), JsError> {
+        debug_log("ViewerICE40::show_json".to_string());
         let pnr_info = PnrInfo::from_jsobj(Chip::ICE40, obj, report)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.renderer

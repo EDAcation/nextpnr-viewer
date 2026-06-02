@@ -1,6 +1,8 @@
 use anyhow::{bail, Result};
 use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader, WebGlUniformLocation};
 
+use crate::utils::debug_log;
+
 /** Default vertex shader source (GLSL)
     Expects a vertex buffer (VBO) with vec2 positions for each of the vertices as input.
 
@@ -144,9 +146,12 @@ pub struct RenderingProgram {
 
 impl RenderingProgram {
     pub fn new(context: WebGl2RenderingContext) -> Result<Self> {
+        debug_log("RenderingProgram::new: compiling shaders".to_string());
         let vertex_shader = compile_shader(&context, DEFAULT_VERTEX_SRC, ShaderType::Vertex)?;
         let fragment_shader = compile_shader(&context, DEFAULT_FRAGMENT_SRC, ShaderType::Fragment)?;
         let program = link_shaders(&context, vertex_shader, fragment_shader)?;
+
+        debug_log("RenderingProgram::new: shaders linked".to_string());
 
         Ok(RenderingProgram { context, program })
     }

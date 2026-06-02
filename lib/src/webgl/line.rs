@@ -2,6 +2,7 @@ use anyhow::{bail, Result};
 use web_sys::{js_sys, WebGl2RenderingContext, WebGlVertexArrayObject};
 
 use crate::gfx::Color;
+use crate::utils::debug_log;
 
 use super::{types::WebGlElement, RenderingProgram};
 
@@ -35,6 +36,7 @@ pub struct Line {
 
 impl Line {
     pub fn new(program: &RenderingProgram, lines: Vec<LineCoords>, color: Color) -> Result<Self> {
+        debug_log(format!("Line::new lines={}", lines.len()));
         let gl = program.get_gl();
 
         // Create vertex array object
@@ -101,6 +103,10 @@ impl WebGlElement<'_> for Line {
         canvas_width: f32,
         canvas_height: f32,
     ) -> Result<()> {
+        debug_log(format!(
+            "Line::draw amount={} scale={:.3} canvas={}x{}",
+            self.amount, scale, canvas_width, canvas_height
+        ));
         let gl = program.get_gl();
 
         program.r#use();
