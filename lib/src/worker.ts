@@ -188,8 +188,8 @@ export class WorkerViewerAdapter {
         await this._rpc('__resize_canvas__', [width, height]);
     }
 
-    async show_json(nextpnrJson: NextpnrJson, reportJson?: ReportJson): Promise<void> {
-        await this._rpc('show_json', [nextpnrJson, reportJson]);
+    async show_json(nextpnrJson: NextpnrJson, reportJson?: ReportJson, startedRendering?: boolean): Promise<void> {
+        await this._rpc('show_json', [nextpnrJson, reportJson, startedRendering]);
     }
 
     async zoom(amt: number, x: number, y: number): Promise<void> {

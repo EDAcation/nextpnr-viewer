@@ -17,3 +17,9 @@ pub fn set_panic_hook() {
 pub fn log(msg: String) {
     js::log(&msg[..])
 }
+
+#[allow(dead_code, unused_variables)]
+pub fn debug_log(msg: String) {
+    #[cfg(feature = "debug_log")]
+    log(msg);
+}
