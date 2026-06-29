@@ -71,6 +71,8 @@ pub struct Renderer<'a, DecalID> {
     rtree: Option<RTree<RTreeData>>,
     rtree_data: FxHashMap<RTreeElementIndex, RTreeElementData>,
 
+    pip_name_by_decal_id: FxHashMap<String, String>,
+
     colors: ColorConfig,
     cell_colors: CellColorConfig,
 
@@ -131,6 +133,8 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
 
             rtree: None,
             rtree_data: FxHashMap::default(),
+
+            pip_name_by_decal_id: FxHashMap::default(),
 
             colors,
             cell_colors,
@@ -291,6 +295,9 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
             else {
                 continue;
             };
+
+            self.pip_name_by_decal_id
+                .insert(decal.id.clone(), pip.name.clone());
 
             pip_decal_map.insert(decal.id.clone(), decal.clone());
 
@@ -686,9 +693,17 @@ impl<'a, DecalID: Clone> Renderer<'a, DecalID> {
         FxHashMap::from_iter(decal_ids.iter().filter_map(|decal_id| {
             let decal = decal_map.get(decal_id.as_str())?;
 
+            let matching_str = if element_type == ElementType::Pip {
+                self.pip_name_by_decal_id
+                    .get(&decal.id)
+                    .map_or(decal.id.clone(), |s| s.clone())
+            } else {
+                decal.id.clone()
+            };
+
             let is_critical = crit_decals
                 .get(&element_type)
-                .is_some_and(|s| s.contains(&decal.id));
+                .is_some_and(|s| s.contains(&matching_str));
 
             let is_active = is_critical // all critical decals are active
                 || self
